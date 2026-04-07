@@ -198,146 +198,175 @@ body {
   width: 100%;
 }
 .jadwal-card-title {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text3);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 10px;
-  font-family: var(--mono);
+  margin-bottom: 12px;
 }
-.jadwal-list { display: flex; flex-direction: column; gap: 6px; }
 .jadwal-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  background: var(--bg3);
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
 }
-.jadwal-nama { font-weight: 500; }
-.jadwal-NIA { color: var(--text2); font-family: var(--mono); font-size: 11px; }
+.jadwal-item:last-child { border-bottom: none; }
+.jadwal-nama { font-size: 14px; font-weight: 500; }
+.jadwal-NIA { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+/* Badge */
 .badge {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 20px;
+  font-size: 11px;
   font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
   font-family: var(--mono);
+  white-space: nowrap;
 }
 .badge-hadir { background: rgba(74,222,128,0.15); color: var(--accent); }
 .badge-belum { background: rgba(248,113,113,0.15); color: var(--red); }
 .badge-blue { background: rgba(34,211,238,0.15); color: var(--accent2); }
+.badge-amber { background: rgba(245,158,11,0.15); color: var(--accent3); }
+.badge-pulang { background: rgba(167,139,250,0.2); color: #c084fc; }
 
-/* Scan frame */
-.scan-section {
+/* Identity section */
+.identity-section {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 20px;
   width: 100%;
+}
+.form-row { margin-bottom: 12px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text3); }
+
+/* Scan type selector */
+.scan-type-selector {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.scan-type-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.scan-type-btn.active-datang {
+  background: rgba(74,222,128,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.scan-type-btn.active-pulang {
+  background: rgba(167,139,250,0.1);
+  border-color: #c084fc;
+  color: #c084fc;
+}
+
+/* GPS status */
+.gps-status {
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.gps-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  flex-shrink: 0;
+}
+.gps-dot.ok { background: var(--accent); }
+.gps-dot.loading { background: var(--accent3); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Scan section */
+.scan-section {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   padding: 20px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 .scan-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text2);
   text-align: center;
 }
 #qr-reader-wrapper {
-  width: 100%;
-  max-width: 300px;
+  width: 260px; height: 260px;
   position: relative;
-}
-#qr-reader {
-  width: 100% !important;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
-#qr-reader video { border-radius: 12px; }
-#qr-reader img { display: none; }
+#qr-reader { width: 100%; height: 100%; }
+#qr-reader video { object-fit: cover; }
 .scan-corner {
   position: absolute;
   width: 24px; height: 24px;
   border-color: var(--accent);
   border-style: solid;
+  z-index: 10;
+  pointer-events: none;
 }
-.scan-corner.tl { top: 8px; left: 8px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
-.scan-corner.tr { top: 8px; right: 8px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
-.scan-corner.bl { bottom: 8px; left: 8px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
-.scan-corner.br { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
-
-/* Identity form */
-.identity-section {
-  width: 100%;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-}
-.form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.form-label {
-  font-size: 12px;
-  color: var(--text2);
-  font-weight: 500;
-}
-.form-input {
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 14px;
-  padding: 10px 12px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-input:focus { border-color: var(--accent); }
+.scan-corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+.scan-corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+.scan-corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+.scan-corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
 .btn-scan {
   width: 100%;
   padding: 12px;
+  border-radius: var(--radius);
   background: var(--accent);
   color: #0a1a0f;
-  border: none;
-  border-radius: 8px;
   font-family: var(--font);
   font-size: 14px;
   font-weight: 600;
+  border: none;
   cursor: pointer;
   transition: all 0.2s;
 }
 .btn-scan:hover { background: #6ee7a0; }
-.btn-scan:disabled { background: var(--bg3); color: var(--text3); cursor: not-allowed; }
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  padding: 14px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 9999;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  white-space: nowrap;
-  max-width: 90vw;
-  text-align: center;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.success { border-color: rgba(74,222,128,0.4); color: var(--accent); }
-.toast.error { border-color: rgba(248,113,113,0.4); color: var(--red); }
-.toast.info { border-color: rgba(34,211,238,0.4); color: var(--accent2); }
+.btn-scan.stop { background: var(--red); color: white; }
 
 /* ============================================================
    ADMIN LOGIN
@@ -356,64 +385,59 @@ body {
   max-width: 380px;
 }
 .admin-login-title {
-  font-size: 20px; font-weight: 600;
+  font-size: 20px; font-weight: 700;
   margin-bottom: 4px;
 }
 .admin-login-sub {
-  font-size: 13px; color: var(--text2);
+  font-size: 13px;
+  color: var(--text2);
   margin-bottom: 28px;
 }
-.form-row-login {
-  margin-bottom: 14px;
-}
+.form-row-login { margin-bottom: 14px; }
 .btn-login {
   width: 100%;
   padding: 13px;
-  background: var(--accent2);
-  color: #02111a;
-  border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #0a1a0f;
   font-family: var(--font);
   font-size: 15px;
   font-weight: 600;
+  border: none;
   cursor: pointer;
-  margin-top: 4px;
+  margin-top: 8px;
   transition: all 0.2s;
 }
-.btn-login:hover { background: #67e8f9; }
+.btn-login:hover { background: #6ee7a0; }
 .login-err {
-  font-size: 13px;
   color: var(--red);
-  margin-top: 10px;
+  font-size: 13px;
   text-align: center;
+  margin-top: 10px;
   display: none;
 }
 
 /* ============================================================
    ADMIN DASHBOARD
    ============================================================ */
-#page-admin {
-  background: var(--bg);
-  flex-direction: row;
-}
-/* Sidebar */
 .sidebar {
-  width: 220px;
+  width: 240px;
+  flex-shrink: 0;
   background: var(--bg2);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   height: 100vh;
   position: sticky;
   top: 0;
 }
 .sidebar-logo {
-  padding: 20px;
+  padding: 24px 20px 16px;
   border-bottom: 1px solid var(--border);
 }
 .sidebar-logo-text {
-  font-size: 15px; font-weight: 700;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--accent);
   font-family: var(--mono);
 }
@@ -423,49 +447,43 @@ body {
 }
 .sidebar-nav {
   flex: 1;
-  padding: 12px 8px;
+  padding: 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  overflow-y: auto;
 }
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
   padding: 9px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 13px;
-  color: var(--text2);
-  transition: all 0.15s;
-  border: none;
-  background: none;
-  width: 100%;
   text-align: left;
-  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.15s;
 }
 .nav-item:hover { background: var(--bg3); color: var(--text); }
 .nav-item.active { background: rgba(74,222,128,0.1); color: var(--accent); }
 .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 .sidebar-footer {
-  padding: 12px 8px;
+  padding: 16px;
   border-top: 1px solid var(--border);
 }
-.sidebar-user {
-  padding: 8px 12px;
-  background: var(--bg3);
-  border-radius: 8px;
-  font-size: 12px;
-}
-.sidebar-user-name { font-weight: 500; }
-.sidebar-user-role { color: var(--text3); font-size: 11px; }
+.sidebar-user-name { font-size: 13px; font-weight: 600; }
+.sidebar-user-role { font-size: 11px; color: var(--text3); }
 
-/* Main content */
 .admin-main {
   flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .admin-topbar {
   background: var(--bg2);
@@ -476,43 +494,135 @@ body {
   justify-content: space-between;
   flex-shrink: 0;
 }
-.topbar-title { font-size: 17px; font-weight: 600; }
+.topbar-title { font-size: 16px; font-weight: 700; }
 .topbar-date { font-size: 12px; color: var(--text2); font-family: var(--mono); }
 .admin-content {
-  padding: 24px;
   flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
 }
-
-/* ---- TAB PANELS ---- */
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
-/* ---- QR DISPLAY (admin) ---- */
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; font-family: var(--mono); line-height: 1; margin-bottom: 4px; }
+.stat-sub { font-size: 11px; color: var(--text3); }
+.stat-green { color: var(--accent); }
+.stat-blue { color: var(--accent2); }
+.stat-amber { color: var(--accent3); }
+
+/* Table card */
+.table-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.table-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.table-card-title { font-size: 14px; font-weight: 600; }
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-input {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 7px 12px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  outline: none;
+}
+.filter-input:focus { border-color: var(--accent); }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg3);
+  white-space: nowrap;
+}
+td {
+  padding: 11px 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* Buttons */
+.btn-sm {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.btn-sm:hover { border-color: var(--accent); color: var(--text); }
+.btn-sm.primary { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.3); color: var(--accent); }
+.btn-sm.primary:hover { background: rgba(74,222,128,0.2); }
+.btn-sm.blue { background: rgba(34,211,238,0.1); border-color: rgba(34,211,238,0.3); color: var(--accent2); }
+.btn-sm.danger { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); color: var(--red); }
+.btn-sm.danger:hover { background: rgba(248,113,113,0.2); }
+
+/* QR Display */
 .qr-admin-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto 1fr;
   gap: 20px;
 }
 .qr-display-card {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+  border-radius: var(--radius);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 .qr-box {
-  background: #fff;
+  background: white;
   padding: 16px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 10px;
 }
 .qr-timer-bar {
-  width: 100%;
+  width: 200px;
   height: 4px;
   background: var(--bg3);
   border-radius: 2px;
@@ -520,183 +630,46 @@ body {
 }
 .qr-timer-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 2px;
+  background: var(--accent);
   transition: width 1s linear;
 }
-.qr-token-display {
-  font-family: var(--mono);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 4px;
-  color: var(--accent);
-}
-.qr-expire-label {
-  font-size: 12px;
-  color: var(--text2);
-}
-.qr-expire-countdown {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--accent3);
-  font-weight: 600;
-}
+.qr-expire-label { font-size: 12px; color: var(--text3); }
+.qr-expire-countdown { font-size: 18px; font-weight: 700; font-family: var(--mono); color: var(--accent3); }
+.qr-token-display { font-size: 22px; font-weight: 700; font-family: var(--mono); color: var(--text); letter-spacing: 3px; }
 
-/* ---- STATS GRID ---- */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
-}
-.stat-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-}
-.stat-label {
-  font-size: 11px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 6px;
-  font-family: var(--mono);
-}
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  font-family: var(--mono);
-}
-.stat-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.stat-green { color: var(--accent); }
-.stat-blue { color: var(--accent2); }
-.stat-amber { color: var(--accent3); }
-.stat-red { color: var(--red); }
-
-/* ---- TABLES ---- */
-.table-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.table-card-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.table-card-title { font-size: 14px; font-weight: 600; }
-.table-scroll { overflow-x: auto; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-th {
-  text-align: left;
-  padding: 10px 16px;
-  color: var(--text3);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  border-bottom: 1px solid var(--border);
-  font-family: var(--mono);
-  font-weight: 500;
-}
-td {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-}
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(255,255,255,0.02); }
-
-/* ---- FILTER ROW ---- */
-.filter-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.filter-input {
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 13px;
-  padding: 7px 12px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.filter-input:focus { border-color: var(--accent); }
-.btn-sm {
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid var(--border2);
-  background: var(--bg3);
-  color: var(--text);
-  transition: all 0.2s;
-}
-.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
-.btn-sm.primary { background: var(--accent); color: #0a1a0f; border-color: var(--accent); }
-.btn-sm.primary:hover { background: #6ee7a0; }
-.btn-sm.danger { border-color: rgba(248,113,113,0.3); color: var(--red); }
-.btn-sm.danger:hover { background: rgba(248,113,113,0.1); }
-.btn-sm.blue { border-color: rgba(34,211,238,0.3); color: var(--accent2); }
-.btn-sm.blue:hover { background: rgba(34,211,238,0.1); }
-
-/* ---- JADWAL MANAGER ---- */
+/* Jadwal Manager */
 .jadwal-manager {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 16px;
 }
 .anggota-picker {
-  background: var(--bg2);
+  background: var(--bg3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 18px;
+  border-radius: var(--radius);
+  padding: 14px;
 }
-.anggota-picker-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
-.anggota-list-pick {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 300px;
-  overflow-y: auto;
-}
+.anggota-picker-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.anggota-list-pick { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .anggota-pick-item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: var(--bg3);
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
+  transition: background 0.15s;
   border: 1px solid transparent;
-  transition: all 0.15s;
 }
-.anggota-pick-item.selected {
-  border-color: var(--accent);
-  background: rgba(74,222,128,0.08);
-}
+.anggota-pick-item:hover { background: var(--bg2); }
+.anggota-pick-item.selected { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.2); }
 .pick-check {
   width: 18px; height: 18px;
   border-radius: 4px;
-  border: 2px solid var(--border2);
+  border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px;
   flex-shrink: 0;
-  transition: all 0.15s;
 }
 .anggota-pick-item.selected .pick-check {
   background: var(--accent);
@@ -783,7 +756,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .mobile-nav-item.active { color: var(--accent); }
 .mobile-nav-icon { font-size: 20px; }
 
-/* Fullscreen scan overlay for admin */
+/* Modal */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -823,33 +796,31 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 .loading { color: var(--text3); font-size: 13px; text-align: center; padding: 20px; }
 .empty-state { color: var(--text3); font-size: 13px; text-align: center; padding: 28px; }
-.tipe-btn {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border2);
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
   background: var(--bg3);
-  color: var(--text2);
-  font-size: 14px;
-  font-family: var(--font);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.tipe-btn.active {
-  border-color: var(--accent);
-  background: rgba(74,222,128,0.1);
-  color: var(--accent);
-}
-.tipe-btn:not(.active):hover {
-  border-color: var(--border2);
-  background: var(--bg3);
+  border: 1px solid var(--border2);
   color: var(--text);
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 999;
+  opacity: 0;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.1); }
+.toast.error { border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.1); }
 </style>
 </head>
 <body>
@@ -858,8 +829,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
      CONFIG - GANTI INI
      ============================================================ -->
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2af7jQXl7-EjlQ_c2J_qb6ksuxxrgb-22uzMrfHTZXKrRJA/exec';
-// Contoh: 'https://script.google.com/macros/s/AKfyc.../exec'
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppandy0i9s4YFOJuuDxBUoDDrRst8GRKvjQCBsTUK-m29sZBSEw/exec';
 </script>
 
 <!-- ============================================================
@@ -904,31 +874,28 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2
       </div>
     </div>
 
-    <!-- Isi identitas -->
+    <!-- Isi identitas - hanya NIA -->
     <div class="identity-section">
       <div class="jadwal-card-title" style="margin-bottom:12px">👤 Identitasmu</div>
       <div class="form-row">
-        <label class="form-label">NIA</label>
-        <input class="form-input" id="input-NIA" type="text" placeholder="Contoh: 20210001" maxlength="20" />
+        <label class="form-label">NIA (Nomor Induk Anggota)</label>
+        <input class="form-input" id="input-NIA" type="text" placeholder="Contoh: 92025001" maxlength="20" />
       </div>
-      <div class="form-row">
-        <label class="form-label">Nama Lengkap</label>
-        <input class="form-input" id="input-nama" type="text" placeholder="Nama sesuai data anggota" />
-      </div>
-    </div>
 
-    <!-- Pilih tipe absen -->
-    <div class="identity-section" style="margin-bottom:0;">
-      <div class="jadwal-card-title" style="margin-bottom:12px">⏱ Tipe Absen</div>
-      <div style="display:flex;gap:10px;">
-        <button class="tipe-btn active" id="tipe-datang" onclick="setTipeAbsen('DATANG')">
-          <span>🟢</span> Datang
-        </button>
-        <button class="tipe-btn" id="tipe-pulang" onclick="setTipeAbsen('PULANG')">
-          <span>🔴</span> Pulang
-        </button>
+      <!-- Jenis absen: Datang / Pulang -->
+      <div class="form-row" style="margin-bottom:4px;">
+        <label class="form-label">Jenis Absen</label>
+        <div class="scan-type-selector">
+          <button class="scan-type-btn active-datang" id="btn-tipe-datang" onclick="setScanType('DATANG')">🟢 Datang</button>
+          <button class="scan-type-btn" id="btn-tipe-pulang" onclick="setScanType('PULANG')">🟣 Pulang</button>
+        </div>
       </div>
-      <div id="gps-status" style="font-size:12px;color:var(--text3);margin-top:8px;font-family:var(--mono);">📍 GPS: Belum didapat</div>
+
+      <!-- GPS Status -->
+      <div class="gps-status" id="gps-status">
+        <div class="gps-dot loading" id="gps-dot"></div>
+        <span id="gps-label">Mengambil lokasi GPS...</span>
+      </div>
     </div>
 
     <!-- Scan section -->
@@ -1070,7 +1037,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2
           <div class="table-scroll">
             <table>
               <thead>
-                <tr><th>Waktu</th><th>NIA</th><th>Nama</th><th>Tipe</th><th>Status</th></tr>
+                <tr><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Durasi</th><th>Status</th></tr>
               </thead>
               <tbody id="tbl-today"></tbody>
             </table>
@@ -1125,7 +1092,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2
           <div class="table-scroll">
             <table>
               <thead>
-                <tr><th>Tanggal</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Tipe</th><th>Status</th><th>Lokasi</th></tr>
+                <tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Durasi</th><th>GPS</th></tr>
               </thead>
               <tbody id="tbl-rekap"></tbody>
             </table>
@@ -1147,7 +1114,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2
           <div class="table-scroll">
             <table>
               <thead>
-                <tr><th>Tanggal</th><th>Waktu</th><th>Tipe</th><th>Status</th></tr>
+                <tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>Durasi</th><th>Status</th></tr>
               </thead>
               <tbody id="tbl-histori"></tbody>
             </table>
@@ -1205,8 +1172,8 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2
     <div class="modal-title">Tambah Anggota Baru</div>
     <div class="modal-sub">Data akan disimpan ke Google Sheets</div>
     <div class="form-row" style="margin-bottom:10px;">
-      <label class="form-label">NIA</label>
-      <input class="form-input" id="new-NIA" placeholder="Nomor Induk Anggota" />
+      <label class="form-label">NIA (Nomor Induk Anggota)</label>
+      <input class="form-input" id="new-NIA" placeholder="Contoh: 92025001" />
     </div>
     <div class="form-row" style="margin-bottom:10px;">
       <label class="form-label">Nama Lengkap</label>
@@ -1214,7 +1181,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2
     </div>
     <div class="form-row" style="margin-bottom:10px;">
       <label class="form-label">Divisi</label>
-      <input class="form-input" id="new-divisi" placeholder="Contoh: Penelitian, Edukasi, Humas" />
+      <input class="form-input" id="new-divisi" placeholder="Contoh: HR, DC, PR, TnD, EnR, DP" />
     </div>
     <div class="form-row" style="margin-bottom:16px;">
       <label class="form-label">No. Telp / WA</label>
@@ -1236,13 +1203,12 @@ let currentTab = 'qr';
 let qrInstance = null;
 let scannerInstance = null;
 let isScanning = false;
-let qrTimer = null;
-let qrCountdownTimer = null;
+let qrIntervalRef = null;
 let allAnggota = [];
 let selectedAnggota = new Set();
 let adminInfo = null;
-let tipeAbsen = 'DATANG'; // default
-let currentGPS = null;
+let scanType = 'DATANG'; // 'DATANG' atau 'PULANG'
+let gpsCoords = null;
 
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => {
@@ -1267,15 +1233,17 @@ function showToast(msg, type = 'info', dur = 3000) {
   setTimeout(() => t.classList.remove('show'), dur);
 }
 
+// ============================================================
+// API
+// ============================================================
 async function api(params) {
-  if (!GAS_URL || GAS_URL === 'https://script.google.com/macros/s/AKfycbxoSM0vwHaq-c-WV4Z9juu2af7jQXl7-EjlQ_c2J_qb6ksuxxrgb-22uzMrfHTZXKrRJA/exec') {
-    // Demo mode
+  if (!GAS_URL || GAS_URL === 'GANTI_DENGAN_URL_WEB_APP_GOOGLE_APPS_SCRIPT') {
     return demoApi(params);
   }
   try {
     const url = GAS_URL + '?' + new URLSearchParams(params);
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
+    const timer = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(url, {signal: controller.signal});
     clearTimeout(timer);
     return await res.json();
@@ -1285,37 +1253,210 @@ async function api(params) {
   }
 }
 
-// ---- DEMO MODE (saat GAS_URL belum diset) ----
-const demoJadwal = [
-  {NIA:'20210001', nama:'Budi Santoso', divisi:'Penelitian', statusDatang:'HADIR', statusPulang:'BELUM'},
-  {NIA:'20210002', nama:'Siti Rahayu', divisi:'Edukasi', statusDatang:'BELUM', statusPulang:'BELUM'},
-  {NIA:'20210003', nama:'Ahmad Fauzi', divisi:'Humas', statusDatang:'BELUM', statusPulang:'BELUM'},
+// ============================================================
+// DEMO MODE — DATA NYATA KIPM-UP + FUNGSI LENGKAP
+// ============================================================
+const realAnggota = [
+  {NIA:'82024022', nama:'Rifqy Rachmat', divisi:'Ketua Umum', telp:'87886993450'},
+  {NIA:'82024015', nama:'Muhamad Alfan', divisi:'Wakil Ketua Umum I', telp:'85773694230'},
+  {NIA:'92025010', nama:'Khoirunnisa Assolihah', divisi:'Wakil Ketua Umum II', telp:'85779050415'},
+  {NIA:'82024012', nama:'Kinanti Ayuningtyas Puri', divisi:'Investment Manager I', telp:'85692447441'},
+  {NIA:'92025002', nama:'Afief Baharmus', divisi:'Investment Manager II', telp:'81285321417'},
+  {NIA:'82024017', nama:'Nisrina Zakiyah Rahmah', divisi:'Investment Manager III', telp:'81292936383'},
+  {NIA:'92025014', nama:'Melany Septiana Putri', divisi:'Secretary I', telp:'81387694749'},
+  {NIA:'92025013', nama:'Maudyna Tasya Ardianti', divisi:'Secretary II', telp:'81218510500'},
+  {NIA:'92025011', nama:'Majda Tsania', divisi:'Secretary III', telp:'87881633207'},
+  {NIA:'92025012', nama:'Mariyah Sujana', divisi:'Treasury I', telp:'817111899'},
+  {NIA:'92025005', nama:'Baim Daniel Musyafa', divisi:'Treasury II', telp:'87782121989'},
+  {NIA:'92025026', nama:'Nandini Melody Yordan', divisi:'Head of HR', telp:'81211077409'},
+  {NIA:'92025035', nama:'Sayyid Dzaky Ismail', divisi:'HR', telp:'81381984626'},
+  {NIA:'92025037', nama:'Siti Aprilia Temihila', divisi:'HR', telp:'85813099914'},
+  {NIA:'92025033', nama:'Ririn Dwi Lestari', divisi:'HR', telp:'82315117903'},
+  {NIA:'92025036', nama:'Selfia Herlanda', divisi:'HR', telp:'895330130991'},
+  {NIA:'92025003', nama:'Ahmad Farel Rabbani', divisi:'HR', telp:'85886307614'},
+  {NIA:'92025018', nama:'Muhammad Panji Robani', divisi:'HR', telp:'89525554553'},
+  {NIA:'92025015', nama:'Milka Nur Azizah', divisi:'Head of DC', telp:'81514099345'},
+  {NIA:'92025007', nama:'Darwita Sangadji', divisi:'DC', telp:'81388726799'},
+  {NIA:'92025019', nama:'Muhammad Rasya Raafi Ramadhan', divisi:'DC', telp:'82122956668'},
+  {NIA:'92025028', nama:'Natasya Nabila', divisi:'DC', telp:'81297977770'},
+  {NIA:'92025039', nama:'Syitna Fatimah Alu', divisi:'DC', telp:'81248513691'},
+  {NIA:'92025030', nama:'Rasya Baihaqi', divisi:'DC', telp:'895328945483'},
+  {NIA:'92025021', nama:'Muhammad Roffi Huda Kusuma', divisi:'DC', telp:'81927651901'},
+  {NIA:'92025016', nama:'Muhamad Raditia Ramadhan', divisi:'DC', telp:'85692722484'},
+  {NIA:'92025006', nama:'Chandra Lie', divisi:'Head of PR', telp:'81348390793'},
+  {NIA:'92025034', nama:'Salsabila Dinda Ayudia', divisi:'PR', telp:'85819865866'},
+  {NIA:'92025009', nama:'Hasya Balqis Khairunnisa', divisi:'PR', telp:'81232688225'},
+  {NIA:'92025025', nama:'Naila Zulfa Rahma', divisi:'PR', telp:'82136451822'},
+  {NIA:'92025024', nama:'Naila Fauziah', divisi:'PR', telp:'88213170889'},
+  {NIA:'92025023', nama:'Nada Jauza Syaqila', divisi:'PR', telp:'81282830972'},
+  {NIA:'82024029', nama:'Tofan Habibi', divisi:'Head of TnD', telp:'83115083899'},
+  {NIA:'92025027', nama:'Nasya Aliyah Inka', divisi:'TnD', telp:'85888072950'},
+  {NIA:'92025038', nama:'Syifa Khaulia', divisi:'TnD', telp:'89531920320'},
+  {NIA:'92025004', nama:'Ahmad Haidar Pasha', divisi:'TnD', telp:'85959914099'},
+  {NIA:'92025022', nama:'Mukti Hidayatulloh', divisi:'TnD', telp:'81285879617'},
+  {NIA:'92025001', nama:'Ismail Jamil', divisi:'Head of EnR', telp:'81586826673'},
+  {NIA:'92025040', nama:'Zuldan Ahmad Fauzan', divisi:'EnR', telp:'82110975842'},
+  {NIA:'92025017', nama:'Muhammad Abdul Muhyi', divisi:'EnR', telp:'85776422165'},
+  {NIA:'92025008', nama:'Dwi Savitri Denia', divisi:'EnR', telp:'81314520884'},
+  {NIA:'92025032', nama:'Reno Rafly Anggara', divisi:'EnR', telp:'82120764752'},
+  {NIA:'72023013', nama:'Retno Anggraeni', divisi:'Ketua DP', telp:'81383218527'},
+  {NIA:'82024014', nama:'M. Fabian Al Aziz', divisi:'DP', telp:'85156428245'},
+  {NIA:'82024016', nama:'Muhammad Anwar', divisi:'DP', telp:'8386470342'},
+  {NIA:'82024018', nama:'Putri Aisyah Novianti', divisi:'DP', telp:'89503215160'},
+  {NIA:'82024024', nama:'Sabila Nur Aisyah', divisi:'DP', telp:'87874528999'},
 ];
-const demoAnggota = [
-  {NIA:'20210001', nama:'Budi Santoso', divisi:'Penelitian', telp:'081234567890'},
-  {NIA:'20210002', nama:'Siti Rahayu', divisi:'Edukasi', telp:'081234567891'},
-  {NIA:'20210003', nama:'Ahmad Fauzi', divisi:'Humas', telp:'081234567892'},
-  {NIA:'20210004', nama:'Dewi Lestari', divisi:'Keuangan', telp:'081234567893'},
-];
-const demoRekap = [
-  {tanggal: new Date().toISOString().split('T')[0], waktu:'08:15:32', NIA:'20210001', nama:'Budi Santoso', tipe:'DATANG', status:'HADIR', gpsLat:'-6.200000', gpsLng:'106.816666'},
-  {tanggal: new Date().toISOString().split('T')[0], waktu:'12:22:11', NIA:'20210001', nama:'Budi Santoso', tipe:'PULANG', status:'HADIR', gpsLat:'-6.200001', gpsLng:'106.816667'},
-];
+
+// Demo absensi storage (persists during session)
+let demoAbsensi = [];
+// Demo anggota (editable during session)
+let demoAnggotaList = [...realAnggota];
+
 function demoApi(p) {
   const today = new Date().toISOString().split('T')[0];
   switch(p.action) {
-    case 'getJadwalHariIni': return {ok:true, data: demoJadwal, tanggal: today};
-    case 'getDashboardStats': return {ok:true, hadirHariIni:1, jadwalHariIni:3, hadirBulanIni:8, jadwalBulanIni:12, totalAnggota:4, persenHariIni:33};
-    case 'getAnggota': return {ok:true, data: demoAnggota};
-    case 'getRekapAbsensi': return {ok:true, data: demoRekap};
-    case 'getHistoriAnggota': return {ok:true, NIA:p.NIA, totalJadwal:5, totalHadir:4, persentase:80, histori:[{tanggal:today,waktu:'08:15',tipe:'DATANG',status:'HADIR'}]};
-    case 'adminLogin': return (p.username==='adminhrd'&&p.password==='kipmup2017') ? {ok:true,nama:'Administrator',role:'superadmin'} : {ok:false,msg:'Salah'};
-    case 'validateBarcode': return {ok:true, msg:`[DEMO] Absen ${p.tipe||'DATANG'} berhasil!`, waktu:'08:30:00', jadwal:true};
-    case 'addAnggota': return {ok:true, msg:'[DEMO] Anggota ditambahkan'};
-    case 'deleteAnggota': return {ok:true};
-    case 'setJadwal': return {ok:true, msg:'[DEMO] Jadwal disimpan'};
-    case 'exportAbsensi': return {ok:true, csv:'Tanggal,Waktu,NIA,Nama,Tipe,Status,GPS Lat,GPS Lng,Google Maps\n'+today+',08:15,20210001,Budi Santoso,DATANG,HADIR,-6.200000,106.816666,https://maps.google.com/?q=-6.2,106.8', total:1};
+    case 'getJadwalHariIni': {
+      // Build a demo schedule based on day of week (Mon-Fri)
+      const dayNames = ['Ahad','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const dow = new Date().getDay(); // 0=Sun
+      const jadwalMap = {
+        1: ['92025012','92025013','92025014','92025007','92025002','92025004','92025019','92025027'], // Senin
+        2: ['92025033','82024015','92025015','92025011','92025009','82024029','92025005','92025016'], // Selasa
+        3: ['92025026','92025001','92025039','92025018','82024012','92025040','92025006','92025030'], // Rabu
+        4: ['92025036','92025034','82024017','92025035','92025025','92025021','92025023','92025030'], // Kamis
+        5: ['92025010','92025024','82024017','92025037','82024022','92025003','92025040','92025008'], // Jumat
+      };
+      const niaList = jadwalMap[dow] || [];
+      const jadwalData = niaList.map(nia => {
+        const a = demoAnggotaList.find(x => x.NIA === nia);
+        if (!a) return null;
+        const sudahHadir = demoAbsensi.some(r => r.tanggal === today && r.NIA === nia && r.tipe === 'DATANG');
+        return { NIA: a.NIA, nama: a.nama, divisi: a.divisi, status: sudahHadir ? 'HADIR' : 'BELUM' };
+      }).filter(Boolean);
+      return {ok:true, data: jadwalData, tanggal: today};
+    }
+    case 'getDashboardStats': {
+      const hadirHariIni = new Set(demoAbsensi.filter(r => r.tanggal === today && r.tipe === 'DATANG').map(r => r.NIA)).size;
+      const bulan = today.substring(0,7);
+      const hadirBulanIni = new Set(demoAbsensi.filter(r => r.tanggal.startsWith(bulan) && r.tipe === 'DATANG').map(r => r.NIA)).size;
+      return {ok:true, hadirHariIni, jadwalHariIni:8, hadirBulanIni, jadwalBulanIni:40, totalAnggota: demoAnggotaList.length, persenHariIni: Math.round(hadirHariIni/8*100)};
+    }
+    case 'getAnggota':
+      return {ok:true, data: demoAnggotaList};
+    case 'getRekapAbsensi': {
+      let data = [...demoAbsensi];
+      if (p.from) data = data.filter(r => r.tanggal >= p.from);
+      if (p.to) data = data.filter(r => r.tanggal <= p.to);
+      return {ok:true, data};
+    }
+    case 'getHistoriAnggota': {
+      const hist = demoAbsensi.filter(r => r.NIA === p.NIA);
+      const totalJadwal = 10;
+      const totalHadir = new Set(hist.filter(r => r.tipe === 'DATANG').map(r => r.tanggal)).size;
+      return {ok:true, NIA:p.NIA, totalJadwal, totalHadir, persentase: Math.round(totalHadir/totalJadwal*100), histori:hist};
+    }
+    case 'adminLogin':
+      return (p.username==='adminhrd'&&p.password==='kipmup2017') ? {ok:true,nama:'Administrator HRD',role:'superadmin'} : {ok:false,msg:'Salah'};
+    case 'validateBarcode': {
+      const anggota = demoAnggotaList.find(a => a.NIA === p.NIA);
+      if (!anggota) return {ok:false, msg:'NIA tidak terdaftar sebagai anggota KIPM-UP!'};
+      // Cek duplikasi tipe yang sama
+      const alreadySame = demoAbsensi.find(r => r.tanggal === today && r.NIA === p.NIA && r.tipe === p.tipe);
+      if (alreadySame) return {ok:false, msg:`Kamu sudah absen ${p.tipe} hari ini!`};
+      // Jika PULANG, cek sudah absen datang
+      if (p.tipe === 'PULANG') {
+        const datang = demoAbsensi.find(r => r.tanggal === today && r.NIA === p.NIA && r.tipe === 'DATANG');
+        if (!datang) return {ok:false, msg:'Kamu belum absen DATANG hari ini!'};
+        // Hitung durasi
+        const durasi = hitungDurasi(datang.waktu, new Date().toTimeString().substring(0,8));
+        datang.durasi = durasi;
+      }
+      const nowWaktu = new Date().toTimeString().substring(0,8);
+      const rec = {tanggal: today, waktu: nowWaktu, NIA: p.NIA, nama: anggota.nama, tipe: p.tipe, status: 'HADIR', durasi: p.tipe === 'DATANG' ? '-' : '-', gpsLat: p.lat||'', gpsLng: p.lng||''};
+      demoAbsensi.push(rec);
+      const isJadwal = demoApi({action:'getJadwalHariIni'}).data.some(j => j.NIA === p.NIA);
+      return {ok:true, msg:`Absen ${p.tipe} berhasil! Selamat ${p.tipe === 'DATANG' ? 'bekerja' : 'beristirahat'}, ${anggota.nama}!`, jadwal: isJadwal, waktu: nowWaktu, nama: anggota.nama};
+    }
+    case 'addAnggota': {
+      if (!p.NIA || !p.nama) return {ok:false, msg:'NIA dan Nama wajib diisi'};
+      if (demoAnggotaList.find(a => a.NIA === p.NIA)) return {ok:false, msg:'NIA sudah terdaftar!'};
+      demoAnggotaList.push({NIA: p.NIA, nama: p.nama, divisi: p.divisi||'-', telp: p.telp||''});
+      return {ok:true, msg:`Anggota ${p.nama} berhasil ditambahkan`};
+    }
+    case 'deleteAnggota': {
+      const idx = demoAnggotaList.findIndex(a => a.NIA === p.NIA);
+      if (idx === -1) return {ok:false, msg:'Anggota tidak ditemukan'};
+      const nama = demoAnggotaList[idx].nama;
+      demoAnggotaList.splice(idx, 1);
+      return {ok:true, msg:`Anggota ${nama} berhasil dihapus`};
+    }
+    case 'setJadwal':
+      return {ok:true, msg:'[DEMO] Jadwal disimpan'};
+    case 'exportAbsensi': {
+      let data = [...demoAbsensi];
+      if (p.from) data = data.filter(r => r.tanggal >= p.from);
+      if (p.to) data = data.filter(r => r.tanggal <= p.to);
+      const header = 'Tanggal,Tipe,Waktu,NIA,Nama,Durasi,GPS Lat,GPS Lng';
+      const csv = [header, ...data.map(r => [r.tanggal,r.tipe,r.waktu,r.NIA,r.nama,r.durasi||'-',r.gpsLat||'',r.gpsLng||''].join(','))].join('\n');
+      return {ok:true, csv, total: data.length};
+    }
     default: return {ok:false, msg:'Demo: unknown action'};
+  }
+}
+
+function hitungDurasi(waktuDatang, waktuPulang) {
+  if (!waktuDatang || !waktuPulang) return '-';
+  const [hD,mD] = waktuDatang.split(':').map(Number);
+  const [hP,mP] = waktuPulang.split(':').map(Number);
+  const menitDatang = hD * 60 + mD;
+  const menitPulang = hP * 60 + mP;
+  const diff = menitPulang - menitDatang;
+  if (diff <= 0) return '-';
+  const jam = Math.floor(diff / 60);
+  const menit = diff % 60;
+  return jam > 0 ? `${jam}j ${menit}m` : `${menit}m`;
+}
+
+// ============================================================
+// GPS
+// ============================================================
+function initGPS() {
+  if (!navigator.geolocation) {
+    setGPSLabel('GPS tidak tersedia di browser ini', false);
+    return;
+  }
+  setGPSLabel('Mengambil lokasi GPS...', 'loading');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      gpsCoords = {lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy};
+      setGPSLabel(`📍 ${gpsCoords.lat.toFixed(5)}, ${gpsCoords.lng.toFixed(5)} (±${Math.round(gpsCoords.acc)}m)`, 'ok');
+    },
+    err => {
+      gpsCoords = null;
+      setGPSLabel('Lokasi tidak bisa diambil — tetap bisa absen', false);
+    },
+    {timeout: 10000, maximumAge: 60000}
+  );
+}
+
+function setGPSLabel(text, status) {
+  document.getElementById('gps-label').textContent = text;
+  const dot = document.getElementById('gps-dot');
+  dot.className = 'gps-dot' + (status === 'ok' ? ' ok' : status === 'loading' ? ' loading' : '');
+}
+
+// ============================================================
+// SCAN TYPE
+// ============================================================
+function setScanType(type) {
+  scanType = type;
+  const btnD = document.getElementById('btn-tipe-datang');
+  const btnP = document.getElementById('btn-tipe-pulang');
+  if (type === 'DATANG') {
+    btnD.className = 'scan-type-btn active-datang';
+    btnP.className = 'scan-type-btn';
+  } else {
+    btnD.className = 'scan-type-btn';
+    btnP.className = 'scan-type-btn active-pulang';
   }
 }
 
@@ -1324,53 +1465,13 @@ function demoApi(p) {
 // ============================================================
 function initScanPage() {
   stopScanner();
+  gpsCoords = null;
   const today = new Date();
   document.getElementById('scan-tanggal').textContent =
     today.toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   loadJadwalScan();
-  // Reset tipe ke DATANG
-  setTipeAbsen('DATANG');
-  // Ambil GPS di background
-  getGPS();
-}
-
-function setTipeAbsen(tipe) {
-  tipeAbsen = tipe;
-  document.getElementById('tipe-datang').classList.toggle('active', tipe === 'DATANG');
-  document.getElementById('tipe-pulang').classList.toggle('active', tipe === 'PULANG');
-  if (tipe === 'PULANG') {
-    document.getElementById('tipe-pulang').style.borderColor = 'var(--red)';
-    document.getElementById('tipe-pulang').style.background = 'rgba(248,113,113,0.1)';
-    document.getElementById('tipe-pulang').style.color = 'var(--red)';
-  } else {
-    document.getElementById('tipe-pulang').style.borderColor = '';
-    document.getElementById('tipe-pulang').style.background = '';
-    document.getElementById('tipe-pulang').style.color = '';
-  }
-}
-
-function getGPS() {
-  const el = document.getElementById('gps-status');
-  if (!navigator.geolocation) {
-    if (el) el.textContent = '📍 GPS: Tidak didukung browser ini';
-    return;
-  }
-  if (el) el.textContent = '📍 GPS: Mendapatkan lokasi...';
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      currentGPS = {
-        lat: pos.coords.latitude.toFixed(6),
-        lng: pos.coords.longitude.toFixed(6),
-        acc: Math.round(pos.coords.accuracy)
-      };
-      if (el) el.textContent = `📍 GPS: ${currentGPS.lat}, ${currentGPS.lng} (±${currentGPS.acc}m)`;
-    },
-    (err) => {
-      currentGPS = null;
-      if (el) el.textContent = '📍 GPS: Izin ditolak / tidak tersedia';
-    },
-    {enableHighAccuracy: true, timeout: 10000, maximumAge: 30000}
-  );
+  initGPS();
+  setScanType('DATANG');
 }
 
 async function loadJadwalScan() {
@@ -1380,22 +1481,15 @@ async function loadJadwalScan() {
     el.innerHTML = '<div class="empty-state">Tidak ada jadwal piket hari ini</div>';
     return;
   }
-  el.innerHTML = res.data.map(j => {
-    const badgeDatang = j.statusDatang === 'HADIR'
-      ? '<span class="badge badge-hadir">Datang ✓</span>'
-      : '<span class="badge badge-belum">Datang -</span>';
-    const badgePulang = j.statusPulang === 'HADIR'
-      ? '<span class="badge badge-hadir" style="background:rgba(34,211,238,0.12);color:var(--accent2);">Pulang ✓</span>'
-      : '<span class="badge badge-belum">Pulang -</span>';
-    return `
+  el.innerHTML = res.data.map(j => `
     <div class="jadwal-item">
       <div>
         <div class="jadwal-nama">${j.nama}</div>
         <div class="jadwal-NIA">${j.NIA} · ${j.divisi}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${badgeDatang}${badgePulang}</div>
-    </div>`;
-  }).join('');
+      <span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span>
+    </div>
+  `).join('');
 }
 
 function toggleScan() {
@@ -1408,15 +1502,14 @@ function toggleScan() {
 
 function startScanner() {
   const NIA = document.getElementById('input-NIA').value.trim();
-  const nama = document.getElementById('input-nama').value.trim();
-  if (!NIA || !nama) {
-    showToast('Isi NIA dan Nama dulu ya!', 'error');
+  if (!NIA) {
+    showToast('Isi NIA kamu dulu ya!', 'error');
     return;
   }
-  // Refresh GPS sebelum scan
-  getGPS();
   isScanning = true;
-  document.getElementById('btn-start-scan').textContent = '⏹ Stop Scan';
+  const btn = document.getElementById('btn-start-scan');
+  btn.textContent = '⏹ Stop Scan';
+  btn.className = 'btn-scan stop';
   
   scannerInstance = new Html5Qrcode('qr-reader');
   const config = {fps: 10, qrbox: {width: 220, height: 220}};
@@ -1424,12 +1517,13 @@ function startScanner() {
   scannerInstance.start(
     {facingMode:'environment'},
     config,
-    (decodedText) => onQRScanned(decodedText, NIA, nama),
+    (decodedText) => onQRScanned(decodedText, NIA),
     () => {}
   ).catch(err => {
     showToast('Tidak bisa akses kamera: ' + err, 'error');
     isScanning = false;
-    document.getElementById('btn-start-scan').textContent = '▶ Mulai Scan';
+    btn.textContent = '▶ Mulai Scan';
+    btn.className = 'btn-scan';
   });
 }
 
@@ -1440,33 +1534,31 @@ function stopScanner() {
   }
   isScanning = false;
   const btn = document.getElementById('btn-start-scan');
-  if (btn) btn.textContent = '▶ Mulai Scan';
+  if (btn) {
+    btn.textContent = '▶ Mulai Scan';
+    btn.className = 'btn-scan';
+  }
 }
 
 let lastScanTime = 0;
-async function onQRScanned(text, NIA, nama) {
+async function onQRScanned(text, NIA) {
   const now = Date.now();
   if (now - lastScanTime < 3000) return;
   lastScanTime = now;
   
-  const gpsLat = currentGPS ? currentGPS.lat : '';
-  const gpsLng = currentGPS ? currentGPS.lng : '';
-  const gpsAcc = currentGPS ? currentGPS.acc : '';
-  
   showToast('⏳ Memvalidasi...', 'info');
-  const res = await api({
+  const params = {
     action: 'validateBarcode',
     token: text,
     NIA,
-    nama,
-    tipe: tipeAbsen,
-    gpsLat,
-    gpsLng,
-    gpsAcc
-  });
+    tipe: scanType,
+    lat: gpsCoords ? gpsCoords.lat : '',
+    lng: gpsCoords ? gpsCoords.lng : '',
+    acc: gpsCoords ? gpsCoords.acc : ''
+  };
+  const res = await api(params);
   if (res.ok) {
-    const icon = tipeAbsen === 'DATANG' ? '🟢' : '🔴';
-    showToast(`✅ ${icon} ${res.msg}`, 'success', 4000);
+    showToast('✅ ' + res.msg, 'success', 5000);
     stopScanner();
     loadJadwalScan();
   } else {
@@ -1508,7 +1600,6 @@ function initAdminPage() {
   startQRTimer();
   loadJadwalToday_Admin();
   loadAnggotaPicker();
-  // Set default jadwal date to today
   const today = new Date().toISOString().split('T')[0];
   const el = document.getElementById('jadwal-date');
   if (el) el.value = today;
@@ -1545,14 +1636,12 @@ function switchTab(tab) {
 
 // ---- QR CODE GENERATOR ----
 function generateToken() {
-  // FIXED: pakai MD5 agar identik dengan backend Code.gs
   const wib = new Date(new Date().getTime() + 7*3600*1000);
   const d = wib.toISOString().slice(0,10).replace(/-/g,'');
   const slot = Math.floor(wib.getSeconds()/30) + Math.floor(wib.getMinutes())*2 + Math.floor(wib.getHours())*120;
   const raw = d + '_' + slot + '_KIPMUP2024SECRET';
   return md5(raw).substring(0, 12).toUpperCase();
 }
-
 
 function renderQR(token) {
   const el = document.getElementById('qr-canvas');
@@ -1571,8 +1660,6 @@ function renderQR(token) {
   document.getElementById('qr-token-text').textContent = token;
 }
 
-let qrIntervalRef = null;
-
 function startQRTimer() {
   stopQRTimer();
   
@@ -1586,7 +1673,6 @@ function startQRTimer() {
     const fill = document.getElementById('qr-timer-fill');
     if (fill) fill.style.width = pct + '%';
     
-    // Regenerate when new slot starts
     if (secInSlot === 0 || !document.getElementById('qr-canvas').querySelector('img,canvas')) {
       const token = generateToken();
       renderQR(token);
@@ -1613,18 +1699,15 @@ async function loadJadwalLive() {
     el.innerHTML = '<div class="empty-state" style="padding:10px;">Tidak ada jadwal hari ini</div>';
     return;
   }
-  el.innerHTML = res.data.map(j => {
-    const dot1 = j.statusDatang === 'HADIR' ? '🟢' : '⚪';
-    const dot2 = j.statusPulang === 'HADIR' ? '🔵' : '⚪';
-    return `
+  el.innerHTML = res.data.map(j => `
     <div class="jadwal-item" style="margin-bottom:6px;">
       <div>
         <div class="jadwal-nama" style="font-size:12px;">${j.nama}</div>
         <div class="jadwal-NIA">${j.divisi}</div>
       </div>
-      <div style="font-size:18px;letter-spacing:2px;">${dot1}${dot2}</div>
-    </div>`;
-  }).join('');
+      <span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span>
+    </div>
+  `).join('');
 }
 
 // ---- DASHBOARD ----
@@ -1639,24 +1722,22 @@ async function loadDashboard() {
     document.getElementById('s-total').textContent = res.totalAnggota;
   }
   
-  const rekap = await api({action:'getRekapAbsensi', from: new Date().toISOString().split('T')[0], to: new Date().toISOString().split('T')[0]});
+  const today = new Date().toISOString().split('T')[0];
+  const rekap = await api({action:'getRekapAbsensi', from: today, to: today});
   const tbody = document.getElementById('tbl-today');
   if (rekap.ok && rekap.data.length) {
-    tbody.innerHTML = rekap.data.map(r => {
-      const tipeLabel = r.tipe === 'PULANG'
-        ? '<span class="badge" style="background:rgba(248,113,113,0.12);color:var(--red);">Pulang</span>'
-        : '<span class="badge badge-hadir">Datang</span>';
-      return `
+    tbody.innerHTML = rekap.data.map(r => `
       <tr>
+        <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${r.tipe||'-'}</span></td>
         <td style="font-family:var(--mono);color:var(--accent);">${r.waktu}</td>
-        <td style="font-family:var(--mono);color:var(--text2);">${r.NIA}</td>
+        <td style="font-family:var(--mono);color:var(--text2);font-size:12px;">${r.NIA}</td>
         <td>${r.nama}</td>
-        <td>${tipeLabel}</td>
-        <td><span class="badge ${r.status.includes('tidak')? 'badge-blue':'badge-hadir'}">${r.status}</span></td>
-      </tr>`;
-    }).join('');
+        <td style="font-family:var(--mono);font-size:12px;color:var(--accent2);">${r.durasi||'-'}</td>
+        <td><span class="badge badge-hadir">${r.status}</span></td>
+      </tr>
+    `).join('');
   } else {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada absensi hari ini</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada absensi hari ini</td></tr>';
   }
 }
 
@@ -1667,24 +1748,17 @@ async function loadRekap() {
   const res = await api({action:'getRekapAbsensi', from, to});
   const tbody = document.getElementById('tbl-rekap');
   if (res.ok && res.data.length) {
-    tbody.innerHTML = res.data.map(r => {
-      const tipeLabel = r.tipe === 'PULANG'
-        ? '<span class="badge" style="background:rgba(248,113,113,0.12);color:var(--red);font-size:11px;">Pulang</span>'
-        : '<span class="badge badge-hadir" style="font-size:11px;">Datang</span>';
-      const gpsLink = (r.gpsLat && r.gpsLng)
-        ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2);font-size:11px;font-family:var(--mono);">📍 Maps</a>`
-        : `<span style="color:var(--text3);font-size:11px;">-</span>`;
-      return `
+    tbody.innerHTML = res.data.map(r => `
       <tr>
-        <td style="font-family:var(--mono);">${r.tanggal}</td>
+        <td style="font-family:var(--mono);font-size:12px;">${r.tanggal}</td>
+        <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${r.tipe||'-'}</span></td>
         <td style="font-family:var(--mono);color:var(--accent);">${r.waktu}</td>
-        <td style="font-family:var(--mono);color:var(--text2);">${r.NIA}</td>
+        <td style="font-family:var(--mono);color:var(--text2);font-size:12px;">${r.NIA}</td>
         <td>${r.nama}</td>
-        <td>${tipeLabel}</td>
-        <td><span class="badge ${r.status.includes('tidak')? 'badge-blue':'badge-hadir'}" style="font-size:11px;">${r.status}</span></td>
-        <td>${gpsLink}</td>
-      </tr>`;
-    }).join('');
+        <td style="font-family:var(--mono);font-size:12px;color:var(--accent2);">${r.durasi||'-'}</td>
+        <td style="font-size:11px;">${r.gpsLat ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2);">📍 Maps</a>` : '-'}</td>
+      </tr>
+    `).join('');
   } else {
     tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data</td></tr>';
   }
@@ -1725,19 +1799,16 @@ async function loadHistori() {
     `;
     const tbody = document.getElementById('tbl-histori');
     tbody.innerHTML = res.histori.length
-      ? res.histori.map(h => {
-          const tipeLabel = h.tipe === 'PULANG'
-            ? '<span class="badge" style="background:rgba(248,113,113,0.12);color:var(--red);font-size:11px;">Pulang</span>'
-            : '<span class="badge badge-hadir" style="font-size:11px;">Datang</span>';
-          return `
-          <tr>
-            <td style="font-family:var(--mono);">${h.tanggal}</td>
-            <td style="font-family:var(--mono);color:var(--accent);">${h.waktu}</td>
-            <td>${tipeLabel}</td>
-            <td><span class="badge badge-hadir">${h.status}</span></td>
-          </tr>`;
-        }).join('')
-      : '<tr><td colspan="4" class="empty-state">Belum ada riwayat absensi</td></tr>';
+      ? res.histori.map(h => `
+        <tr>
+          <td style="font-family:var(--mono);font-size:12px;">${h.tanggal}</td>
+          <td><span class="badge ${h.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${h.tipe||'-'}</span></td>
+          <td style="font-family:var(--mono);color:var(--accent);">${h.waktu}</td>
+          <td style="font-family:var(--mono);font-size:12px;color:var(--accent2);">${h.durasi||'-'}</td>
+          <td><span class="badge badge-hadir">${h.status}</span></td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="5" class="empty-state">Belum ada riwayat absensi</td></tr>';
   }
 }
 
@@ -1787,7 +1858,6 @@ async function loadJadwalToday_Admin() {
       <span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span>
     </div>
   `).join('');
-  // Also pre-select today's anggota
   selectedAnggota = new Set(res.data.map(j => j.NIA));
   renderAnggotaPicker();
 }
@@ -1795,7 +1865,7 @@ async function loadJadwalToday_Admin() {
 async function saveJadwal() {
   const tanggal = document.getElementById('jadwal-date').value;
   if (!tanggal) { showToast('Pilih tanggal dulu!', 'error'); return; }
-  if (!selectedAnggota.size) { showToast('Pilih miNIAal 1 anggota!', 'error'); return; }
+  if (!selectedAnggota.size) { showToast('Pilih minimal 1 anggota!', 'error'); return; }
   
   const anggota = allAnggota.filter(a => selectedAnggota.has(a.NIA));
   const res = await api({action:'setJadwal', tanggal, anggota: JSON.stringify(anggota)});
@@ -1811,22 +1881,35 @@ async function saveJadwal() {
 // ---- ANGGOTA ----
 async function loadAnggota() {
   const res = await api({action:'getAnggota'});
+  if (!res.ok) { showToast('Gagal memuat data anggota', 'error'); return; }
   allAnggota = res.data || [];
+  renderAnggotaTable();
+}
+
+function renderAnggotaTable() {
   const tbody = document.getElementById('tbl-anggota');
+  if (!allAnggota.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada data anggota</td></tr>';
+    return;
+  }
   tbody.innerHTML = allAnggota.map(a => `
     <tr>
-      <td style="font-family:var(--mono);color:var(--text2);">${a.NIA}</td>
+      <td style="font-family:var(--mono);color:var(--text2);font-size:12px;">${a.NIA}</td>
       <td style="font-weight:500;">${a.nama}</td>
-      <td>${a.divisi}</td>
-      <td style="font-family:var(--mono);font-size:12px;">${a.telp || '-'}</td>
+      <td style="font-size:12px;color:var(--text2);">${a.divisi}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">${a.telp || '-'}</td>
       <td>
-        <button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}','${a.nama}')">Hapus</button>
+        <button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}','${a.nama.replace(/'/g,'')}')">Hapus</button>
       </td>
     </tr>
   `).join('');
 }
 
 function showAddAnggota() {
+  document.getElementById('new-NIA').value = '';
+  document.getElementById('new-nama').value = '';
+  document.getElementById('new-divisi').value = '';
+  document.getElementById('new-telp').value = '';
   document.getElementById('modal-add-anggota').classList.add('show');
 }
 
@@ -1853,11 +1936,14 @@ async function submitAddAnggota() {
 }
 
 async function deleteAnggota(NIA, nama) {
-  if (!confirm(`Hapus anggota ${nama}?`)) return;
+  if (!confirm(`Hapus anggota ${nama} (NIA: ${NIA})?`)) return;
   const res = await api({action:'deleteAnggota', NIA});
   if (res.ok) {
-    showToast('✅ Anggota dihapus', 'success');
+    showToast('✅ ' + (res.msg || 'Anggota dihapus'), 'success');
     loadAnggota();
+    loadAnggotaPicker();
+  } else {
+    showToast('❌ ' + (res.msg || 'Gagal menghapus'), 'error');
   }
 }
 
