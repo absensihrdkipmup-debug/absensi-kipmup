@@ -496,7 +496,7 @@ tr:hover td { background: rgba(255,255,255,0.015); }
      KONFIGURASI GAS_URL
      ============================================================ -->
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz9AaUwRZBY2QmoeZ2AKw2V-1_Okj7P64PZRP6p5cVDwPbMwMKyxEeCi18t0WAZ3jWG/exec'; // GANTI DENGAN URL WEB APP ANDA
+const GAS_URL = ''; // GANTI DENGAN URL WEB APP ANDA
 </script>
 
 <!-- ============================================================
@@ -697,7 +697,7 @@ function showToast(msg, type = 'info', dur = 3000) {
 // API CALL (dengan demo fallback jika GAS_URL tidak bisa)
 // ============================================================
 async function api(params) {
-  if (!GAS_URL || GAS_URL === 'https://script.google.com/macros/s/AKfycbz9AaUwRZBY2QmoeZ2AKw2V-1_Okj7P64PZRP6p5cVDwPbMwMKyxEeCi18t0WAZ3jWG/exec') {
+  if (!GAS_URL || GAS_URL === '') {
     return demoApi(params);
   }
   try {
