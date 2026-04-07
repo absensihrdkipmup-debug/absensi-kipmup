@@ -823,6 +823,33 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 .loading { color: var(--text3); font-size: 13px; text-align: center; padding: 20px; }
 .empty-state { color: var(--text3); font-size: 13px; text-align: center; padding: 28px; }
+.tipe-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 14px;
+  font-family: var(--font);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tipe-btn.active {
+  border-color: var(--accent);
+  background: rgba(74,222,128,0.1);
+  color: var(--accent);
+}
+.tipe-btn:not(.active):hover {
+  border-color: var(--border2);
+  background: var(--bg3);
+  color: var(--text);
+}
 </style>
 </head>
 <body>
@@ -888,6 +915,20 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppand
         <label class="form-label">Nama Lengkap</label>
         <input class="form-input" id="input-nama" type="text" placeholder="Nama sesuai data anggota" />
       </div>
+    </div>
+
+    <!-- Pilih tipe absen -->
+    <div class="identity-section" style="margin-bottom:0;">
+      <div class="jadwal-card-title" style="margin-bottom:12px">⏱ Tipe Absen</div>
+      <div style="display:flex;gap:10px;">
+        <button class="tipe-btn active" id="tipe-datang" onclick="setTipeAbsen('DATANG')">
+          <span>🟢</span> Datang
+        </button>
+        <button class="tipe-btn" id="tipe-pulang" onclick="setTipeAbsen('PULANG')">
+          <span>🔴</span> Pulang
+        </button>
+      </div>
+      <div id="gps-status" style="font-size:12px;color:var(--text3);margin-top:8px;font-family:var(--mono);">📍 GPS: Belum didapat</div>
     </div>
 
     <!-- Scan section -->
@@ -1029,7 +1070,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppand
           <div class="table-scroll">
             <table>
               <thead>
-                <tr><th>Waktu</th><th>NIA</th><th>Nama</th><th>Status</th></tr>
+                <tr><th>Waktu</th><th>NIA</th><th>Nama</th><th>Tipe</th><th>Status</th></tr>
               </thead>
               <tbody id="tbl-today"></tbody>
             </table>
@@ -1084,7 +1125,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppand
           <div class="table-scroll">
             <table>
               <thead>
-                <tr><th>Tanggal</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Status</th></tr>
+                <tr><th>Tanggal</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Tipe</th><th>Status</th><th>Lokasi</th></tr>
               </thead>
               <tbody id="tbl-rekap"></tbody>
             </table>
@@ -1106,7 +1147,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppand
           <div class="table-scroll">
             <table>
               <thead>
-                <tr><th>Tanggal</th><th>Waktu</th><th>Status</th></tr>
+                <tr><th>Tanggal</th><th>Waktu</th><th>Tipe</th><th>Status</th></tr>
               </thead>
               <tbody id="tbl-histori"></tbody>
             </table>
@@ -1165,7 +1206,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppand
     <div class="modal-sub">Data akan disimpan ke Google Sheets</div>
     <div class="form-row" style="margin-bottom:10px;">
       <label class="form-label">NIA</label>
-      <input class="form-input" id="new-NIA" placeholder="Nomor Induk Mahasiswa" />
+      <input class="form-input" id="new-NIA" placeholder="Nomor Induk Anggota" />
     </div>
     <div class="form-row" style="margin-bottom:10px;">
       <label class="form-label">Nama Lengkap</label>
@@ -1200,6 +1241,8 @@ let qrCountdownTimer = null;
 let allAnggota = [];
 let selectedAnggota = new Set();
 let adminInfo = null;
+let tipeAbsen = 'DATANG'; // default
+let currentGPS = null;
 
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => {
@@ -1244,9 +1287,9 @@ async function api(params) {
 
 // ---- DEMO MODE (saat GAS_URL belum diset) ----
 const demoJadwal = [
-  {NIA:'20210001', nama:'Budi Santoso', divisi:'Penelitian', status:'HADIR'},
-  {NIA:'20210002', nama:'Siti Rahayu', divisi:'Edukasi', status:'BELUM'},
-  {NIA:'20210003', nama:'Ahmad Fauzi', divisi:'Humas', status:'BELUM'},
+  {NIA:'20210001', nama:'Budi Santoso', divisi:'Penelitian', statusDatang:'HADIR', statusPulang:'BELUM'},
+  {NIA:'20210002', nama:'Siti Rahayu', divisi:'Edukasi', statusDatang:'BELUM', statusPulang:'BELUM'},
+  {NIA:'20210003', nama:'Ahmad Fauzi', divisi:'Humas', statusDatang:'BELUM', statusPulang:'BELUM'},
 ];
 const demoAnggota = [
   {NIA:'20210001', nama:'Budi Santoso', divisi:'Penelitian', telp:'081234567890'},
@@ -1255,8 +1298,8 @@ const demoAnggota = [
   {NIA:'20210004', nama:'Dewi Lestari', divisi:'Keuangan', telp:'081234567893'},
 ];
 const demoRekap = [
-  {tanggal: new Date().toISOString().split('T')[0], waktu:'08:15:32', NIA:'20210001', nama:'Budi Santoso', status:'HADIR'},
-  {tanggal: new Date().toISOString().split('T')[0], waktu:'08:22:11', NIA:'20210004', nama:'Dewi Lestari', status:'HADIR (tidak terjadwal)'},
+  {tanggal: new Date().toISOString().split('T')[0], waktu:'08:15:32', NIA:'20210001', nama:'Budi Santoso', tipe:'DATANG', status:'HADIR', gpsLat:'-6.200000', gpsLng:'106.816666'},
+  {tanggal: new Date().toISOString().split('T')[0], waktu:'12:22:11', NIA:'20210001', nama:'Budi Santoso', tipe:'PULANG', status:'HADIR', gpsLat:'-6.200001', gpsLng:'106.816667'},
 ];
 function demoApi(p) {
   const today = new Date().toISOString().split('T')[0];
@@ -1265,13 +1308,13 @@ function demoApi(p) {
     case 'getDashboardStats': return {ok:true, hadirHariIni:1, jadwalHariIni:3, hadirBulanIni:8, jadwalBulanIni:12, totalAnggota:4, persenHariIni:33};
     case 'getAnggota': return {ok:true, data: demoAnggota};
     case 'getRekapAbsensi': return {ok:true, data: demoRekap};
-    case 'getHistoriAnggota': return {ok:true, NIA:p.NIA, totalJadwal:5, totalHadir:4, persentase:80, histori:[{tanggal:today,waktu:'08:15',status:'HADIR'}]};
+    case 'getHistoriAnggota': return {ok:true, NIA:p.NIA, totalJadwal:5, totalHadir:4, persentase:80, histori:[{tanggal:today,waktu:'08:15',tipe:'DATANG',status:'HADIR'}]};
     case 'adminLogin': return (p.username==='adminhrd'&&p.password==='kipmup2017') ? {ok:true,nama:'Administrator',role:'superadmin'} : {ok:false,msg:'Salah'};
-    case 'validateBarcode': return {ok:true, msg:'[DEMO] Absensi berhasil!', waktu:'08:30:00', jadwal:true};
+    case 'validateBarcode': return {ok:true, msg:`[DEMO] Absen ${p.tipe||'DATANG'} berhasil!`, waktu:'08:30:00', jadwal:true};
     case 'addAnggota': return {ok:true, msg:'[DEMO] Anggota ditambahkan'};
     case 'deleteAnggota': return {ok:true};
     case 'setJadwal': return {ok:true, msg:'[DEMO] Jadwal disimpan'};
-    case 'exportAbsensi': return {ok:true, csv:'Tanggal,Waktu,NIA,Nama,Status\n'+today+',08:15,20210001,Budi Santoso,HADIR', total:1};
+    case 'exportAbsensi': return {ok:true, csv:'Tanggal,Waktu,NIA,Nama,Tipe,Status,GPS Lat,GPS Lng,Google Maps\n'+today+',08:15,20210001,Budi Santoso,DATANG,HADIR,-6.200000,106.816666,https://maps.google.com/?q=-6.2,106.8', total:1};
     default: return {ok:false, msg:'Demo: unknown action'};
   }
 }
@@ -1285,6 +1328,49 @@ function initScanPage() {
   document.getElementById('scan-tanggal').textContent =
     today.toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   loadJadwalScan();
+  // Reset tipe ke DATANG
+  setTipeAbsen('DATANG');
+  // Ambil GPS di background
+  getGPS();
+}
+
+function setTipeAbsen(tipe) {
+  tipeAbsen = tipe;
+  document.getElementById('tipe-datang').classList.toggle('active', tipe === 'DATANG');
+  document.getElementById('tipe-pulang').classList.toggle('active', tipe === 'PULANG');
+  if (tipe === 'PULANG') {
+    document.getElementById('tipe-pulang').style.borderColor = 'var(--red)';
+    document.getElementById('tipe-pulang').style.background = 'rgba(248,113,113,0.1)';
+    document.getElementById('tipe-pulang').style.color = 'var(--red)';
+  } else {
+    document.getElementById('tipe-pulang').style.borderColor = '';
+    document.getElementById('tipe-pulang').style.background = '';
+    document.getElementById('tipe-pulang').style.color = '';
+  }
+}
+
+function getGPS() {
+  const el = document.getElementById('gps-status');
+  if (!navigator.geolocation) {
+    if (el) el.textContent = '📍 GPS: Tidak didukung browser ini';
+    return;
+  }
+  if (el) el.textContent = '📍 GPS: Mendapatkan lokasi...';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      currentGPS = {
+        lat: pos.coords.latitude.toFixed(6),
+        lng: pos.coords.longitude.toFixed(6),
+        acc: Math.round(pos.coords.accuracy)
+      };
+      if (el) el.textContent = `📍 GPS: ${currentGPS.lat}, ${currentGPS.lng} (±${currentGPS.acc}m)`;
+    },
+    (err) => {
+      currentGPS = null;
+      if (el) el.textContent = '📍 GPS: Izin ditolak / tidak tersedia';
+    },
+    {enableHighAccuracy: true, timeout: 10000, maximumAge: 30000}
+  );
 }
 
 async function loadJadwalScan() {
@@ -1294,15 +1380,22 @@ async function loadJadwalScan() {
     el.innerHTML = '<div class="empty-state">Tidak ada jadwal piket hari ini</div>';
     return;
   }
-  el.innerHTML = res.data.map(j => `
+  el.innerHTML = res.data.map(j => {
+    const badgeDatang = j.statusDatang === 'HADIR'
+      ? '<span class="badge badge-hadir">Datang ✓</span>'
+      : '<span class="badge badge-belum">Datang -</span>';
+    const badgePulang = j.statusPulang === 'HADIR'
+      ? '<span class="badge badge-hadir" style="background:rgba(34,211,238,0.12);color:var(--accent2);">Pulang ✓</span>'
+      : '<span class="badge badge-belum">Pulang -</span>';
+    return `
     <div class="jadwal-item">
       <div>
         <div class="jadwal-nama">${j.nama}</div>
         <div class="jadwal-NIA">${j.NIA} · ${j.divisi}</div>
       </div>
-      <span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span>
-    </div>
-  `).join('');
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${badgeDatang}${badgePulang}</div>
+    </div>`;
+  }).join('');
 }
 
 function toggleScan() {
@@ -1320,6 +1413,8 @@ function startScanner() {
     showToast('Isi NIA dan Nama dulu ya!', 'error');
     return;
   }
+  // Refresh GPS sebelum scan
+  getGPS();
   isScanning = true;
   document.getElementById('btn-start-scan').textContent = '⏹ Stop Scan';
   
@@ -1354,10 +1449,24 @@ async function onQRScanned(text, NIA, nama) {
   if (now - lastScanTime < 3000) return;
   lastScanTime = now;
   
+  const gpsLat = currentGPS ? currentGPS.lat : '';
+  const gpsLng = currentGPS ? currentGPS.lng : '';
+  const gpsAcc = currentGPS ? currentGPS.acc : '';
+  
   showToast('⏳ Memvalidasi...', 'info');
-  const res = await api({action:'validateBarcode', token: text, NIA, nama});
+  const res = await api({
+    action: 'validateBarcode',
+    token: text,
+    NIA,
+    nama,
+    tipe: tipeAbsen,
+    gpsLat,
+    gpsLng,
+    gpsAcc
+  });
   if (res.ok) {
-    showToast('✅ ' + res.msg + (res.jadwal ? ' (Terjadwal)' : ''), 'success', 4000);
+    const icon = tipeAbsen === 'DATANG' ? '🟢' : '🔴';
+    showToast(`✅ ${icon} ${res.msg}`, 'success', 4000);
     stopScanner();
     loadJadwalScan();
   } else {
@@ -1504,15 +1613,18 @@ async function loadJadwalLive() {
     el.innerHTML = '<div class="empty-state" style="padding:10px;">Tidak ada jadwal hari ini</div>';
     return;
   }
-  el.innerHTML = res.data.map(j => `
+  el.innerHTML = res.data.map(j => {
+    const dot1 = j.statusDatang === 'HADIR' ? '🟢' : '⚪';
+    const dot2 = j.statusPulang === 'HADIR' ? '🔵' : '⚪';
+    return `
     <div class="jadwal-item" style="margin-bottom:6px;">
       <div>
         <div class="jadwal-nama" style="font-size:12px;">${j.nama}</div>
         <div class="jadwal-NIA">${j.divisi}</div>
       </div>
-      <span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span>
-    </div>
-  `).join('');
+      <div style="font-size:18px;letter-spacing:2px;">${dot1}${dot2}</div>
+    </div>`;
+  }).join('');
 }
 
 // ---- DASHBOARD ----
@@ -1530,16 +1642,21 @@ async function loadDashboard() {
   const rekap = await api({action:'getRekapAbsensi', from: new Date().toISOString().split('T')[0], to: new Date().toISOString().split('T')[0]});
   const tbody = document.getElementById('tbl-today');
   if (rekap.ok && rekap.data.length) {
-    tbody.innerHTML = rekap.data.map(r => `
+    tbody.innerHTML = rekap.data.map(r => {
+      const tipeLabel = r.tipe === 'PULANG'
+        ? '<span class="badge" style="background:rgba(248,113,113,0.12);color:var(--red);">Pulang</span>'
+        : '<span class="badge badge-hadir">Datang</span>';
+      return `
       <tr>
         <td style="font-family:var(--mono);color:var(--accent);">${r.waktu}</td>
         <td style="font-family:var(--mono);color:var(--text2);">${r.NIA}</td>
         <td>${r.nama}</td>
+        <td>${tipeLabel}</td>
         <td><span class="badge ${r.status.includes('tidak')? 'badge-blue':'badge-hadir'}">${r.status}</span></td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   } else {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada absensi hari ini</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada absensi hari ini</td></tr>';
   }
 }
 
@@ -1550,17 +1667,26 @@ async function loadRekap() {
   const res = await api({action:'getRekapAbsensi', from, to});
   const tbody = document.getElementById('tbl-rekap');
   if (res.ok && res.data.length) {
-    tbody.innerHTML = res.data.map(r => `
+    tbody.innerHTML = res.data.map(r => {
+      const tipeLabel = r.tipe === 'PULANG'
+        ? '<span class="badge" style="background:rgba(248,113,113,0.12);color:var(--red);font-size:11px;">Pulang</span>'
+        : '<span class="badge badge-hadir" style="font-size:11px;">Datang</span>';
+      const gpsLink = (r.gpsLat && r.gpsLng)
+        ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2);font-size:11px;font-family:var(--mono);">📍 Maps</a>`
+        : `<span style="color:var(--text3);font-size:11px;">-</span>`;
+      return `
       <tr>
         <td style="font-family:var(--mono);">${r.tanggal}</td>
         <td style="font-family:var(--mono);color:var(--accent);">${r.waktu}</td>
         <td style="font-family:var(--mono);color:var(--text2);">${r.NIA}</td>
         <td>${r.nama}</td>
-        <td><span class="badge ${r.status.includes('tidak')? 'badge-blue':'badge-hadir'}">${r.status}</span></td>
-      </tr>
-    `).join('');
+        <td>${tipeLabel}</td>
+        <td><span class="badge ${r.status.includes('tidak')? 'badge-blue':'badge-hadir'}" style="font-size:11px;">${r.status}</span></td>
+        <td>${gpsLink}</td>
+      </tr>`;
+    }).join('');
   } else {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data</td></tr>';
   }
 }
 
@@ -1599,14 +1725,19 @@ async function loadHistori() {
     `;
     const tbody = document.getElementById('tbl-histori');
     tbody.innerHTML = res.histori.length
-      ? res.histori.map(h => `
-        <tr>
-          <td style="font-family:var(--mono);">${h.tanggal}</td>
-          <td style="font-family:var(--mono);color:var(--accent);">${h.waktu}</td>
-          <td><span class="badge badge-hadir">${h.status}</span></td>
-        </tr>
-      `).join('')
-      : '<tr><td colspan="3" class="empty-state">Belum ada riwayat absensi</td></tr>';
+      ? res.histori.map(h => {
+          const tipeLabel = h.tipe === 'PULANG'
+            ? '<span class="badge" style="background:rgba(248,113,113,0.12);color:var(--red);font-size:11px;">Pulang</span>'
+            : '<span class="badge badge-hadir" style="font-size:11px;">Datang</span>';
+          return `
+          <tr>
+            <td style="font-family:var(--mono);">${h.tanggal}</td>
+            <td style="font-family:var(--mono);color:var(--accent);">${h.waktu}</td>
+            <td>${tipeLabel}</td>
+            <td><span class="badge badge-hadir">${h.status}</span></td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="4" class="empty-state">Belum ada riwayat absensi</td></tr>';
   }
 }
 
