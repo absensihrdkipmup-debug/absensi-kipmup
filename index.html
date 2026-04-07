@@ -616,16 +616,46 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbz9AaUwRZBY2QmoeZ2AKw2V
   </div>
 </div>
 
-<!-- ============================================================
-     PAGE ADMIN DASHBOARD (sama seperti file Anda, saya singkat)
-     Untuk menghemat tempat, saya asumsikan konten dashboard Anda sudah ada.
-     Silakan copy dari file asli Anda bagian admin dashboard.
-     ============================================================ -->
-<div id="page-admin" class="page" style="display:none;flex-direction:row;">
-  <!-- SIDEBAR dan KONTEN ADMIN (salin dari file Anda) -->
-  <div class="sidebar">...</div>
-  <div class="admin-main">...</div>
-  <div class="mobile-nav">...</div>
+<div id="page-admin" class="page" style="display:none; flex-direction:row;">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-text">KIPM-UP</div></div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="switchTab('qr')">📱 QR Code</button>
+      <button class="nav-item" onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button class="nav-item" onclick="switchTab('anggota')">👥 Anggota</button>
+      <button class="nav-item" onclick="switchTab('jadwal')">📅 Jadwal Piket</button>
+      <button class="nav-item" onclick="switchTab('rekap')">📋 Rekap Absensi</button>
+      <button class="nav-item" onclick="switchTab('histori')">🔍 Histori Anggota</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user-name" id="admin-nama-display">Admin</div>
+      <div class="sidebar-user-role" id="admin-role-display">role</div>
+      <button class="btn-sm" onclick="adminLogout()" style="margin-top:10px;">Logout</button>
+    </div>
+  </div>
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">Dashboard Admin</div>
+      <div class="topbar-date" id="topbar-clock">--:--:-- WIB</div>
+    </div>
+    <div class="admin-content">
+      <!-- Panel QR -->
+      <div id="tab-qr" class="tab-panel active">
+        <div class="qr-display-card">
+          <div id="qr-canvas"></div>
+          <div class="qr-timer-bar"><div id="qr-timer-fill" class="qr-timer-fill"></div></div>
+          <div>Refresh: <span id="qr-countdown">30</span> detik</div>
+          <div id="qr-token-text" class="qr-token-display"></div>
+        </div>
+      </div>
+      <!-- Panel lain bisa ditambahkan nanti -->
+      <div id="tab-dashboard" class="tab-panel">Konten dashboard</div>
+      <div id="tab-anggota" class="tab-panel">Konten anggota</div>
+      <div id="tab-jadwal" class="tab-panel">Konten jadwal</div>
+      <div id="tab-rekap" class="tab-panel">Konten rekap</div>
+      <div id="tab-histori" class="tab-panel">Konten histori</div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL TAMBAH ANGGOTA -->
@@ -1054,11 +1084,11 @@ async function adminLogin() {
   const username = document.getElementById('admin-username').value.trim();
   const password = document.getElementById('admin-password').value;
   
-  👉 console.log("Mencoba login dengan username:", username);
+  console.log("Mencoba login dengan username:", username);
   
   const res = await api({action:'adminLogin', username, password});
   
-  👉 console.log("Response dari server:", res);
+  console.log("Response dari server:", res);
   
   if (res && res.ok) {
     adminInfo = res;
@@ -1067,7 +1097,7 @@ async function adminLogin() {
     goTo('admin');
   } else {
     document.getElementById('login-err').style.display = 'block';
-    👉 console.error("Login gagal. Pesan error:", res?.msg);
+    console.error("Login gagal. Pesan error:", res?.msg);
   }
 }
   
