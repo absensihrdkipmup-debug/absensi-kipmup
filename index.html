@@ -1225,15 +1225,19 @@ function showToast(msg, type = 'info', dur = 3000) {
 }
 
 async function api(params) {
-  if (!GAS_URL || GAS_URL === 'https://script.google.com/macros/s/AKfycbw5PNHJReqgbTgvznFppandy0i9s4YFOJuuDxBUoDDrRst8GRKvjQCBsTUK-m29sZBSEw/exec') {
+  if (!GAS_URL || GAS_URL === 'GANTI_DENGAN_URL_WEB_APP_GOOGLE_APPS_SCRIPT') {
     // Demo mode
     return demoApi(params);
   }
   try {
     const url = GAS_URL + '?' + new URLSearchParams(params);
-    const res = await fetch(url);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
+    const res = await fetch(url, {signal: controller.signal});
+    clearTimeout(timer);
     return await res.json();
   } catch(e) {
+    if (e.name === 'AbortError') return {ok: false, msg: 'Request timeout (>15 detik). Cek koneksi atau coba lagi.'};
     return {ok: false, msg: 'Koneksi gagal: ' + e.message};
   }
 }
