@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>KIPM-UP · Absensi Piket | QR Live + Countdown</title>
+<title>KIPM-UP · Absensi Piket | QR Live + Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -17,6 +17,7 @@
   --border2: rgba(255,255,255,0.13);
   --accent: #4ade80;
   --accent2: #22d3ee;
+  --accent3: #f59e0b;
   --red: #f87171;
   --text: #f0f4f8;
   --text2: #8a96a8;
@@ -34,6 +35,9 @@ body {
   min-height: 100vh;
   line-height: 1.6;
 }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
 .page { display: none; min-height: 100vh; }
 .page.active { display: flex; flex-direction: column; }
 #page-admin.active { flex-direction: row; }
@@ -43,6 +47,7 @@ body {
   align-items: center;
   justify-content: center;
   background: var(--bg);
+  position: relative;
 }
 .landing-card {
   background: var(--bg2);
@@ -96,6 +101,7 @@ body {
 .badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; font-family: var(--mono); white-space: nowrap; }
 .badge-hadir { background: rgba(74,222,128,0.15); color: var(--accent); }
 .badge-belum { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-pulang { background: rgba(167,139,250,0.2); color: #c084fc; }
 .form-input {
   width: 100%;
   background: var(--bg3);
@@ -121,6 +127,7 @@ body {
   transition: all 0.15s;
 }
 .btn-sm.primary { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.3); color: var(--accent); }
+.btn-sm.primary:hover { background: rgba(74,222,128,0.2); }
 .btn-sm.danger { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); color: var(--red); }
 .table-card {
   background: var(--bg2);
@@ -233,6 +240,8 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
   font-size: 12px;
 }
 .anggota-pick-item.selected .pick-check { background: var(--accent); border-color: var(--accent); color: #0a1a0f; }
+.pick-name { font-size: 13px; font-weight: 500; }
+.pick-divisi { font-size: 11px; color: var(--text2); }
 .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 @media (max-width: 768px) {
   .sidebar { display: none; }
@@ -304,20 +313,13 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
   color: var(--text3);
   margin-top: 12px;
 }
-.countdown-timer {
-  font-size: 28px;
-  font-weight: 700;
-  font-family: var(--mono);
-  color: var(--accent2);
-  background: rgba(34,211,238,0.1);
-  border-radius: 40px;
-  padding: 8px 16px;
-  display: inline-block;
-  margin-top: 12px;
-}
 </style>
 </head>
 <body>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw0U_FqSI0YQqwIokG3jrRraxIRxop0nvHqqbJ_Rqg9yHLMECM7F6mDS9U5WboLEnpdIQ/exec';
+</script>
 
 <!-- LANDING (3 OPSI) -->
 <div id="page-landing" class="page active">
@@ -335,19 +337,18 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
 
 <!-- SCAN (Anggota) -->
 <div id="page-scan" class="page">
-  <div style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px; align-items:center;">
+  <div class="scan-header" style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px;">
     <div class="back-btn" onclick="goTo('landing')">←</div>
-    <div><div style="font-weight:600;">Absensi Piket</div><div id="scan-tanggal" style="font-size:12px; color:var(--text2);"></div></div>
+    <div><div class="scan-header-title">Absensi Piket</div><div id="scan-tanggal"></div></div>
   </div>
-  <div style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
+  <div class="scan-body" style="padding:20px; max-width:480px; margin:0 auto;">
     <div class="jadwal-card" style="background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:16px;">
-      <div style="font-weight:600; margin-bottom:8px;">📋 Piket Hari Ini</div>
+      <div class="jadwal-card-title">📋 Piket Hari Ini</div>
       <div id="jadwal-today"><div class="loading">Memuat...</div></div>
     </div>
     <div class="identity-section" style="background:var(--bg2); border-radius:12px; padding:16px;">
       <label class="form-label">NIA (Nomor Induk Anggota)</label>
-      <input class="form-input" id="input-NIA" placeholder="Contoh: 082024022" autocomplete="off">
-      <div id="nia-validasi-status" style="font-size:11px; margin-top:5px;"></div>
+      <input class="form-input" id="input-NIA" placeholder="Contoh: 082024022">
       <div style="margin:12px 0 8px;"><label class="form-label">Jenis Absen</label>
         <div style="display:flex; gap:10px;">
           <button class="scan-type-btn" id="btn-tipe-datang" onclick="setScanType('DATANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--accent); color:var(--accent); border-radius:8px;">🟢 Datang</button>
@@ -357,14 +358,14 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
       <div class="gps-status" id="gps-status" style="font-size:11px; margin-top:6px;">📍 Mengambil lokasi...</div>
     </div>
     <div class="scan-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:16px; text-align:center;">
-      <div class="scan-label" style="margin-bottom:12px;">Arahkan kamera ke QR Code yang ditampilkan di menu "QR Code Live"</div>
+      <div class="scan-label">Arahkan kamera ke QR Code yang ditampilkan admin / layar</div>
       <div id="qr-reader-wrapper" style="width:260px; height:260px; margin:12px auto; position:relative;"><div id="qr-reader"></div></div>
-      <button class="btn-scan" id="btn-start-scan" onclick="toggleScan()" style="background:var(--accent); color:#0a1a0f; padding:10px 20px; border-radius:30px; border:none; margin-top:10px;">▶ Mulai Scan</button>
+      <button class="btn-scan" id="btn-start-scan" onclick="toggleScan()" style="background:var(--accent); color:#0a1a0f; padding:10px 20px; border-radius:30px; border:none;">▶ Mulai Scan</button>
     </div>
   </div>
 </div>
 
-<!-- HALAMAN QR LIVE + COUNTDOWN TIMER -->
+<!-- HALAMAN QR LIVE (DIPINDAHKAN DARI ADMIN) -->
 <div id="page-qr" class="page">
   <div style="padding:16px 20px; background:var(--bg2); display:flex; gap:12px; align-items:center;">
     <div class="back-btn" onclick="goTo('landing')">←</div>
@@ -372,13 +373,11 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
   </div>
   <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:20px;">
     <div class="qr-container">
-      <div class="qr-title">📸 QR Dinamis + Validasi Token</div>
-      <div class="qr-sub">Setiap 30 detik token berubah · Hanya token terbaru yang diterima sistem</div>
+      <div class="qr-title">📸 QR Dinamis</div>
+      <div class="qr-sub">Setiap 30 detik token berubah · Scan menggunakan halaman Anggota</div>
       <div id="qr-display-canvas" style="background:white; padding:12px; border-radius:20px; display:inline-block;"></div>
       <div class="token-box" id="qr-token-text-live">----</div>
-      <div class="countdown-timer" id="countdown-timer">30</div>
-      <div class="refresh-info">🔄 Token otomatis refresh setiap 30 detik | Scan wajib menggunakan token yang tampil sekarang</div>
-      <button class="btn-sm primary" style="margin-top:12px;" onclick="forceRefreshToken()">⟳ Refresh Sekarang</button>
+      <div class="refresh-info">🔄 Token baru dalam <span id="qr-countdown">30</span> detik | Token unik untuk absen hari ini</div>
     </div>
   </div>
 </div>
@@ -386,73 +385,57 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
 <!-- ADMIN LOGIN -->
 <div id="page-admin-login" class="page">
   <div style="position:absolute;top:16px;left:16px;"><div class="back-btn" onclick="goTo('landing')">←</div></div>
-  <div style="display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;">
-    <div class="admin-login-card" style="background:var(--bg2); max-width:380px; width:100%; padding:40px; border-radius:20px;">
-      <div class="admin-login-title" style="font-size:20px; font-weight:600;">Admin Login</div>
-      <div class="admin-login-sub" style="font-size:13px; color:var(--text2); margin-bottom:20px;">Masuk ke dashboard</div>
-      <input class="form-input" id="admin-username" placeholder="Username" style="margin-bottom:12px;">
-      <input class="form-input" id="admin-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') adminLogin()">
-      <button class="btn-login" onclick="adminLogin()" style="width:100%; margin-top:16px; background:var(--accent); padding:12px; border:none; border-radius:12px; font-weight:bold; color:#0a1a0f;">Masuk →</button>
-      <div class="login-err" id="login-err" style="display:none; color:var(--red); text-align:center; margin-top:12px;">Username atau password salah</div>
-    </div>
+  <div class="admin-login-card" style="background:var(--bg2); max-width:380px; margin:auto; padding:40px; border-radius:20px;">
+    <div class="admin-login-title">Admin Login</div>
+    <div class="admin-login-sub">Masuk ke dashboard</div>
+    <input class="form-input" id="admin-username" placeholder="Username" style="margin-bottom:12px;">
+    <input class="form-input" id="admin-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') adminLogin()">
+    <button class="btn-login" onclick="adminLogin()" style="width:100%; margin-top:16px; background:var(--accent); padding:12px; border:none; border-radius:12px; font-weight:bold;">Masuk →</button>
+    <div class="login-err" id="login-err" style="display:none; color:var(--red); text-align:center; margin-top:12px;">Username atau password salah</div>
   </div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
-<div id="page-admin" class="page">
+<!-- ADMIN DASHBOARD (QR TAB TELAH DIHAPUS) -->
+<div id="page-admin" class="page" style="display:none;">
   <div class="sidebar">
-    <div style="padding:24px 20px;"><div style="font-weight:700; font-size:18px;">KIPM-UP</div><div style="font-size:11px; color:var(--text3);">Admin Panel</div></div>
+    <div class="sidebar-logo" style="padding:24px 20px;"><div class="sidebar-logo-text">KIPM-UP</div><div class="sidebar-logo-sub">Admin</div></div>
     <nav class="sidebar-nav">
       <button class="nav-item active" onclick="switchTab('dashboard')" data-tab="dashboard">📊 Dashboard</button>
       <button class="nav-item" onclick="switchTab('jadwal')" data-tab="jadwal">📅 Jadwal Piket (Edit)</button>
       <button class="nav-item" onclick="switchTab('rekap')" data-tab="rekap">📋 Rekap Absensi</button>
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota</button>
     </nav>
-    <div style="padding:16px; border-top:1px solid var(--border); margin-top:auto;">
-      <div id="admin-nama-display">Administrator</div>
+    <div class="sidebar-footer" style="padding:16px; border-top:1px solid var(--border);">
+      <div id="admin-nama-display">Admin</div>
       <button class="btn-sm" style="width:100%; margin-top:8px;" onclick="adminLogout()">Keluar</button>
     </div>
   </div>
   <div class="admin-main">
-    <div style="padding:14px 24px; background:var(--bg2); display:flex; justify-content:space-between; border-bottom:1px solid var(--border);">
-      <div class="topbar-title" id="tab-title">Dashboard</div>
-      <div id="topbar-clock">--:--:--</div>
-    </div>
+    <div class="admin-topbar" style="padding:14px 24px; background:var(--bg2); display:flex; justify-content:space-between;"><div class="topbar-title" id="tab-title">Dashboard</div><div id="topbar-clock">--:--:--</div></div>
     <div class="admin-content">
-      <div id="tab-dashboard" class="tab-panel active">
-        <div class="stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;" id="stats-grid"></div>
-        <div class="table-card">
-          <div style="padding:12px 16px; border-bottom:1px solid var(--border); font-weight:600;">Absensi Hari Ini</div>
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead>
-              <tbody id="tbl-today"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <div id="tab-dashboard" class="tab-panel active"><div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;" id="stats-grid"></div><div class="table-card"><div class="table-card-header">Absensi Hari Ini</div><div class="table-scroll"><table><thead><tr><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead><tbody id="tbl-today"></tbody></table></div></div></div>
       <div id="tab-jadwal" class="tab-panel">
         <div class="table-card" style="margin-bottom:20px;">
-          <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <div style="font-weight:600;">⚙️ Atur Jadwal Piket (Klik centang anggota)</div>
+          <div class="table-card-header" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div class="table-card-title">⚙️ Atur Jadwal Piket (Klik centang anggota)</div>
             <div class="filter-row">
-              <select id="jadwal-hari-select" class="filter-input" style="background:var(--bg3); padding:6px 10px; border-radius:6px;"><option value="1">Senin</option><option value="2">Selasa</option><option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option></select>
+              <select class="filter-input" id="jadwal-hari-select"><option value="1">Senin</option><option value="2">Selasa</option><option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option></select>
               <button class="btn-sm primary" onclick="saveJadwalHari()">💾 Simpan Hari Ini</button>
-              <button class="btn-sm primary" onclick="downloadJadwalPDF()">📥 Download Jadwal PDF</button>
-              <button class="btn-sm" onclick="loadAnggotaForPicker()">🔄 Refresh</button>
+              <button class="btn-sm blue" onclick="downloadJadwalPDF()">📥 Download Jadwal PDF</button>
+              <button class="btn-sm" onclick="loadAnggotaPicker(true)">🔄 Refresh Anggota</button>
             </div>
           </div>
           <div style="padding:16px;">
             <div class="jadwal-manager">
               <div class="anggota-picker">
-                <div style="font-weight:600; margin-bottom:10px;">✅ Pilih Anggota yang Piket</div>
-                <input id="cari-anggota" placeholder="Cari nama atau NIA..." style="width:100%; margin-bottom:12px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:8px; color:var(--text);">
-                <div class="anggota-list-pick" id="anggota-pick-list"><div class="loading">Memuat...</div></div>
-                <div style="margin-top:12px; font-size:11px; color:var(--text3);">Klik nama untuk memilih/membatalkan. Klik "Simpan Hari Ini" untuk menyimpan.</div>
+                <div class="anggota-picker-title">✅ Pilih Anggota yang Piket (centang / hapus centang)</div>
+                <input class="filter-input" id="cari-anggota" placeholder="Cari nama atau NIA..." style="width:100%; margin-bottom:12px;" oninput="renderAnggotaPicker()">
+                <div class="anggota-list-pick" id="anggota-pick-list"><div class="loading">Memuat data anggota...</div></div>
+                <div style="margin-top:12px; font-size:11px; color:var(--text3);">Klik nama untuk memilih/membatalkan. Klik "Simpan Hari Ini" untuk menyimpan jadwal.</div>
               </div>
               <div>
                 <div class="anggota-picker">
-                  <div style="font-weight:600; margin-bottom:10px;">📅 Pratinjau Jadwal Minggu Ini</div>
+                  <div class="anggota-picker-title">📅 Pratinjau Jadwal Minggu Ini (setelah disimpan)</div>
                   <div id="jadwal-preview-minggu" style="font-size:13px;">Memuat...</div>
                 </div>
               </div>
@@ -460,58 +443,23 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
           </div>
         </div>
       </div>
-      <div id="tab-rekap" class="tab-panel">
-        <div class="table-card">
-          <div style="padding:12px 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-            <input type="date" id="rekap-from" class="filter-input" style="background:var(--bg3); padding:6px 10px; border-radius:6px;">
-            <input type="date" id="rekap-to" class="filter-input" style="background:var(--bg3); padding:6px 10px; border-radius:6px;">
-            <button class="btn-sm primary" onclick="loadRekap()">Filter</button>
-            <button class="btn-sm primary" onclick="exportCSV()">⬇ Export CSV</button>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead>
-              <tbody id="tbl-rekap"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div id="tab-anggota" class="tab-panel">
-        <div class="table-card">
-          <div style="padding:12px 16px;"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div>
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Aksi</th></tr></thead>
-              <tbody id="tbl-anggota"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
+      <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
     </div>
   </div>
   <div class="mobile-nav">
-    <button class="mobile-nav-item" onclick="switchTab('dashboard')">📊</button>
+    <button class="mobile-nav-item active" onclick="switchTab('dashboard')">📊</button>
     <button class="mobile-nav-item" onclick="switchTab('jadwal')">📅</button>
     <button class="mobile-nav-item" onclick="switchTab('rekap')">📋</button>
     <button class="mobile-nav-item" onclick="switchTab('anggota')">👥</button>
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-add-anggota">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-add-anggota')">✕</button>
-    <div style="font-size:18px; font-weight:600; margin-bottom:16px;">Tambah Anggota</div>
-    <input class="form-input" id="new-NIA" placeholder="NIA">
-    <input class="form-input" id="new-nama" placeholder="Nama" style="margin-top:8px;">
-    <input class="form-input" id="new-divisi" placeholder="Divisi" style="margin-top:8px;">
-    <input class="form-input" id="new-telp" placeholder="No. Telp" style="margin-top:8px;">
-    <button class="btn-sm primary" style="margin-top:16px; width:100%;" onclick="submitAddAnggota()">Simpan</button>
-  </div>
-</div>
+<div class="modal-overlay" id="modal-add-anggota"><div class="modal-box"><button class="modal-close" onclick="closeModal('modal-add-anggota')">✕</button><div class="modal-title">Tambah Anggota</div><input class="form-input" id="new-NIA" placeholder="NIA"><input class="form-input" id="new-nama" placeholder="Nama" style="margin-top:8px;"><input class="form-input" id="new-divisi" placeholder="Divisi" style="margin-top:8px;"><input class="form-input" id="new-telp" placeholder="No. Telp" style="margin-top:8px;"><button class="btn-sm primary" style="margin-top:16px; width:100%;" onclick="submitAddAnggota()">Simpan</button></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ======================= DATA ANGGOTA =======================
+// ----------------------------- DATA + DEMO MODE -----------------------------
 const realAnggota = [
   {NIA:'082024022', nama:'Rifqy Rachmat', divisi:'Ketua Umum', telp:'87886993450'},
   {NIA:'082024015', nama:'Muhamad Alfan', divisi:'Wakil Ketua Umum I', telp:'85773694230'},
@@ -569,648 +517,121 @@ let jadwalMingguan = JSON.parse(localStorage.getItem('jadwalMingguan') || 'null'
   5: ['082024029','092025027','092025038','092025004','092025022','092025001','092025040','092025017']
 };
 
-// ======================= QR TOKEN (PERBAIKAN UTAMA) =======================
-let currentLiveToken = null;
-let tokenExpiryTime = 0;
-let countdownInterval = null;
-let qrRefreshTimer = null;
-
-// Fungsi untuk menghasilkan token berdasarkan window 30 detik
-function generateTokenForWindow(windowIndex) {
-  return md5(windowIndex + "KIPM_SECURE_SALT_2025").substring(0, 12).toUpperCase();
-}
-
-function updateLiveToken() {
-  const now = Date.now();
-  const windowIndex = Math.floor(now / 30000);
-  const newToken = generateTokenForWindow(windowIndex);
-  currentLiveToken = newToken;
-  tokenExpiryTime = (windowIndex + 1) * 30000;
-  
-  // Simpan ke localStorage
-  localStorage.setItem('kipm_live_token', currentLiveToken);
-  localStorage.setItem('kipm_token_expiry', tokenExpiryTime);
-  
-  // Update tampilan QR
-  const canvasDiv = document.getElementById('qr-display-canvas');
-  if(canvasDiv){
-    canvasDiv.innerHTML = '';
-    new QRCode(canvasDiv, { text: currentLiveToken, width: 180, height: 180 });
-    document.getElementById('qr-token-text-live').innerText = currentLiveToken;
-  }
-  updateCountdownDisplay();
-}
-
-function updateCountdownDisplay() {
-  const remaining = Math.max(0, Math.ceil((tokenExpiryTime - Date.now()) / 1000));
-  const timerEl = document.getElementById('countdown-timer');
-  if(timerEl) timerEl.innerText = remaining;
-  // Refresh otomatis jika waktu habis dan halaman QR aktif
-  if(remaining <= 0 && document.getElementById('page-qr').classList.contains('active')) {
-    updateLiveToken();
-  }
-}
-
-function startCountdown() {
-  if(countdownInterval) clearInterval(countdownInterval);
-  countdownInterval = setInterval(() => {
-    if(document.getElementById('page-qr').classList.contains('active')) {
-      updateCountdownDisplay();
-    }
-  }, 500);
-}
-
-function forceRefreshToken() {
-  updateLiveToken();
-  showToast('Token QR diperbarui!', 'success');
-}
-
-// ======================= API SIMULASI (dengan validasi token yang benar) =======================
 function api(params) {
   const today = new Date().toISOString().split('T')[0];
-  
   if(params.action === 'getAnggota') return {ok:true, data: demoAnggotaList};
-  
   if(params.action === 'getJadwalHariIni'){
     const dow = new Date().getDay();
     const list = jadwalMingguan[dow] || [];
-    const data = list.map(nia=>{
-      const a=demoAnggotaList.find(x=>x.NIA===nia);
-      return a?{
-        NIA:a.NIA,
-        nama:a.nama,
-        divisi:a.divisi,
-        status:demoAbsensi.some(r=>r.tanggal===today && r.NIA===nia && r.tipe==='DATANG')?'HADIR':'BELUM'
-      }:null;
-    }).filter(Boolean);
+    const data = list.map(nia=>{const a=demoAnggotaList.find(x=>x.NIA===nia); return a?{NIA:a.NIA,nama:a.nama,divisi:a.divisi,status:demoAbsensi.some(r=>r.tanggal===today && r.NIA===nia && r.tipe==='DATANG')?'HADIR':'BELUM'}:null}).filter(Boolean);
     return {ok:true, data};
   }
-  
   if(params.action === 'getDashboardStats'){
     const hadirHari = new Set(demoAbsensi.filter(r=>r.tanggal===today && r.tipe==='DATANG').map(r=>r.NIA)).size;
-    const totalJadwal = (jadwalMingguan[new Date().getDay()] || []).length;
-    return {
-      ok:true,
-      hadirHariIni:hadirHari,
-      totalJadwal:totalJadwal||1,
-      totalAnggota:demoAnggotaList.length,
-      persenHariIni:totalJadwal?Math.round((hadirHari/totalJadwal)*100):0
-    };
+    return {ok:true, hadirHariIni:hadirHari, jadwalHariIni:8, totalAnggota:demoAnggotaList.length, persenHariIni:Math.round(hadirHari/8*100)};
   }
-  
-  if(params.action === 'getRekapAbsensi'){
-    let data = demoAbsensi;
-    if(params.from) data = data.filter(r=>r.tanggal >= params.from);
-    if(params.to) data = data.filter(r=>r.tanggal <= params.to);
-    return {ok:true, data};
-  }
-  
-  if(params.action === 'adminLogin'){
-    return (params.username==='adminhrd' && params.password==='kipmup2017') ? 
-      {ok:true, nama:'Administrator'} : {ok:false};
-  }
-  
+  if(params.action === 'getRekapAbsensi') return {ok:true, data:demoAbsensi.filter(r=>(!params.from||r.tanggal>=params.from)&&(!params.to||r.tanggal<=params.to))};
+  if(params.action === 'adminLogin') return (params.username==='adminhrd'&&params.password==='kipmup2017')?{ok:true,nama:'Administrator',role:'superadmin'}:{ok:false};
   if(params.action === 'addAnggota'){
     if(demoAnggotaList.find(a=>a.NIA===params.NIA)) return {ok:false, msg:'NIA sudah ada'};
-    demoAnggotaList.push({
-      NIA:params.NIA,
-      nama:params.nama,
-      divisi:params.divisi||'-',
-      telp:params.telp||''
-    });
+    demoAnggotaList.push({NIA:params.NIA, nama:params.nama, divisi:params.divisi||'-', telp:params.telp||''});
     return {ok:true, msg:'Berhasil'};
   }
-  
-  if(params.action === 'deleteAnggota'){
-    demoAnggotaList = demoAnggotaList.filter(a=>a.NIA!==params.NIA);
-    return {ok:true};
-  }
-  
-  if(params.action === 'setJadwal'){
-    jadwalMingguan[params.hari] = JSON.parse(params.anggota);
-    localStorage.setItem('jadwalMingguan', JSON.stringify(jadwalMingguan));
-    return {ok:true};
-  }
-  
+  if(params.action === 'deleteAnggota'){ demoAnggotaList = demoAnggotaList.filter(a=>a.NIA!==params.NIA); return {ok:true};}
+  if(params.action === 'setJadwal'){ jadwalMingguan[params.hari] = JSON.parse(params.anggota); localStorage.setItem('jadwalMingguan',JSON.stringify(jadwalMingguan)); return {ok:true};}
   if(params.action === 'exportAbsensi'){
     let data = demoAbsensi;
-    if(params.from) data = data.filter(r=>r.tanggal >= params.from);
-    if(params.to) data = data.filter(r=>r.tanggal <= params.to);
-    const csv = 'Tanggal,Tipe,Waktu,NIA,Nama\n' + 
-      data.map(r=>`${r.tanggal},${r.tipe},${r.waktu},${r.NIA},${r.nama}`).join('\n');
+    if(params.from) data=data.filter(r=>r.tanggal>=params.from);
+    if(params.to) data=data.filter(r=>r.tanggal<=params.to);
+    const csv='Tanggal,Tipe,Waktu,NIA,Nama\n'+data.map(r=>`${r.tanggal},${r.tipe},${r.waktu},${r.NIA},${r.nama}`).join('\n');
     return {ok:true, csv};
   }
-  
   if(params.action === 'validateBarcode'){
-    const scannedToken = (params.token || '').trim();
-    const storedToken = localStorage.getItem('kipm_live_token');
-    const expiry = parseInt(localStorage.getItem('kipm_token_expiry') || '0');
-    const now = Date.now();
-    
-    // Validasi token: cek apakah sama dengan stored token ATAU masih dalam grace period 3 detik setelah expiry
-    let tokenValid = false;
-    if(scannedToken === storedToken) {
-      tokenValid = true;
-    } else if(now < expiry + 3000) {
-      // Cek apakah token adalah token dari window sebelumnya (grace period)
-      const currentWindow = Math.floor(now / 30000);
-      const prevToken = generateTokenForWindow(currentWindow - 1);
-      if(scannedToken === prevToken) tokenValid = true;
-    }
-    
-    if(!tokenValid) {
-      return {
-        ok: false,
-        msg: 'QR Code tidak valid atau sudah kadaluarsa. Silakan refresh halaman QR dan scan ulang.'
-      };
-    }
-    
-    // Cek NIA
+    // Validasi token QR — harus cocok dengan token aktif yang sedang ditampilkan
+    if(!activeQRToken || params.token !== activeQRToken) return {ok:false, msg:'QR Code tidak valid atau sudah kedaluwarsa, minta admin tampilkan QR terbaru'};
     const anggota = demoAnggotaList.find(a=>a.NIA===params.NIA);
-    if(!anggota) return {ok:false, msg:'NIA tidak terdaftar di sistem'};
-    
-    // Cek duplikasi absen
-    if(demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe===params.tipe)) {
-      return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
-    }
-    
-    // Cek urutan: pulang harus setelah datang
-    if(params.tipe==='PULANG' && !demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe==='DATANG')) {
-      return {ok:false, msg:'Harus absen DATANG terlebih dahulu'};
-    }
-    
-    // Simpan absensi
-    demoAbsensi.push({
-      tanggal: today,
-      waktu: new Date().toTimeString().slice(0,8),
-      NIA: params.NIA,
-      nama: anggota.nama,
-      tipe: params.tipe
-    });
+    if(!anggota) return {ok:false, msg:'NIA tidak terdaftar'};
+    if(demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe===params.tipe)) return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
+    if(params.tipe==='PULANG' && !demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe==='DATANG')) return {ok:false, msg:'Harus absen DATANG dulu'};
+    demoAbsensi.push({tanggal:today, waktu:new Date().toTimeString().slice(0,8), NIA:params.NIA, nama:anggota.nama, tipe:params.tipe, status:'HADIR'});
     return {ok:true, msg:`Absen ${params.tipe} berhasil, ${anggota.nama}!`};
   }
-  
   return {ok:false};
 }
 
-// ======================= GLOBAL VARIABLES =======================
+// GLOBAL VARS
 let allAnggota = [];
 let selectedAnggota = new Set();
 let currentScanType = 'DATANG';
-let scannerActive = false;
-let html5Scanner = null;
+let scannerActive = false, html5Scanner = null;
+let qrRefreshInterval = null;
 
-// ======================= HELPER FUNCTIONS =======================
-function showToast(msg, type='info'){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + type;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
-}
-
+function showToast(msg, type='info'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);}
 function goTo(page){
-  // Sembunyikan semua halaman
-  document.querySelectorAll('.page').forEach(p=>{
-    p.classList.remove('active');
-    p.style.display = 'none';
-  });
-  const target = document.getElementById('page-'+page);
-  if(target) {
-    target.style.display = 'flex';
-    target.classList.add('active');
-  } else {
-    console.error('Page not found:', page);
-    return;
-  }
-  
-  // Inisialisasi sesuai halaman
-  if(page === 'admin') initAdmin();
-  if(page === 'scan'){ 
-    loadJadwalScan(); 
-    document.getElementById('scan-tanggal').innerText = new Date().toLocaleDateString('id-ID');
-    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(()=>{}, ()=>{});
-    validateNIA();
-  }
-  if(page === 'qr'){ 
-    if(qrRefreshTimer) clearInterval(qrRefreshTimer);
-    updateLiveToken(); 
-    startCountdown();
-    qrRefreshTimer = setInterval(() => {
-      if(document.getElementById('page-qr').classList.contains('active') && Date.now() >= tokenExpiryTime) {
-        updateLiveToken();
-      }
-    }, 1000);
-  }
-  if(page !== 'qr'){ 
-    if(qrRefreshTimer) clearInterval(qrRefreshTimer); 
-    if(countdownInterval) clearInterval(countdownInterval); 
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active'); p.style.display='none';});
+  document.getElementById('page-'+page).style.display='flex';
+  document.getElementById('page-'+page).classList.add('active');
+  if(page==='admin') initAdmin();
+  if(page==='scan'){ loadJadwalScan(); if(navigator.geolocation) navigator.geolocation.getCurrentPosition(()=>{},()=>{}); }
+  if(page==='qr'){ startQRLiveDisplay(); }
+  if(page!=='qr' && qrRefreshInterval){ clearInterval(qrRefreshInterval); qrRefreshInterval=null; }
+  if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; activeQRToken=null; }
+}
+function setScanType(t){ currentScanType=t; document.getElementById('btn-tipe-datang').style.borderColor=t==='DATANG'?'var(--accent)':'var(--border2)'; document.getElementById('btn-tipe-pulang').style.borderColor=t==='PULANG'?'#c084fc':'var(--border2)';}
+async function loadJadwalScan(){ const res=await api({action:'getJadwalHariIni'}); const el=document.getElementById('jadwal-today'); if(res.ok && res.data.length) el.innerHTML=res.data.map(j=>`<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:6px 0;"><div><b>${j.nama}</b><div style="font-size:11px;">${j.NIA} · ${j.divisi}</div></div><span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span></div>`).join(''); else el.innerHTML='<div class="empty-state">Tidak ada jadwal hari ini</div>';}
+function toggleScan(){ if(scannerActive){ if(html5Scanner) html5Scanner.stop().catch(e=>{}); scannerActive=false; document.getElementById('btn-start-scan').innerHTML='▶ Mulai Scan'; }else{ const nia=document.getElementById('input-NIA').value.trim(); if(!nia){ showToast('Isi NIA dulu','error'); return; } html5Scanner=new Html5Qrcode('qr-reader'); html5Scanner.start({facingMode:'environment'},{fps:10,qrbox:220}, async (text)=>{ const res=await api({action:'validateBarcode', token:text, NIA:nia, tipe:currentScanType}); showToast(res.ok?`✅ ${res.msg}`:`❌ ${res.msg}`, res.ok?'success':'error'); if(res.ok){ toggleScan(); loadJadwalScan(); } }).catch(e=>{ showToast('Gagal akses kamera','error'); }); scannerActive=true; document.getElementById('btn-start-scan').innerHTML='⏹ Stop Scan'; }}
+// QR LIVE DISPLAY (dipindah ke halaman publik)
+let activeQRToken = null; // token aktif yang bisa divalidasi scanner
+let qrCountdownInterval = null;
+let qrSecondsLeft = 30;
+
+function renderQRCodeOnPublic() {
+  activeQRToken = md5(Date.now()+"KIPM").substring(0,12).toUpperCase();
+  qrSecondsLeft = 30;
+  const canvasDiv = document.getElementById('qr-display-canvas');
+  if(canvasDiv){
+    // Buat wrapper baru biar QRCode library tidak konflik dengan instance lama
+    const wrapper = document.createElement('div');
+    canvasDiv.innerHTML = '';
+    canvasDiv.appendChild(wrapper);
+    new QRCode(wrapper, { text: activeQRToken, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('qr-token-text-live').innerText = activeQRToken;
   }
 }
-
-function setScanType(t){
-  currentScanType = t;
-  const btnDtg = document.getElementById('btn-tipe-datang');
-  const btnPlg = document.getElementById('btn-tipe-pulang');
-  if(btnDtg) btnDtg.style.borderColor = t==='DATANG' ? 'var(--accent)' : 'var(--border2)';
-  if(btnPlg) btnPlg.style.borderColor = t==='PULANG' ? '#c084fc' : 'var(--border2)';
-}
-
-function validateNIA(){
-  const nia = document.getElementById('input-NIA')?.value.trim();
-  const statusDiv = document.getElementById('nia-validasi-status');
-  if(!nia){ 
-    if(statusDiv) statusDiv.innerHTML = ''; 
-    return false; 
-  }
-  const found = demoAnggotaList.find(a=>a.NIA===nia);
-  if(found){
-    statusDiv.innerHTML = `✅ ${found.nama} (${found.divisi})`;
-    statusDiv.style.color = 'var(--accent)';
-    return true;
-  } else {
-    statusDiv.innerHTML = `❌ NIA tidak terdaftar`;
-    statusDiv.style.color = 'var(--red)';
-    return false;
-  }
-}
-
-async function loadJadwalScan(){
-  const res = await api({action:'getJadwalHariIni'});
-  const el = document.getElementById('jadwal-today');
-  if(res.ok && res.data.length){
-    el.innerHTML = res.data.map(j=>`
-      <div style="display:flex; justify-content:space-between; padding:6px 0;">
-        <div>
-          <b>${j.nama}</b>
-          <div style="font-size:11px;">${j.NIA} · ${j.divisi}</div>
-        </div>
-        <span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span>
-      </div>
-    `).join('');
-  } else {
-    el.innerHTML = '<div class="empty-state">Tidak ada jadwal hari ini</div>';
-  }
-}
-
-function toggleScan(){
-  if(scannerActive){
-    if(html5Scanner) html5Scanner.stop().catch(e=>{});
-    scannerActive = false;
-    document.getElementById('btn-start-scan').innerHTML = '▶ Mulai Scan';
-  } else {
-    const nia = document.getElementById('input-NIA').value.trim();
-    if(!nia){ showToast('Isi NIA dulu','error'); return; }
-    if(!validateNIA()){ showToast('NIA tidak terdaftar di sistem','error'); return; }
-    
-    html5Scanner = new Html5Qrcode('qr-reader');
-    html5Scanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: 220 },
-      async (text) => {
-        const res = await api({
-          action: 'validateBarcode',
-          token: text.trim(),
-          NIA: nia,
-          tipe: currentScanType
-        });
-        showToast(res.ok ? `✅ ${res.msg}` : `❌ ${res.msg}`, res.ok ? 'success' : 'error');
-        if(res.ok){ 
-          toggleScan(); 
-          loadJadwalScan(); 
-        }
-      }
-    ).catch(e=>{ 
-      showToast('Gagal akses kamera', 'error');
-      console.error(e);
-    });
-    scannerActive = true;
-    document.getElementById('btn-start-scan').innerHTML = '⏹ Stop Scan';
-  }
-}
-
-// ======================= ADMIN FUNCTIONS =======================
-async function adminLogin(){
-  const u = document.getElementById('admin-username').value;
-  const p = document.getElementById('admin-password').value;
-  const res = await api({action:'adminLogin', username:u, password:p});
-  if(res.ok){ 
-    goTo('admin'); 
-  } else { 
-    document.getElementById('login-err').style.display = 'block'; 
-  }
-}
-
-function adminLogout(){ 
-  goTo('landing'); 
-}
-
-async function initAdmin(){
-  await loadAnggotaForPicker();
-  startClock();
-  switchTab('dashboard');
-  loadDashboard();
-}
-
-function startClock(){
-  setInterval(()=>{
-    const d = new Date();
-    const clockEl = document.getElementById('topbar-clock');
-    if(clockEl) clockEl.innerText = d.toLocaleTimeString('id-ID');
+function startQRLiveDisplay() {
+  if(qrRefreshInterval) clearInterval(qrRefreshInterval);
+  if(qrCountdownInterval) clearInterval(qrCountdownInterval);
+  renderQRCodeOnPublic();
+  qrRefreshInterval = setInterval(() => renderQRCodeOnPublic(), 30000);
+  qrCountdownInterval = setInterval(() => {
+    qrSecondsLeft--;
+    const el = document.getElementById('qr-countdown');
+    if(el) el.innerText = qrSecondsLeft > 0 ? qrSecondsLeft : 30;
   }, 1000);
 }
-
-function switchTab(tab){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  const targetPanel = document.getElementById(`tab-${tab}`);
-  if(targetPanel) targetPanel.classList.add('active');
-  
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const activeNav = document.querySelector(`[data-tab="${tab}"]`);
-  if(activeNav) activeNav.classList.add('active');
-  
-  const titleMap = {
-    dashboard:'Dashboard',
-    jadwal:'Jadwal Piket',
-    rekap:'Rekap Absensi',
-    anggota:'Data Anggota'
-  };
-  document.getElementById('tab-title').innerText = titleMap[tab] || 'Dashboard';
-  
-  if(tab==='dashboard') loadDashboard();
-  if(tab==='rekap') loadRekap();
-  if(tab==='anggota') loadAnggotaTable();
-  if(tab==='jadwal'){ 
-    loadAnggotaForPicker(); 
-    renderJadwalPreview(); 
-  }
-}
-
-async function loadAnggotaForPicker(){
-  const res = await api({action:'getAnggota'});
-  if(res.ok){
-    allAnggota = res.data;
-    const hari = parseInt(document.getElementById('jadwal-hari-select').value);
-    selectedAnggota = new Set(jadwalMingguan[hari]||[]);
-    renderAnggotaPicker();
-    renderJadwalPreview();
-  } else {
-    showToast('Gagal load anggota','error');
-  }
-}
-
-function renderAnggotaPicker(){
-  const query = document.getElementById('cari-anggota')?.value.toLowerCase() || '';
-  let filtered = allAnggota;
-  if(query) filtered = allAnggota.filter(a=>a.nama.toLowerCase().includes(query) || a.NIA.includes(query));
-  const container = document.getElementById('anggota-pick-list');
-  if(!filtered.length){
-    container.innerHTML = '<div class="empty-state">Tidak ada anggota</div>';
-    return;
-  }
-  container.innerHTML = filtered.map(a=>`
-    <div class="anggota-pick-item ${selectedAnggota.has(a.NIA)?'selected':''}" onclick="togglePickAnggota('${a.NIA}')">
-      <div class="pick-check">${selectedAnggota.has(a.NIA)?'✓':''}</div>
-      <div>
-        <div class="pick-name">${a.nama}</div>
-        <div class="pick-divisi">${a.NIA} · ${a.divisi}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function togglePickAnggota(NIA){
-  if(selectedAnggota.has(NIA)) selectedAnggota.delete(NIA);
-  else selectedAnggota.add(NIA);
-  renderAnggotaPicker();
-}
-
-async function saveJadwalHari(){
-  const hari = parseInt(document.getElementById('jadwal-hari-select').value);
-  if(selectedAnggota.size === 0){
-    showToast('Pilih minimal 1 anggota!','error');
-    return;
-  }
-  jadwalMingguan[hari] = [...selectedAnggota];
-  localStorage.setItem('jadwalMingguan', JSON.stringify(jadwalMingguan));
-  await api({action:'setJadwal', hari, anggota:JSON.stringify([...selectedAnggota])});
-  showToast('✅ Jadwal berhasil disimpan!','success');
-  renderJadwalPreview();
-}
-
-function renderJadwalPreview(){
-  const hariNama = ['','Senin','Selasa','Rabu','Kamis','Jumat'];
-  const anggotaMap = new Map(allAnggota.map(a=>[a.NIA,a]));
-  let html = '';
-  for(let h=1; h<=5; h++){
-    const list = jadwalMingguan[h] || [];
-    html += `
-      <div style="margin-bottom:12px; padding:10px; background:var(--bg2); border-radius:8px;">
-        <div style="font-weight:600;">${hariNama[h]} (${list.length})</div>
-        ${list.map(nia=>{
-          const a = anggotaMap.get(nia);
-          return `<div>📌 ${a ? `${a.nama} (${a.divisi})` : nia}</div>`;
-        }).join('') || '<div class="empty-state">Kosong</div>'}
-      </div>
-    `;
-  }
-  document.getElementById('jadwal-preview-minggu').innerHTML = html;
-}
-
-function downloadJadwalPDF(){
-  const anggotaMap = new Map(allAnggota.map(a=>[a.NIA,a]));
-  let html = `<!DOCTYPE html>
-  <html>
-  <head><meta charset="UTF-8"><title>Jadwal Piket KIPM-UP</title>
-  <style>
-    body{font-family:sans-serif;padding:20px;}
-    h1{color:#2d6a4f;}
-    table{border-collapse:collapse;width:100%;}
-    th,td{border:1px solid #ccc;padding:8px;text-align:left;}
-    th{background:#f1f8e9;}
-  </style>
-  </head>
-  <body>
-  <h1>📋 Jadwal Piket KIPM-UP</h1>
-  <p>Cetak: ${new Date().toLocaleDateString('id-ID')}</p>`;
-  const hariNama = ['Senin','Selasa','Rabu','Kamis','Jumat'];
-  for(let i=0; i<5; i++){
-    const h = i+1;
-    const list = jadwalMingguan[h] || [];
-    if(list.length){
-      html += `<h3>${hariNama[i]}</h3>
-      <table>
-        <thead><tr><th>No</th><th>NIA</th><th>Nama</th><th>Divisi</th></tr></thead>
-        <tbody>`;
-      list.forEach((nia, idx)=>{
-        const a = anggotaMap.get(nia);
-        html += `<tr>
-          <td>${idx+1}</td>
-          <td>${nia}</td>
-          <td>${a ? a.nama : '-'}</td>
-          <td>${a ? a.divisi : '-'}</td>
-        </tr>`;
-      });
-      html += `</tbody></table><br>`;
-    }
-  }
-  html += `</body></html>`;
-  const win = window.open();
-  win.document.write(html);
-  win.document.close();
-  win.print();
-}
-
-async function loadDashboard(){
-  const res = await api({action:'getDashboardStats'});
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;">
-      <div style="font-size:12px;">Hadir Hari Ini</div>
-      <div style="font-size:28px; font-weight:600;">${res.hadirHariIni||0}</div>
-    </div>
-    <div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;">
-      <div style="font-size:12px;">% Kehadiran</div>
-      <div style="font-size:28px;">${res.persenHariIni||0}%</div>
-    </div>
-    <div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;">
-      <div style="font-size:12px;">Total Anggota</div>
-      <div style="font-size:28px;">${res.totalAnggota||0}</div>
-    </div>
-  `;
-  const today = new Date().toISOString().split('T')[0];
-  const rekap = await api({action:'getRekapAbsensi', from:today, to:today});
-  const tbody = document.getElementById('tbl-today');
-  if(rekap.data.length){
-    tbody.innerHTML = rekap.data.map(r=>`
-      <tr>
-        <td>${r.tipe}</td>
-        <td>${r.waktu}</td>
-        <td>${r.NIA}</td>
-        <td>${r.nama}</td>
-      </tr>
-    `).join('');
-  } else {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada absensi</td></tr>';
-  }
-}
-
-async function loadRekap(){
-  const from = document.getElementById('rekap-from').value;
-  const to = document.getElementById('rekap-to').value;
-  const res = await api({action:'getRekapAbsensi', from, to});
-  const tbody = document.getElementById('tbl-rekap');
-  if(res.data.length){
-    tbody.innerHTML = res.data.map(r=>`
-      <tr>
-        <td>${r.tanggal}</td>
-        <td>${r.tipe}</td>
-        <td>${r.waktu}</td>
-        <td>${r.NIA}</td>
-        <td>${r.nama}</td>
-      </tr>
-    `).join('');
-  } else {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada data</td></tr>';
-  }
-}
-
-async function exportCSV(){
-  const from = document.getElementById('rekap-from').value;
-  const to = document.getElementById('rekap-to').value;
-  const res = await api({action:'exportAbsensi', from, to});
-  if(res.ok){
-    const blob = new Blob([res.csv], {type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'rekap_absensi.csv';
-    a.click();
-    showToast('CSV terunduh','success');
-  }
-}
-
-async function loadAnggotaTable(){
-  const res = await api({action:'getAnggota'});
-  const tbody = document.getElementById('tbl-anggota');
-  if(res.data.length){
-    tbody.innerHTML = res.data.map(a=>`
-      <tr>
-        <td>${a.NIA}</td>
-        <td>${a.nama}</td>
-        <td>${a.divisi}</td>
-        <td>${a.telp||'-'}</td>
-        <td><button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}')">Hapus</button></td>
-      </tr>
-    `).join('');
-  } else {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Kosong</td></tr>';
-  }
-}
-
-function showAddAnggota(){ 
-  document.getElementById('modal-add-anggota').classList.add('show'); 
-}
-
-function closeModal(id){ 
-  document.getElementById(id).classList.remove('show'); 
-}
-
-async function submitAddAnggota(){
-  const NIA = document.getElementById('new-NIA').value.trim();
-  const nama = document.getElementById('new-nama').value.trim();
-  const divisi = document.getElementById('new-divisi').value.trim();
-  const telp = document.getElementById('new-telp').value.trim();
-  if(!NIA || !nama){ 
-    showToast('NIA dan Nama wajib','error'); 
-    return; 
-  }
-  const res = await api({action:'addAnggota', NIA, nama, divisi, telp});
-  if(res.ok){
-    showToast('Anggota ditambahkan','success');
-    closeModal('modal-add-anggota');
-    await loadAnggotaForPicker();
-    loadAnggotaTable();
-  } else {
-    showToast(res.msg||'Gagal','error');
-  }
-}
-
-async function deleteAnggota(NIA){
-  if(confirm('Hapus anggota?')){
-    await api({action:'deleteAnggota', NIA});
-    await loadAnggotaForPicker();
-    loadAnggotaTable();
-    showToast('Dihapus','success');
-  }
-}
-
-// ======================= EVENT LISTENERS =======================
-document.getElementById('jadwal-hari-select')?.addEventListener('change', ()=>{
-  const hari = parseInt(document.getElementById('jadwal-hari-select').value);
-  selectedAnggota = new Set(jadwalMingguan[hari]||[]);
-  renderAnggotaPicker();
-});
-document.getElementById('input-NIA')?.addEventListener('input', validateNIA);
-document.getElementById('cari-anggota')?.addEventListener('input', ()=>renderAnggotaPicker());
-
-// ======================= EXPOSE GLOBAL FUNCTIONS =======================
-window.goTo = goTo;
-window.setScanType = setScanType;
-window.toggleScan = toggleScan;
-window.adminLogin = adminLogin;
-window.switchTab = switchTab;
-window.togglePickAnggota = togglePickAnggota;
-window.saveJadwalHari = saveJadwalHari;
-window.downloadJadwalPDF = downloadJadwalPDF;
-window.showAddAnggota = showAddAnggota;
-window.closeModal = closeModal;
-window.submitAddAnggota = submitAddAnggota;
-window.deleteAnggota = deleteAnggota;
-window.loadRekap = loadRekap;
-window.exportCSV = exportCSV;
-window.forceRefreshToken = forceRefreshToken;
-window.adminLogout = adminLogout;
-
-console.log('✅ Sistem siap | QR Live dengan validasi token + grace period | Landing 3 tombol berfungsi');
+// ADMIN LOGIC (QR dihapus total)
+async function adminLogin(){ const u=document.getElementById('admin-username').value, p=document.getElementById('admin-password').value; const res=await api({action:'adminLogin', username:u, password:p}); if(res.ok){ goTo('admin'); }else{ document.getElementById('login-err').style.display='block'; }}
+function adminLogout(){ goTo('landing'); if(qrRefreshInterval) clearInterval(qrRefreshInterval); }
+async function initAdmin(){ await loadAnggotaForPicker(); startClock(); switchTab('dashboard'); loadDashboard(); }
+function startClock(){ setInterval(()=>{ const d=new Date(); document.getElementById('topbar-clock').innerText=d.toLocaleTimeString('id-ID'); },1000); }
+function switchTab(tab){ document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); document.getElementById(`tab-${tab}`).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); document.getElementById('tab-title').innerText=tab==='dashboard'?'Dashboard':tab==='jadwal'?'Jadwal Piket':tab==='rekap'?'Rekap Absensi':tab==='anggota'?'Data Anggota':''; if(tab==='dashboard') loadDashboard(); if(tab==='rekap') loadRekap(); if(tab==='anggota') loadAnggotaTable(); if(tab==='jadwal'){ loadAnggotaForPicker(); renderJadwalPreview(); } }
+async function loadAnggotaForPicker(){ const res=await api({action:'getAnggota'}); if(res.ok){ allAnggota=res.data; const hari=parseInt(document.getElementById('jadwal-hari-select').value); selectedAnggota=new Set(jadwalMingguan[hari]||[]); renderAnggotaPicker(); renderJadwalPreview(); }else{ showToast('Gagal load anggota','error'); } }
+function renderAnggotaPicker(){ const query=document.getElementById('cari-anggota')?.value.toLowerCase()||''; let filtered=allAnggota; if(query) filtered=allAnggota.filter(a=>a.nama.toLowerCase().includes(query)||a.NIA.includes(query)); const container=document.getElementById('anggota-pick-list'); if(!filtered.length){ container.innerHTML='<div class="empty-state">Tidak ada anggota</div>'; return; } container.innerHTML=filtered.map(a=>`<div class="anggota-pick-item ${selectedAnggota.has(a.NIA)?'selected':''}" onclick="togglePickAnggota('${a.NIA}')"><div class="pick-check">${selectedAnggota.has(a.NIA)?'✓':''}</div><div><div class="pick-name">${a.nama}</div><div class="pick-divisi">${a.NIA} · ${a.divisi}</div></div></div>`).join(''); }
+function togglePickAnggota(NIA){ if(selectedAnggota.has(NIA)) selectedAnggota.delete(NIA); else selectedAnggota.add(NIA); renderAnggotaPicker(); }
+async function saveJadwalHari(){ const hari=parseInt(document.getElementById('jadwal-hari-select').value); if(selectedAnggota.size===0){ showToast('Pilih minimal 1 anggota!','error'); return; } jadwalMingguan[hari]=[...selectedAnggota]; localStorage.setItem('jadwalMingguan',JSON.stringify(jadwalMingguan)); await api({action:'setJadwal', hari, anggota:JSON.stringify([...selectedAnggota])}); showToast('✅ Jadwal berhasil disimpan!','success'); renderJadwalPreview(); }
+function renderJadwalPreview(){ const hariNama=['','Senin','Selasa','Rabu','Kamis','Jumat']; const anggotaMap=new Map(allAnggota.map(a=>[a.NIA,a])); let html=''; for(let h=1;h<=5;h++){ const list=jadwalMingguan[h]||[]; html+=`<div style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;"><div style="font-weight:600;">${hariNama[h]} (${list.length})</div>${list.map(nia=>{const a=anggotaMap.get(nia); return `<div>📌 ${a?`${a.nama} (${a.divisi})`:`${nia}`}</div>`;}).join('')||'<div class="empty-state">Kosong</div>'}</div>`; } document.getElementById('jadwal-preview-minggu').innerHTML=html; }
+function downloadJadwalPDF(){ const anggotaMap=new Map(allAnggota.map(a=>[a.NIA,a])); let html=`<html><head><meta charset="UTF-8"><title>Jadwal Piket KIPM-UP</title><style>body{font-family:sans-serif;padding:20px;}h1{color:#2d6a4f;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}th{background:#f1f8e9;}</style></head><body><h1>📋 Jadwal Piket KIPM-UP</h1><p>Cetak: ${new Date().toLocaleDateString('id-ID')}</p>`; const hariNama=['Senin','Selasa','Rabu','Kamis','Jumat']; for(let i=0;i<5;i++){ const h=i+1; const list=jadwalMingguan[h]||[]; if(list.length){ html+=`<h3>${hariNama[i]}</h3><table><tr><th>No</th><th>NIA</th><th>Nama</th><th>Divisi</th></tr>`; list.forEach((nia,idx)=>{ const a=anggotaMap.get(nia); html+=`<tr><td>${idx+1}</td><td>${nia}</td><td>${a?a.nama:'-'}</td><td>${a?a.divisi:'-'}</td></tr>`; }); html+=`</table><br>`; } } html+=`</body></html>`; const win=window.open(); win.document.write(html); win.document.close(); win.print(); }
+async function loadDashboard(){ const res=await api({action:'getDashboardStats'}); document.getElementById('stats-grid').innerHTML=`<div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;"><div class="stat-label" style="font-size:12px;">Hadir Hari Ini</div><div class="stat-value stat-green" style="font-size:28px; font-weight:600;">${res.hadirHariIni||0}</div></div><div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;"><div class="stat-label">% Kehadiran</div><div class="stat-value stat-blue" style="font-size:28px;">${res.persenHariIni||0}%</div></div><div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;"><div class="stat-label">Total Anggota</div><div class="stat-value" style="font-size:28px;">${res.totalAnggota||0}</div></div>`; const rekap=await api({action:'getRekapAbsensi', from:new Date().toISOString().split('T')[0], to:new Date().toISOString().split('T')[0]}); const tbody=document.getElementById('tbl-today'); if(rekap.data.length) tbody.innerHTML=rekap.data.map(r=>`<tr><td>${r.tipe}</td><td>${r.waktu}</td><td>${r.NIA}</td><td>${r.nama}</td></tr>`).join(''); else tbody.innerHTML='<tr><td colspan="4" class="empty-state">Belum ada absensi</td></tr>'; }
+async function loadRekap(){ const from=document.getElementById('rekap-from').value, to=document.getElementById('rekap-to').value; const res=await api({action:'getRekapAbsensi', from, to}); const tbody=document.getElementById('tbl-rekap'); if(res.data.length) tbody.innerHTML=res.data.map(r=>`<tr><td>${r.tanggal}</td><td>${r.tipe}</td><td>${r.waktu}</td><td>${r.NIA}</td><td>${r.nama}</td></tr>`).join(''); else tbody.innerHTML='<tr><td colspan="5" class="empty-state">Tidak ada data</td></tr>'; }
+async function exportCSV(){ const from=document.getElementById('rekap-from').value, to=document.getElementById('rekap-to').value; const res=await api({action:'exportAbsensi', from, to}); if(res.ok){ const blob=new Blob([res.csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='rekap_absensi.csv'; a.click(); showToast('CSV terunduh','success'); } }
+async function loadAnggotaTable(){ const res=await api({action:'getAnggota'}); const tbody=document.getElementById('tbl-anggota'); if(res.data.length) tbody.innerHTML=res.data.map(a=>`<tr><td>${a.NIA}</td><td>${a.nama}</td><td>${a.divisi}</td><td>${a.telp||'-'}</td><td><button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}')">Hapus</button></td></tr>`).join(''); else tbody.innerHTML='<tr><td colspan="5" class="empty-state">Kosong</td></tr>'; }
+function showAddAnggota(){ document.getElementById('modal-add-anggota').classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+async function submitAddAnggota(){ const NIA=document.getElementById('new-NIA').value.trim(), nama=document.getElementById('new-nama').value.trim(), divisi=document.getElementById('new-divisi').value.trim(), telp=document.getElementById('new-telp').value.trim(); if(!NIA||!nama){ showToast('NIA dan Nama wajib','error'); return; } const res=await api({action:'addAnggota', NIA, nama, divisi, telp}); if(res.ok){ showToast('Anggota ditambahkan','success'); closeModal('modal-add-anggota'); await loadAnggotaForPicker(); loadAnggotaTable(); }else showToast(res.msg||'Gagal','error'); }
+async function deleteAnggota(NIA){ if(confirm('Hapus anggota?')){ await api({action:'deleteAnggota', NIA}); await loadAnggotaForPicker(); loadAnggotaTable(); showToast('Dihapus','success'); } }
+document.getElementById('jadwal-hari-select')?.addEventListener('change',()=>{ const hari=parseInt(document.getElementById('jadwal-hari-select').value); selectedAnggota=new Set(jadwalMingguan[hari]||[]); renderAnggotaPicker(); });
+window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.downloadJadwalPDF=downloadJadwalPDF; window.showAddAnggota=showAddAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV;
+console.log('✅ Sistem siap | QR Live di halaman publik | 3 opsi landing');
 </script>
 </body>
 </html>
