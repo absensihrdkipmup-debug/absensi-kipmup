@@ -332,7 +332,7 @@ const realAnggota = [
   {NIA:'082024017', nama:'Nisrina Zakiyah Rahmah', divisi:'Investment Manager III', telp:'81292936383'},
   {NIA:'092025014', nama:'Melany Septiana Putri', divisi:'Secretary I', telp:'81387694749'},
   {NIA:'092025013', nama:'Maudyna Tasya Ardianti', divisi:'Secretary II', telp:'81218510500'},
-  {NIA:'092025011', nama:'Majda Tsania', Secretary III:'87881633207'},
+  {NIA:'092025011', nama:'Majda Tsania', divisi:'Secretary III', telp:'87881633207'},
   {NIA:'092025012', nama:'Mariyah Sujana', divisi:'Treasury I', telp:'817111899'},
   {NIA:'092025005', nama:'Baim Daniel Musyafa', divisi:'Treasury II', telp:'87782121989'},
   {NIA:'092025026', nama:'Nandini Melody Yordan', divisi:'Head of HR', telp:'81211077409'},
@@ -442,25 +442,44 @@ let allAnggota = [...realAnggota];
     </div>
 
     <!-- Kalender Kegiatan KIPM -->
-    <div class="table-card" style="padding:20px; background:var(--bg2);">
-      <h3 style="margin-bottom:16px; font-size:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">📅 Agenda Komunitas (KIPM)</h3>
-      <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:12px;">
+    <div class="table-card" style="padding:20px; background:var(--bg2); margin-bottom:16px;">
+      <h3 style="margin-bottom:16px; font-size:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">📅 Agenda Rutin Komunitas KIPM-UP</h3>
+      <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:10px;" id="agenda-list">
         <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid var(--accent2);">
-          <div style="font-weight:600; font-size:14px;">Rapat Evaluasi Mingguan</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap Jumat · 16:00 WIB di Ruang KIPM</div>
+          <div style="font-weight:600; font-size:14px;">📊 Rapat Evaluasi Mingguan</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap Jumat · 16:00 WIB · Ruang KIPM / Sekre</div>
         </li>
         <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid var(--accent3);">
-          <div style="font-weight:600; font-size:14px;">Trading Bersama (Live)</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap Rabu · 09:00 WIB via Google Meet</div>
+          <div style="font-weight:600; font-size:14px;">📈 Trading Bersama (Live Session)</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap Rabu · 09:00 WIB · via Google Meet</div>
         </li>
         <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid var(--accent);">
-          <div style="font-weight:600; font-size:14px;">Kelas Edukasi Pasar Modal</div>
+          <div style="font-weight:600; font-size:14px;">🎓 Kelas Edukasi Pasar Modal</div>
           <div style="font-size:12px; color:var(--text2); margin-top:4px;">Minggu ke-2 & ke-4 · Pemateri Eksternal</div>
         </li>
+        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid #c084fc;">
+          <div style="font-weight:600; font-size:14px;">🗂️ Piket Rutin Harian</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap hari kerja · Sesuai jadwal divisi masing-masing</div>
+        </li>
+        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid #f87171;">
+          <div style="font-weight:600; font-size:14px;">🏆 General Meeting / Musyawarah</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Awal & akhir periode kepengurusan</div>
+        </li>
       </ul>
-      <div style="margin-top:20px; text-align:center;">
-        <button class="btn-sm" style="width:100%; padding:10px;" onclick="goTo('landing')">Kembali ke Beranda</button>
+    </div>
+
+    <!-- Jadwal Piket Minggu Ini -->
+    <div class="table-card" style="padding:20px; background:var(--bg2); margin-bottom:16px;">
+      <h3 style="margin-bottom:16px; font-size:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">🗓️ Jadwal Piket Minggu Ini</h3>
+      <div id="kalender-jadwal-minggu" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="color:var(--text2); font-size:13px;">Memuat jadwal...</div>
       </div>
+    </div>
+
+    <!-- Tombol kembali -->
+    <div style="text-align:center; padding-bottom:24px;">
+      <button class="btn-sm" style="width:100%; padding:12px; font-size:14px;" onclick="goTo('scan')">🔄 Absen Lagi (Pulang)</button>
+      <button class="btn-sm" style="width:100%; padding:12px; font-size:14px; margin-top:8px;" onclick="goTo('landing')">Kembali ke Beranda</button>
     </div>
   </div>
 </div>
@@ -579,12 +598,26 @@ let allAnggota = [...realAnggota];
 // Gunakan parameter 't' di ujung URL agar browser HP tidak pakai cache lama
 async function gasCall(params) {
   try {
-    const payload = new URLSearchParams(params);
-    const res = await fetch(GAS_URL + "?t=" + new Date().getTime(), {method:'POST', body:payload});
-    const text = await res.text();
-    try { return JSON.parse(text); } catch(e) { return {ok:false, msg:'Response GAS tidak valid'}; }
+    // Tambah semua params ke URL agar GAS bisa baca via GET maupun POST
+    const urlParams = new URLSearchParams({...params, t: new Date().getTime()});
+    
+    // Coba POST dulu
+    try {
+      const res = await fetch(GAS_URL + '?' + urlParams.toString(), {
+        method:'POST', 
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: urlParams.toString()
+      });
+      const text = await res.text();
+      try { return JSON.parse(text); } catch(e) { /* fall through to GET */ }
+    } catch(postErr) { /* fall through to GET */ }
+    
+    // Fallback ke GET (lebih reliable di beberapa browser/network)
+    const resGet = await fetch(GAS_URL + '?' + urlParams.toString(), {method:'GET'});
+    const textGet = await resGet.text();
+    try { return JSON.parse(textGet); } catch(e) { return {ok:false, msg:'Response GAS tidak valid: ' + textGet.substring(0,100)}; }
   } catch(e) {
-    return {ok:false, msg:'Koneksi ke server gagal'};
+    return {ok:false, msg:'Koneksi ke server gagal: ' + e.message};
   }
 }
 
@@ -610,6 +643,7 @@ function goTo(page){
     if(tgl) tgl.innerText = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   }
   if(page==='qr'){ startQRLiveDisplay(); }
+  if(page==='kalender'){ renderKalenderJadwal(); }
   if(page!=='qr' && qrRefreshInterval){ clearInterval(qrRefreshInterval); qrRefreshInterval=null; }
   if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; qrLastToken=null; }
 }
@@ -620,27 +654,42 @@ async function loadJadwalScan(){
   const el = document.getElementById('jadwal-today'); 
   el.innerHTML = '<div class="loading" style="color:var(--accent);">Memuat jadwal & sinkronisasi status...</div>';
   
-  try {
-    const dow = new Date().getDay(); 
-    const list = jadwalMingguan[dow] || [];
+  const dow = new Date().getDay(); 
+  const list = jadwalMingguan[dow] || [];
 
-    if(!list.length) {
-      el.innerHTML = '<div class="empty-state" style="padding:10px;">Hari ini tidak ada jadwal piket. (Libur)</div>';
-      return;
-    }
+  if(!list.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:10px;">Hari ini tidak ada jadwal piket. (Libur / Weekend)</div>';
+    return;
+  }
 
-    const today = new Date().toISOString().split('T')[0];
-    const res = await api({action:'getRekapAbsensi', from:today, to:today});
-    const hadirNIA = new Set((res.ok && res.data ? res.data : []).filter(r=>r.tipe==='DATANG').map(r=>r.NIA));
-
+  // Render jadwal lokal dulu (cepat), lalu update status dari server
+  const renderJadwal = (hadirNIA) => {
     const displayData = list.map(nia => {
       const a = allAnggota.find(x => x.NIA === nia);
       return a ? {NIA: a.NIA, nama: a.nama, divisi: a.divisi, status: hadirNIA.has(nia) ? 'HADIR' : 'BELUM'} : null;
     }).filter(Boolean);
 
+    if(!displayData.length) {
+      el.innerHTML = '<div class="empty-state" style="padding:10px;">Tidak ada data anggota untuk jadwal hari ini.</div>';
+      return;
+    }
     el.innerHTML = displayData.map(j => `<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:6px 0; border-bottom: 1px solid var(--border);"><div><b>${j.nama}</b><div style="font-size:11px; color:var(--text2);">${j.NIA} · ${j.divisi}</div></div><span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}" style="align-self:center;">${j.status}</span></div>`).join('');
+  };
+
+  // Render dulu tanpa status hadir
+  renderJadwal(new Set());
+
+  // Coba ambil status dari server
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const res = await api({action:'getRekapAbsensi', from:today, to:today});
+    if(res && res.ok && Array.isArray(res.data)) {
+      const hadirNIA = new Set(res.data.filter(r=>r.tipe==='DATANG').map(r=>r.NIA));
+      renderJadwal(hadirNIA);
+    }
   } catch(e) {
-      el.innerHTML = '<div class="empty-state" style="padding:10px; color:var(--red);">Gagal memuat status dari server.</div>';
+    // Tetap tampilkan jadwal lokal, hanya status yang tidak diketahui
+    console.warn('Server tidak dapat dihubungi, menampilkan jadwal lokal tanpa status hadir.');
   }
 }
 
@@ -742,9 +791,24 @@ function startQRLiveDisplay() {
 async function adminLogin(){ 
   const u=document.getElementById('admin-username').value;
   const p=document.getElementById('admin-password').value; 
+  document.getElementById('login-err').style.display='none';
   showToast('Memeriksa kredensial...', 'info');
-  const res=await api({action:'adminLogin', username:u, password:p}); 
-  if(res.ok){ goTo('admin'); }else{ document.getElementById('login-err').style.display='block'; }
+  try {
+    const res=await api({action:'adminLogin', username:u, password:p}); 
+    if(res.ok){ 
+      const namaEl = document.getElementById('admin-nama-display');
+      if(namaEl) namaEl.innerText = res.nama || 'Admin';
+      goTo('admin'); 
+    } else { 
+      const errEl = document.getElementById('login-err');
+      errEl.innerText = 'Username atau password salah';
+      errEl.style.display='block'; 
+    }
+  } catch(e) {
+    const errEl = document.getElementById('login-err');
+    errEl.innerText = 'Koneksi server gagal. Periksa jaringan.';
+    errEl.style.display='block';
+  }
 }
 function adminLogout(){ goTo('landing'); if(qrRefreshInterval) clearInterval(qrRefreshInterval); }
 async function initAdmin(){ 
@@ -927,6 +991,35 @@ async function deleteAnggota(NIA){
     if(res.ok) { showToast('Anggota dihapus','success'); loadAnggotaTable(); }
     else showToast('Gagal menghapus','error');
   } 
+}
+
+function renderKalenderJadwal(){
+  const el = document.getElementById('kalender-jadwal-minggu');
+  if(!el) return;
+  const hariNama = ['','Senin','Selasa','Rabu','Kamis','Jumat'];
+  const hariColors = ['','var(--accent2)','var(--accent3)','var(--accent)','#c084fc','#f87171'];
+  const today = new Date();
+  const todayDow = today.getDay(); // 0=Minggu, 1=Senin, dst
+  
+  let html = '';
+  for(let h=1; h<=5; h++){
+    const list = jadwalMingguan[h] || [];
+    const isToday = h === todayDow;
+    html += `<div style="background:var(--bg3); border-radius:8px; padding:12px; border-left:3px solid ${hariColors[h]}; ${isToday ? 'border:2px solid '+hariColors[h]+';' : ''}">
+      <div style="font-weight:600; font-size:13px; color:${hariColors[h]}; margin-bottom:6px;">${hariNama[h]} ${isToday ? '(Hari Ini)' : ''} — ${list.length} anggota</div>`;
+    if(list.length === 0){
+      html += `<div style="font-size:12px; color:var(--text3);">Tidak ada piket</div>`;
+    } else {
+      const names = list.slice(0,4).map(nia => {
+        const a = allAnggota.find(x=>x.NIA===nia);
+        return a ? `<span style="background:var(--bg2); padding:2px 8px; border-radius:20px; font-size:11px; margin:2px; display:inline-block;">${a.nama.split(' ')[0]}</span>` : '';
+      }).join('');
+      const more = list.length > 4 ? `<span style="font-size:11px; color:var(--text3); margin:2px;">+${list.length-4} lainnya</span>` : '';
+      html += `<div style="flex-wrap:wrap;">${names}${more}</div>`;
+    }
+    html += `</div>`;
+  }
+  el.innerHTML = html;
 }
 
 window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview;
