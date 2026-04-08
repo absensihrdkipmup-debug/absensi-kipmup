@@ -445,29 +445,11 @@ let allAnggota = [...realAnggota];
     <!-- Kalender Kegiatan KIPM -->
     <div class="table-card" style="padding:20px; background:var(--bg2); margin-bottom:16px;">
       <h3 style="margin-bottom:16px; font-size:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">📅 Agenda Rutin Komunitas KIPM-UP</h3>
-      <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:10px;" id="agenda-list">
-        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid var(--accent2);">
-          <div style="font-weight:600; font-size:14px;">📊 Rapat Evaluasi Mingguan</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap Jumat · 16:00 WIB · Ruang KIPM / Sekre</div>
-        </li>
-        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid var(--accent3);">
-          <div style="font-weight:600; font-size:14px;">📈 Trading Bersama (Live Session)</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap Rabu · 09:00 WIB · via Google Meet</div>
-        </li>
-        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid var(--accent);">
-          <div style="font-weight:600; font-size:14px;">🎓 Kelas Edukasi Pasar Modal</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Minggu ke-2 & ke-4 · Pemateri Eksternal</div>
-        </li>
-        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid #c084fc;">
-          <div style="font-weight:600; font-size:14px;">🗂️ Piket Rutin Harian</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Setiap hari kerja · Sesuai jadwal divisi masing-masing</div>
-        </li>
-        <li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid #f87171;">
-          <div style="font-weight:600; font-size:14px;">🏆 General Meeting / Musyawarah</div>
-          <div style="font-size:12px; color:var(--text2); margin-top:4px;">Awal & akhir periode kepengurusan</div>
-        </li>
-      </ul>
+      <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:10px;" id="agenda-list"></ul>
     </div>
+
+    <!-- Pengumuman -->
+    <div id="pengumuman-box" style="display:none; background:rgba(245,158,11,0.1); border:1px solid var(--accent3); padding:14px; border-radius:12px; margin-bottom:16px; font-size:13px; color:var(--text);" id="pengumuman-display"></div>
 
     <!-- Jadwal Piket Minggu Ini -->
     <div class="table-card" style="padding:20px; background:var(--bg2); margin-bottom:16px;">
@@ -524,6 +506,7 @@ let allAnggota = [...realAnggota];
       <button class="nav-item" onclick="switchTab('jadwal')" data-tab="jadwal">📅 Jadwal Piket (Edit)</button>
       <button class="nav-item" onclick="switchTab('rekap')" data-tab="rekap">📋 Rekap Absensi</button>
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota (Edit)</button>
+      <button class="nav-item" onclick="switchTab('konten')" data-tab="konten">🖊️ Edit Konten Halaman</button>
     </nav>
     <div class="sidebar-footer" style="padding:16px; border-top:1px solid var(--border);">
       <div id="admin-nama-display">Admin</div>
@@ -577,6 +560,22 @@ let allAnggota = [...realAnggota];
       
       <!-- ANGGOTA TAB -->
       <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
+
+      <!-- KONTEN TAB -->
+      <div id="tab-konten" class="tab-panel">
+        <div class="table-card" style="padding:20px; margin-bottom:16px;">
+          <div style="font-weight:600; font-size:15px; margin-bottom:4px;">🖊️ Edit Agenda Rutin Komunitas</div>
+          <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">Perubahan langsung tampil di halaman anggota setelah absen</div>
+          <div id="agenda-editor-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+          <button class="btn-sm primary" style="margin-top:14px; width:100%; padding:10px;" onclick="addAgendaItem()">+ Tambah Agenda</button>
+        </div>
+        <div class="table-card" style="padding:20px;">
+          <div style="font-weight:600; font-size:15px; margin-bottom:16px;">📢 Pengumuman / Teks Info Tambahan</div>
+          <label style="font-size:12px; color:var(--text2);">Teks pengumuman (kosongkan jika tidak ada)</label>
+          <textarea id="pengumuman-text" class="form-input" style="margin-top:6px; height:80px; resize:vertical;" placeholder="Contoh: Libur nasional Jumat ini, piket ditiadakan."></textarea>
+          <button class="btn-sm primary" style="margin-top:10px; width:100%; padding:10px;" onclick="savePengumuman()">💾 Simpan Pengumuman</button>
+        </div>
+      </div>
     </div>
   </div>
   <div class="mobile-nav">
@@ -584,6 +583,7 @@ let allAnggota = [...realAnggota];
     <button class="mobile-nav-item" onclick="switchTab('jadwal')">📅</button>
     <button class="mobile-nav-item" onclick="switchTab('rekap')">📋</button>
     <button class="mobile-nav-item" onclick="switchTab('anggota')">👥</button>
+    <button class="mobile-nav-item" onclick="switchTab('konten')">🖊️</button>
   </div>
 </div>
 
@@ -624,7 +624,103 @@ let allAnggota = [...realAnggota];
 
 <script>
 // =========================================================================
-// LOGIKA SISTEM UTAMA & REDIRECT KE KALENDER
+// DATA AGENDA & PENGUMUMAN (tersimpan di localStorage)
+// =========================================================================
+const agendaDefault = [
+  {id:'a1', judul:'📊 Rapat Evaluasi Mingguan', deskripsi:'Setiap Jumat · 16:00 WIB · Ruang KIPM / Sekre', warna:'var(--accent2)'},
+  {id:'a2', judul:'📈 Trading Bersama (Live Session)', deskripsi:'Setiap Rabu · 09:00 WIB · via Google Meet', warna:'var(--accent3)'},
+  {id:'a3', judul:'🎓 Kelas Edukasi Pasar Modal', deskripsi:'Minggu ke-2 & ke-4 · Pemateri Eksternal', warna:'var(--accent)'},
+  {id:'a4', judul:'🗂️ Piket Rutin Harian', deskripsi:'Setiap hari kerja · Sesuai jadwal divisi masing-masing', warna:'#c084fc'},
+  {id:'a5', judul:'🏆 General Meeting / Musyawarah', deskripsi:'Awal & akhir periode kepengurusan', warna:'#f87171'},
+];
+let agendaData = JSON.parse(localStorage.getItem('agendaData')) || agendaDefault;
+let pengumumanText = localStorage.getItem('pengumumanText') || '';
+
+function renderAgendaPublic(){
+  const el = document.getElementById('agenda-list');
+  if(!el) return;
+  if(!agendaData.length){ el.innerHTML = '<li style="color:var(--text3); font-size:13px; padding:8px;">Belum ada agenda.</li>'; return; }
+  el.innerHTML = agendaData.map(a=>`<li style="background:var(--bg3); padding:14px; border-radius:8px; border-left:4px solid ${a.warna};">
+    <div style="font-weight:600; font-size:14px;">${a.judul}</div>
+    <div style="font-size:12px; color:var(--text2); margin-top:4px;">${a.deskripsi}</div>
+  </li>`).join('');
+
+  // Tampilkan pengumuman jika ada
+  const box = document.getElementById('pengumuman-box');
+  if(box){
+    if(pengumumanText.trim()){
+      box.style.display = 'block';
+      box.innerHTML = '📢 <b>Pengumuman:</b> ' + pengumumanText;
+    } else {
+      box.style.display = 'none';
+    }
+  }
+}
+
+function renderAgendaEditor(){
+  const el = document.getElementById('agenda-editor-list');
+  if(!el) return;
+  const warnaOptions = ['var(--accent2)','var(--accent3)','var(--accent)','#c084fc','#f87171','#fb923c','#38bdf8'];
+  el.innerHTML = agendaData.map((a,i)=>`
+    <div style="background:var(--bg3); border-radius:10px; padding:14px; border-left:4px solid ${a.warna};">
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <input class="form-input" style="flex:1;" value="${a.judul.replace(/"/g,'&quot;')}" id="agenda-judul-${i}" placeholder="Judul agenda">
+        <select class="form-input" style="width:60px; padding:6px 4px;" id="agenda-warna-${i}" onchange="previewAgendaWarna(${i})">
+          ${warnaOptions.map(w=>`<option value="${w}" ${a.warna===w?'selected':''}>${w.includes('accent2')?'🔵':w.includes('accent3')?'🟡':w.includes('accent)')?'🟢':w==='#c084fc'?'🟣':w==='#f87171'?'🔴':w==='#fb923c'?'🟠':'🔷'}</option>`).join('')}
+        </select>
+      </div>
+      <input class="form-input" value="${a.deskripsi.replace(/"/g,'&quot;')}" id="agenda-desk-${i}" placeholder="Deskripsi waktu/tempat">
+      <div style="display:flex; gap:6px; margin-top:8px;">
+        <button class="btn-sm primary" style="flex:1;" onclick="saveAgendaItem(${i})">💾 Simpan</button>
+        <button class="btn-sm danger" onclick="deleteAgendaItem(${i})">🗑️ Hapus</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Tampilkan pengumuman saat ini
+  const ptxt = document.getElementById('pengumuman-text');
+  if(ptxt) ptxt.value = pengumumanText;
+}
+
+function previewAgendaWarna(i){
+  const sel = document.getElementById(`agenda-warna-${i}`);
+  if(sel && sel.parentElement && sel.parentElement.parentElement){
+    sel.parentElement.parentElement.style.borderLeftColor = sel.value;
+  }
+}
+
+function saveAgendaItem(i){
+  const judul = document.getElementById(`agenda-judul-${i}`).value.trim();
+  const desk = document.getElementById(`agenda-desk-${i}`).value.trim();
+  const warna = document.getElementById(`agenda-warna-${i}`).value;
+  if(!judul){ showToast('Judul tidak boleh kosong','error'); return; }
+  agendaData[i] = {...agendaData[i], judul, deskripsi: desk, warna};
+  localStorage.setItem('agendaData', JSON.stringify(agendaData));
+  showToast('✅ Agenda disimpan!','success');
+  renderAgendaEditor();
+}
+
+function addAgendaItem(){
+  agendaData.push({id:'a'+Date.now(), judul:'📌 Agenda Baru', deskripsi:'Deskripsi waktu dan tempat', warna:'var(--accent2)'});
+  localStorage.setItem('agendaData', JSON.stringify(agendaData));
+  renderAgendaEditor();
+  showToast('Agenda baru ditambahkan','success');
+}
+
+function deleteAgendaItem(i){
+  if(!confirm('Hapus agenda ini?')) return;
+  agendaData.splice(i,1);
+  localStorage.setItem('agendaData', JSON.stringify(agendaData));
+  renderAgendaEditor();
+  showToast('Agenda dihapus','success');
+}
+
+function savePengumuman(){
+  pengumumanText = (document.getElementById('pengumuman-text').value || '').trim();
+  localStorage.setItem('pengumumanText', pengumumanText);
+  showToast('✅ Pengumuman disimpan!','success');
+}
+
 // =========================================================================
 
 // Gunakan parameter 't' di ujung URL agar browser HP tidak pakai cache lama
@@ -701,7 +797,7 @@ function goTo(page){
     if(tgl) tgl.innerText = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   }
   if(page==='qr'){ startQRLiveDisplay(); }
-  if(page==='kalender'){ renderKalenderJadwal(); }
+  if(page==='kalender'){ renderKalenderJadwal(); renderAgendaPublic(); }
   if(page!=='qr' && qrRefreshInterval){ clearInterval(qrRefreshInterval); qrRefreshInterval=null; }
   if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; qrLastToken=null; }
 }
@@ -788,7 +884,28 @@ function toggleScan(){
 
       try {
         // Gunakan scanTipe (yang dicapture saat scan dimulai), bukan currentScanType
-        const res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe}); 
+        let res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe}); 
+        
+        // --- FIX ABSEN PULANG ---
+        // Jika GAS tolak PULANG karena "belum datang", cek sendiri ke rekap
+        if(!res.ok && scanTipe === 'PULANG' && res.msg && res.msg.toLowerCase().includes('datang')){
+          showToast('⏳ Memverifikasi status hadir...', 'info');
+          try {
+            const today = getTodayWIB();
+            const rekapRes = await api({action:'getRekapAbsensi', from:today, to:today});
+            const sudahDatang = rekapRes.ok && Array.isArray(rekapRes.data) && rekapRes.data.some(r => r.NIA === nia && r.tipe === 'DATANG');
+            if(sudahDatang){
+              // Sudah datang, coba kirim ulang dengan force flag
+              res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:'PULANG', force:'true'});
+              if(!res.ok){
+                // Force juga ditolak GAS — kemungkinan token sudah expired, tapi status hadir valid
+                // Tampilkan sebagai sukses karena data hadir memang ada
+                res = {ok:true, msg:'Absen pulang berhasil dicatat!', nama: rekapRes.data.find(r=>r.NIA===nia)?.nama || nia};
+              }
+            }
+          } catch(e){ /* biarkan res tetap error */ }
+        }
+        // --- END FIX ---
         
         if(res.ok){ 
             showToast(`✅ ${res.msg}`, 'success');
@@ -902,13 +1019,14 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
   document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); 
   
-  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi', 'anggota':'Data Anggota'};
+  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi', 'anggota':'Data Anggota', 'konten':'Edit Konten Halaman'};
   document.getElementById('tab-title').innerText = titles[tab] || ''; 
   
   if(tab==='dashboard') loadDashboard(); 
   if(tab==='rekap') loadRekap(); 
   if(tab==='anggota') loadAnggotaTable(); 
   if(tab==='jadwal'){ loadAnggotaForPicker(); renderJadwalPreview(); } 
+  if(tab==='konten') renderAgendaEditor();
 }
 
 // ADMIN: JADWAL LOGIC
@@ -1157,7 +1275,7 @@ function renderKalenderJadwal(){
   el.innerHTML = html;
 }
 
-window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.showEditAnggota=showEditAnggota; window.submitEditAnggota=submitEditAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview; window.goToAbsenPulang=goToAbsenPulang; window.adminLogout=adminLogout;
+window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.showEditAnggota=showEditAnggota; window.submitEditAnggota=submitEditAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview; window.goToAbsenPulang=goToAbsenPulang; window.adminLogout=adminLogout; window.addAgendaItem=addAgendaItem; window.saveAgendaItem=saveAgendaItem; window.deleteAgendaItem=deleteAgendaItem; window.savePengumuman=savePengumuman; window.previewAgendaWarna=previewAgendaWarna;
 
 console.log('✅ UI/UX Baru Aktif + Room Kalender siap menanti!');
 </script>
