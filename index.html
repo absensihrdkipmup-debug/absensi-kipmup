@@ -677,15 +677,16 @@ function showToast(msg, type='info'){ const t=document.getElementById('toast'); 
 
 // Fungsi khusus dari halaman kalender ke scan dengan mode PULANG
 function goToAbsenPulang(){
+  // Set tipe PULANG DULU sebelum goTo, agar tidak ditimpa
+  currentScanType = 'PULANG';
   goTo('scan');
   // Set NIA jika ada
   if(lastAbsenNIA){
     const niaInput = document.getElementById('input-NIA');
     if(niaInput) niaInput.value = lastAbsenNIA;
   }
-  // Paksa tipe ke PULANG
-  currentScanType = 'PULANG';
-  setTimeout(() => setScanType('PULANG'), 100);
+  // Paksa UI tombol setelah DOM siap
+  setTimeout(() => setScanType('PULANG'), 50);
 }
 
 function goTo(page){
@@ -766,7 +767,10 @@ function toggleScan(){
     document.getElementById('btn-start-scan').innerHTML = '▶ Mulai Scan'; 
   } else { 
     const nia = document.getElementById('input-NIA').value.trim(); 
-    if(!nia){ showToast('Isi NIA dulu','error'); return; } 
+    if(!nia){ showToast('Isi NIA dulu','error'); return; }
+
+    // ⚠️ Capture tipe SEKARANG saat scan dimulai, bukan nanti saat QR terbaca
+    const scanTipe = currentScanType;
 
     isProcessingQR = false; 
     html5Scanner = new Html5Qrcode('qr-reader'); 
@@ -783,23 +787,24 @@ function toggleScan(){
       }).catch(e => console.log('Stop camera error:', e));
 
       try {
-        const res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:currentScanType}); 
+        // Gunakan scanTipe (yang dicapture saat scan dimulai), bukan currentScanType
+        const res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe}); 
         
         if(res.ok){ 
             showToast(`✅ ${res.msg}`, 'success');
 
             // Simpan NIA & tipe untuk dipakai saat kembali ke scan (absen pulang)
             lastAbsenNIA = nia;
-            lastAbsenTipe = currentScanType;
+            lastAbsenTipe = scanTipe;
             
             // Refresh status jadwal supaya badge langsung berubah
             loadJadwalScan();
 
             // REDIRECT KE ROOM KALENDER (Setelah 1.5 Detik)
             document.getElementById('kalender-nama-user').innerText = res.nama || nia;
-            document.getElementById('kalender-tipe-absen').innerText = currentScanType === 'DATANG' ? 'Datang' : 'Pulang';
+            document.getElementById('kalender-tipe-absen').innerText = scanTipe === 'DATANG' ? 'Datang' : 'Pulang';
             const infoPulang = document.getElementById('kalender-info-pulang');
-            if(infoPulang) infoPulang.innerText = currentScanType === 'DATANG' ? 'Jangan lupa absen Pulang saat selesai piket ya! 👇' : '✅ Absensi hari ini sudah lengkap. Terima kasih!';
+            if(infoPulang) infoPulang.innerText = scanTipe === 'DATANG' ? 'Jangan lupa absen Pulang saat selesai piket ya! 👇' : '✅ Absensi hari ini sudah lengkap. Terima kasih!';
             setTimeout(() => {
                 goTo('kalender');
             }, 1500);
