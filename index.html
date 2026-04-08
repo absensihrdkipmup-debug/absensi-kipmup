@@ -438,7 +438,8 @@ let allAnggota = [...realAnggota];
     <!-- Ucapan Selamat Datang -->
     <div style="background:rgba(74,222,128,0.1); border:1px solid var(--accent); padding:16px; border-radius:12px; text-align:center; margin-bottom:20px;">
       <h2 style="color:var(--accent); margin-bottom:4px; font-size:20px;">Absensi Berhasil! 🎉</h2>
-      <p style="font-size:14px; color:var(--text2);">Selamat <b id="kalender-tipe-absen" style="color:var(--text);">Datang</b>, <b id="kalender-nama-user" style="color:var(--text);">Anggota KIPM</b>!</p>
+      <p style="font-size:14px; color:var(--text2);">Absen <b id="kalender-tipe-absen" style="color:var(--text);">Datang</b> tercatat untuk <b id="kalender-nama-user" style="color:var(--text);">Anggota KIPM</b>!</p>
+      <p style="font-size:12px; color:var(--text2); margin-top:6px;" id="kalender-info-pulang"></p>
     </div>
 
     <!-- Kalender Kegiatan KIPM -->
@@ -478,7 +479,7 @@ let allAnggota = [...realAnggota];
 
     <!-- Tombol kembali -->
     <div style="text-align:center; padding-bottom:24px;">
-      <button class="btn-sm" style="width:100%; padding:12px; font-size:14px;" onclick="goTo('scan')">🔄 Absen Lagi (Pulang)</button>
+      <button class="btn-sm" style="width:100%; padding:12px; font-size:14px;" onclick="goToAbsenPulang()">🔄 Absen Pulang</button>
       <button class="btn-sm" style="width:100%; padding:12px; font-size:14px; margin-top:8px;" onclick="goTo('landing')">Kembali ke Beranda</button>
     </div>
   </div>
@@ -522,7 +523,7 @@ let allAnggota = [...realAnggota];
       <button class="nav-item active" onclick="switchTab('dashboard')" data-tab="dashboard">📊 Dashboard</button>
       <button class="nav-item" onclick="switchTab('jadwal')" data-tab="jadwal">📅 Jadwal Piket (Edit)</button>
       <button class="nav-item" onclick="switchTab('rekap')" data-tab="rekap">📋 Rekap Absensi</button>
-      <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota</button>
+      <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota (Edit)</button>
     </nav>
     <div class="sidebar-footer" style="padding:16px; border-top:1px solid var(--border);">
       <div id="admin-nama-display">Admin</div>
@@ -669,8 +670,23 @@ let currentScanType = 'DATANG';
 let scannerActive = false, html5Scanner = null;
 let qrRefreshInterval = null;
 let isProcessingQR = false;
+let lastAbsenNIA = '';   // Simpan NIA terakhir yang berhasil absen
+let lastAbsenTipe = ''; // Simpan tipe absen terakhir (DATANG/PULANG)
 
 function showToast(msg, type='info'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);}
+
+// Fungsi khusus dari halaman kalender ke scan dengan mode PULANG
+function goToAbsenPulang(){
+  goTo('scan');
+  // Set NIA jika ada
+  if(lastAbsenNIA){
+    const niaInput = document.getElementById('input-NIA');
+    if(niaInput) niaInput.value = lastAbsenNIA;
+  }
+  // Paksa tipe ke PULANG
+  currentScanType = 'PULANG';
+  setTimeout(() => setScanType('PULANG'), 100);
+}
 
 function goTo(page){
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active'); p.style.display='none';});
@@ -771,18 +787,19 @@ function toggleScan(){
         
         if(res.ok){ 
             showToast(`✅ ${res.msg}`, 'success');
+
+            // Simpan NIA & tipe untuk dipakai saat kembali ke scan (absen pulang)
+            lastAbsenNIA = nia;
+            lastAbsenTipe = currentScanType;
             
             // Refresh status jadwal supaya badge langsung berubah
             loadJadwalScan();
 
-            // Otomatis switch ke tipe PULANG setelah berhasil DATANG
-            if(currentScanType === 'DATANG') {
-              setTimeout(() => setScanType('PULANG'), 200);
-            }
-
             // REDIRECT KE ROOM KALENDER (Setelah 1.5 Detik)
             document.getElementById('kalender-nama-user').innerText = res.nama || nia;
             document.getElementById('kalender-tipe-absen').innerText = currentScanType === 'DATANG' ? 'Datang' : 'Pulang';
+            const infoPulang = document.getElementById('kalender-info-pulang');
+            if(infoPulang) infoPulang.innerText = currentScanType === 'DATANG' ? 'Jangan lupa absen Pulang saat selesai piket ya! 👇' : '✅ Absensi hari ini sudah lengkap. Terima kasih!';
             setTimeout(() => {
                 goTo('kalender');
             }, 1500);
@@ -1019,9 +1036,22 @@ async function exportCSV(){
 
 // ADMIN: DATA ANGGOTA
 async function loadAnggotaTable(){ 
-  const res = await api({action:'getAnggota'}); 
   const tbody = document.getElementById('tbl-anggota'); 
-  let targetData = (res.ok && res.data && res.data.length > 0) ? res.data : [...realAnggota];
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Memuat data...</td></tr>';
+  
+  let targetData = [...allAnggota]; // Pakai data lokal dulu (sudah pasti ada)
+  
+  // Coba ambil dari server, tapi jangan blokir jika gagal
+  try {
+    const res = await api({action:'getAnggota'}); 
+    if(res.ok && res.data && res.data.length > 0) {
+      targetData = res.data;
+      // Sync ke allAnggota lokal juga
+      allAnggota = [...res.data];
+    }
+  } catch(e) {
+    console.warn('Gagal ambil dari server, tampilkan data lokal');
+  }
   
   if(targetData.length > 0) {
     tbody.innerHTML = targetData.map(a=>`<tr>
@@ -1030,7 +1060,7 @@ async function loadAnggotaTable(){
       <td><span style="font-size:12px; color:var(--text2);">${a.divisi}</span></td>
       <td style="font-size:12px; color:var(--text2);">${a.telp||'-'}</td>
       <td style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="btn-sm primary" onclick="showEditAnggota('${a.NIA}','${a.nama.replace(/'/g,"\\'")}','${(a.divisi||'').replace(/'/g,"\\'")}','${a.telp||''}')">✏️ Edit</button>
+        <button class="btn-sm primary" onclick="showEditAnggota('${a.NIA}','${(a.nama||'').replace(/'/g,"\\'")}','${(a.divisi||'').replace(/'/g,"\\'")}','${a.telp||''}')">✏️ Edit</button>
         <button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}')">🗑️ Hapus</button>
       </td>
     </tr>`).join(''); 
@@ -1122,7 +1152,7 @@ function renderKalenderJadwal(){
   el.innerHTML = html;
 }
 
-window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.showEditAnggota=showEditAnggota; window.submitEditAnggota=submitEditAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview;
+window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.showEditAnggota=showEditAnggota; window.submitEditAnggota=submitEditAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview; window.goToAbsenPulang=goToAbsenPulang; window.adminLogout=adminLogout;
 
 console.log('✅ UI/UX Baru Aktif + Room Kalender siap menanti!');
 </script>
