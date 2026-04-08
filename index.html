@@ -318,7 +318,8 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
 <body>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz69T6bz7u9xYltM2YPhEgBXHHSuFvuww02wpuq-fZxfk1x8fiKEk1XzVO8haE5CNWb0g/exec';
+// --- URL GAS MILIK KAMU ---
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyS9eF5QUuTJrMzjwNXUL5-WyUPFMbFxVdSOqd5byXCQa_J1KwiiDfiYAIlGaiuZyyoVA/exec';
 </script>
 
 <!-- LANDING (3 OPSI) -->
@@ -365,7 +366,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbz69T6bz7u9xYltM2YPhEgB
   </div>
 </div>
 
-<!-- HALAMAN QR LIVE (DIPINDAHKAN DARI ADMIN) -->
+<!-- HALAMAN QR LIVE -->
 <div id="page-qr" class="page">
   <div style="padding:16px 20px; background:var(--bg2); display:flex; gap:12px; align-items:center;">
     <div class="back-btn" onclick="goTo('landing')">←</div>
@@ -395,7 +396,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbz69T6bz7u9xYltM2YPhEgB
   </div>
 </div>
 
-<!-- ADMIN DASHBOARD (QR TAB TELAH DIHAPUS) -->
+<!-- ADMIN DASHBOARD -->
 <div id="page-admin" class="page" style="display:none;">
   <div class="sidebar">
     <div class="sidebar-logo" style="padding:24px 20px;"><div class="sidebar-logo-text">KIPM-UP</div><div class="sidebar-logo-sub">Admin</div></div>
@@ -592,24 +593,6 @@ async function api(params) {
     }
     return result;
   }
-    // Cek duplikat: tanya GAS apakah sudah absen hari ini
-    const cek = await gasCall({action:'cekAbsensi', NIA:params.NIA, tanggal:today, tipe:params.tipe});
-    if(cek.sudahAbsen) return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
-    if(params.tipe==='PULANG'){
-      const cekDatang = await gasCall({action:'cekAbsensi', NIA:params.NIA, tanggal:today, tipe:'DATANG'});
-      if(!cekDatang.sudahAbsen) return {ok:false, msg:'Harus absen DATANG dulu'};
-    }
-
-    // Simpan ke GAS (Google Sheets)
-    const waktu = new Date().toTimeString().slice(0,8);
-    const result = await gasCall({action:'addAbsensi', tanggal:today, waktu, NIA:params.NIA, nama:anggota.nama, tipe:params.tipe});
-    if(!result.ok) return {ok:false, msg:'Gagal simpan ke server: '+(result.msg||'')};
-
-    // Juga simpan lokal sebagai cache sementara
-    demoAbsensi.push({tanggal:today, waktu, NIA:params.NIA, nama:anggota.nama, tipe:params.tipe});
-    saveAbsensi();
-    return {ok:true, msg:`Absen ${params.tipe} berhasil, ${anggota.nama}!`};
-  }
 
   // ---- JADWAL HARI INI: baca dari GAS ----
   if(params.action === 'getJadwalHariIni'){
@@ -680,11 +663,9 @@ function goTo(page){
 function setScanType(t){ currentScanType=t; document.getElementById('btn-tipe-datang').style.borderColor=t==='DATANG'?'var(--accent)':'var(--border2)'; document.getElementById('btn-tipe-pulang').style.borderColor=t==='PULANG'?'#c084fc':'var(--border2)';}
 async function loadJadwalScan(){ const res=await api({action:'getJadwalHariIni'}); const el=document.getElementById('jadwal-today'); if(res.ok && res.data.length) el.innerHTML=res.data.map(j=>`<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:6px 0;"><div><b>${j.nama}</b><div style="font-size:11px;">${j.NIA} · ${j.divisi}</div></div><span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span></div>`).join(''); else el.innerHTML='<div class="empty-state">Tidak ada jadwal hari ini</div>';}
 function toggleScan(){ if(scannerActive){ if(html5Scanner) html5Scanner.stop().catch(e=>{}); scannerActive=false; document.getElementById('btn-start-scan').innerHTML='▶ Mulai Scan'; }else{ const nia=document.getElementById('input-NIA').value.trim(); if(!nia){ showToast('Isi NIA dulu','error'); return; } html5Scanner=new Html5Qrcode('qr-reader'); html5Scanner.start({facingMode:'environment'},{fps:10,qrbox:220}, async (text)=>{ const res=await api({action:'validateBarcode', token:text, NIA:nia, tipe:currentScanType}); showToast(res.ok?`✅ ${res.msg}`:`❌ ${res.msg}`, res.ok?'success':'error'); if(res.ok){ toggleScan(); loadJadwalScan(); } }).catch(e=>{ showToast('Gagal akses kamera','error'); }); scannerActive=true; document.getElementById('btn-start-scan').innerHTML='⏹ Stop Scan'; }}
+
 // QR LIVE DISPLAY
 // Token deterministik: semua device dalam window 30 detik yang sama → token IDENTIK
-const QR_WINDOW_SEC = 30;
-const QR_SECRET = "KIPMUP2024";
-
 function getCurrentQRToken() {
   const now = new Date();
   // Konversi ke zona waktu WIB (UTC+7)
@@ -700,11 +681,18 @@ function getCurrentQRToken() {
                  Math.floor(wib.getUTCMinutes()) * 2 + 
                  Math.floor(wib.getUTCHours()) * 120;
                  
-  const SECRET_KEY = 'KIPMUP2017SECRET'; // Harus sama dengan di GAS
+  const SECRET_KEY = 'KIPMUP2017SECRET'; // Harus sama persis dengan Backend GAS
   const raw = dateStr + '_' + slot30 + '_' + SECRET_KEY;
   
   return md5(raw).substring(0, 12).toUpperCase();
 }
+
+function getSecondsLeft() {
+  const now = Date.now();
+  const windowMs = 30 * 1000;
+  return 30 - Math.floor((now % windowMs) / 1000);
+}
+
 let qrCountdownInterval = null;
 let qrLastToken = null;
 
@@ -733,7 +721,8 @@ function startQRLiveDisplay() {
     if(el) el.innerText = getSecondsLeft();
   }, 1000);
 }
-// ADMIN LOGIC (QR dihapus total)
+
+// ADMIN LOGIC
 async function adminLogin(){ const u=document.getElementById('admin-username').value, p=document.getElementById('admin-password').value; const res=await api({action:'adminLogin', username:u, password:p}); if(res.ok){ goTo('admin'); }else{ document.getElementById('login-err').style.display='block'; }}
 function adminLogout(){ goTo('landing'); if(qrRefreshInterval) clearInterval(qrRefreshInterval); }
 async function initAdmin(){ await loadAnggotaForPicker(); startClock(); switchTab('dashboard'); loadDashboard(); }
@@ -755,7 +744,7 @@ async function submitAddAnggota(){ const NIA=document.getElementById('new-NIA').
 async function deleteAnggota(NIA){ if(confirm('Hapus anggota?')){ await api({action:'deleteAnggota', NIA}); await loadAnggotaForPicker(); loadAnggotaTable(); showToast('Dihapus','success'); } }
 document.getElementById('jadwal-hari-select')?.addEventListener('change',()=>{ const hari=parseInt(document.getElementById('jadwal-hari-select').value); selectedAnggota=new Set(jadwalMingguan[hari]||[]); renderAnggotaPicker(); });
 window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.downloadJadwalPDF=downloadJadwalPDF; window.showAddAnggota=showAddAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV;
-console.log('✅ Sistem siap | QR Live di halaman publik | 3 opsi landing');
+console.log('✅ Sistem siap | QR Live dan Absensi tersambung ke backend');
 </script>
 </body>
 </html>
