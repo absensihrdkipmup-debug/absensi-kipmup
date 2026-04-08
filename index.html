@@ -508,7 +508,18 @@ const realAnggota = [
   {NIA:'000000001', nama:'Alfan Tirta Admajaya Putra', divisi:'Founder', telp:'81918892779'},
 ];
 let demoAnggotaList = [...realAnggota];
-let demoAbsensi = [];
+// Load absensi dari localStorage agar tidak hilang saat refresh
+let demoAbsensi = JSON.parse(localStorage.getItem('absensiData') || '[]');
+// Bersihkan data absensi lebih dari 7 hari
+(function cleanOldAbsensi(){
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-7);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+  demoAbsensi = demoAbsensi.filter(r => r.tanggal >= cutoffStr);
+  localStorage.setItem('absensiData', JSON.stringify(demoAbsensi));
+})();
+function saveAbsensi() {
+  localStorage.setItem('absensiData', JSON.stringify(demoAbsensi));
+}
 let jadwalMingguan = JSON.parse(localStorage.getItem('jadwalMingguan') || 'null') || {
   1: ['082024022','092025002','092025014','092025007','082024029','092025027','092025038','092025004'],
   2: ['082024015','092025010','092025026','092025033','092025015','092025001','092025040','092025017'],
@@ -557,7 +568,14 @@ function api(params) {
     if(!anggota) return {ok:false, msg:'NIA tidak terdaftar'};
     if(demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe===params.tipe)) return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
     if(params.tipe==='PULANG' && !demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe==='DATANG')) return {ok:false, msg:'Harus absen DATANG dulu'};
-    demoAbsensi.push({tanggal:today, waktu:new Date().toTimeString().slice(0,8), NIA:params.NIA, nama:anggota.nama, tipe:params.tipe, status:'HADIR'});
+    const record = {tanggal:today, waktu:new Date().toTimeString().slice(0,8), NIA:params.NIA, nama:anggota.nama, tipe:params.tipe, status:'HADIR'};
+    demoAbsensi.push(record);
+    saveAbsensi(); // persist ke localStorage agar tidak hilang saat refresh
+    // Kirim ke Google Sheets via GAS (fire-and-forget, tidak block UI)
+    if(GAS_URL) {
+      const payload = new URLSearchParams({action:'addAbsensi', tanggal:record.tanggal, waktu:record.waktu, NIA:record.NIA, nama:record.nama, tipe:record.tipe});
+      fetch(GAS_URL, {method:'POST', body:payload}).catch(()=>{});
+    }
     return {ok:true, msg:`Absen ${params.tipe} berhasil, ${anggota.nama}!`};
   }
   return {ok:false};
