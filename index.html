@@ -547,8 +547,12 @@ function api(params) {
     return {ok:true, csv};
   }
   if(params.action === 'validateBarcode'){
-    // Validasi token QR — harus cocok dengan token aktif yang sedang ditampilkan
-    if(!activeQRToken || params.token !== activeQRToken) return {ok:false, msg:'QR Code tidak valid atau sudah kedaluwarsa, minta admin tampilkan QR terbaru'};
+    // Token valid = token window saat ini ATAU window sebelumnya (toleransi 1 window)
+    const validTokens = [
+      getCurrentQRToken(),
+      md5(Math.floor((Date.now() - QR_WINDOW_SEC*1000) / (QR_WINDOW_SEC*1000)) + QR_SECRET).substring(0,12).toUpperCase()
+    ];
+    if(!validTokens.includes(params.token)) return {ok:false, msg:'QR Code tidak valid atau sudah kedaluwarsa'};
     const anggota = demoAnggotaList.find(a=>a.NIA===params.NIA);
     if(!anggota) return {ok:false, msg:'NIA tidak terdaftar'};
     if(demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe===params.tipe)) return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
@@ -575,38 +579,53 @@ function goTo(page){
   if(page==='scan'){ loadJadwalScan(); if(navigator.geolocation) navigator.geolocation.getCurrentPosition(()=>{},()=>{}); }
   if(page==='qr'){ startQRLiveDisplay(); }
   if(page!=='qr' && qrRefreshInterval){ clearInterval(qrRefreshInterval); qrRefreshInterval=null; }
-  if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; activeQRToken=null; }
+  if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; qrLastToken=null; }
 }
 function setScanType(t){ currentScanType=t; document.getElementById('btn-tipe-datang').style.borderColor=t==='DATANG'?'var(--accent)':'var(--border2)'; document.getElementById('btn-tipe-pulang').style.borderColor=t==='PULANG'?'#c084fc':'var(--border2)';}
 async function loadJadwalScan(){ const res=await api({action:'getJadwalHariIni'}); const el=document.getElementById('jadwal-today'); if(res.ok && res.data.length) el.innerHTML=res.data.map(j=>`<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:6px 0;"><div><b>${j.nama}</b><div style="font-size:11px;">${j.NIA} · ${j.divisi}</div></div><span class="badge ${j.status==='HADIR'?'badge-hadir':'badge-belum'}">${j.status}</span></div>`).join(''); else el.innerHTML='<div class="empty-state">Tidak ada jadwal hari ini</div>';}
 function toggleScan(){ if(scannerActive){ if(html5Scanner) html5Scanner.stop().catch(e=>{}); scannerActive=false; document.getElementById('btn-start-scan').innerHTML='▶ Mulai Scan'; }else{ const nia=document.getElementById('input-NIA').value.trim(); if(!nia){ showToast('Isi NIA dulu','error'); return; } html5Scanner=new Html5Qrcode('qr-reader'); html5Scanner.start({facingMode:'environment'},{fps:10,qrbox:220}, async (text)=>{ const res=await api({action:'validateBarcode', token:text, NIA:nia, tipe:currentScanType}); showToast(res.ok?`✅ ${res.msg}`:`❌ ${res.msg}`, res.ok?'success':'error'); if(res.ok){ toggleScan(); loadJadwalScan(); } }).catch(e=>{ showToast('Gagal akses kamera','error'); }); scannerActive=true; document.getElementById('btn-start-scan').innerHTML='⏹ Stop Scan'; }}
-// QR LIVE DISPLAY (dipindah ke halaman publik)
-let activeQRToken = null; // token aktif yang bisa divalidasi scanner
+// QR LIVE DISPLAY
+// Token deterministik: semua device dalam window 30 detik yang sama → token IDENTIK
+const QR_WINDOW_SEC = 30;
+const QR_SECRET = "KIPMUP2024";
+
+function getCurrentQRToken() {
+  const windowId = Math.floor(Date.now() / (QR_WINDOW_SEC * 1000));
+  return md5(windowId + QR_SECRET).substring(0, 12).toUpperCase();
+}
+
+function getSecondsLeft() {
+  const now = Date.now();
+  const windowMs = QR_WINDOW_SEC * 1000;
+  return QR_WINDOW_SEC - Math.floor((now % windowMs) / 1000);
+}
+
 let qrCountdownInterval = null;
-let qrSecondsLeft = 30;
+let qrLastToken = null;
 
 function renderQRCodeOnPublic() {
-  activeQRToken = md5(Date.now()+"KIPM").substring(0,12).toUpperCase();
-  qrSecondsLeft = 30;
+  const token = getCurrentQRToken();
+  if(token === qrLastToken) return; // skip kalau token belum ganti
+  qrLastToken = token;
   const canvasDiv = document.getElementById('qr-display-canvas');
   if(canvasDiv){
-    // Buat wrapper baru biar QRCode library tidak konflik dengan instance lama
     const wrapper = document.createElement('div');
     canvasDiv.innerHTML = '';
     canvasDiv.appendChild(wrapper);
-    new QRCode(wrapper, { text: activeQRToken, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
-    document.getElementById('qr-token-text-live').innerText = activeQRToken;
+    new QRCode(wrapper, { text: token, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('qr-token-text-live').innerText = token;
   }
 }
+
 function startQRLiveDisplay() {
   if(qrRefreshInterval) clearInterval(qrRefreshInterval);
   if(qrCountdownInterval) clearInterval(qrCountdownInterval);
+  qrLastToken = null;
   renderQRCodeOnPublic();
-  qrRefreshInterval = setInterval(() => renderQRCodeOnPublic(), 30000);
+  qrRefreshInterval = setInterval(() => renderQRCodeOnPublic(), 1000);
   qrCountdownInterval = setInterval(() => {
-    qrSecondsLeft--;
     const el = document.getElementById('qr-countdown');
-    if(el) el.innerText = qrSecondsLeft > 0 ? qrSecondsLeft : 30;
+    if(el) el.innerText = getSecondsLeft();
   }, 1000);
 }
 // ADMIN LOGIC (QR dihapus total)
