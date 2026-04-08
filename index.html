@@ -530,38 +530,49 @@ let jadwalMingguan = JSON.parse(localStorage.getItem('jadwalMingguan') || 'null'
   5: ['082024029','092025027','092025038','092025004','092025022','092025001','092025040','092025017']
 };
 
-function api(params) {
+// ---- GAS API (semua data baca/tulis ke Google Sheets) ----
+async function gasCall(params) {
+  if(!GAS_URL) return {ok:false, msg:'GAS_URL belum dikonfigurasi'};
+  try {
+    const payload = new URLSearchParams(params);
+    const res = await fetch(GAS_URL, {method:'POST', body:payload});
+    const text = await res.text();
+    try { return JSON.parse(text); } catch(e) { return {ok:false, msg:'Response GAS tidak valid: '+text.substring(0,100)}; }
+  } catch(e) {
+    return {ok:false, msg:'Koneksi ke server gagal: '+e.message};
+  }
+}
+
+async function api(params) {
   const today = new Date().toISOString().split('T')[0];
+
+  // ---- LOGIN (lokal, tidak perlu GAS) ----
+  if(params.action === 'adminLogin')
+    return (params.username==='adminhrd'&&params.password==='kipmup2017')?{ok:true,nama:'Administrator',role:'superadmin'}:{ok:false,msg:'Username/password salah'};
+
+  // ---- DATA ANGGOTA (lokal, daftar sudah hardcode) ----
   if(params.action === 'getAnggota') return {ok:true, data: demoAnggotaList};
-  if(params.action === 'getJadwalHariIni'){
-    const dow = new Date().getDay();
-    const list = jadwalMingguan[dow] || [];
-    const data = list.map(nia=>{const a=demoAnggotaList.find(x=>x.NIA===nia); return a?{NIA:a.NIA,nama:a.nama,divisi:a.divisi,status:demoAbsensi.some(r=>r.tanggal===today && r.NIA===nia && r.tipe==='DATANG')?'HADIR':'BELUM'}:null}).filter(Boolean);
-    return {ok:true, data};
-  }
-  if(params.action === 'getDashboardStats'){
-    const hadirHari = new Set(demoAbsensi.filter(r=>r.tanggal===today && r.tipe==='DATANG').map(r=>r.NIA)).size;
-    return {ok:true, hadirHariIni:hadirHari, jadwalHariIni:8, totalAnggota:demoAnggotaList.length, persenHariIni:Math.round(hadirHari/8*100)};
-  }
-  if(params.action === 'getRekapAbsensi') return {ok:true, data:demoAbsensi.filter(r=>(!params.from||r.tanggal>=params.from)&&(!params.to||r.tanggal<=params.to))};
-  if(params.action === 'adminLogin') return (params.username==='adminhrd'&&params.password==='kipmup2017')?{ok:true,nama:'Administrator',role:'superadmin'}:{ok:false};
   if(params.action === 'addAnggota'){
     if(demoAnggotaList.find(a=>a.NIA===params.NIA)) return {ok:false, msg:'NIA sudah ada'};
     demoAnggotaList.push({NIA:params.NIA, nama:params.nama, divisi:params.divisi||'-', telp:params.telp||''});
     saveAnggota();
     return {ok:true, msg:'Berhasil'};
   }
-  if(params.action === 'deleteAnggota'){ demoAnggotaList = demoAnggotaList.filter(a=>a.NIA!==params.NIA); saveAnggota(); return {ok:true};}
-  if(params.action === 'setJadwal'){ jadwalMingguan[params.hari] = JSON.parse(params.anggota); localStorage.setItem('jadwalMingguan',JSON.stringify(jadwalMingguan)); return {ok:true};}
-  if(params.action === 'exportAbsensi'){
-    let data = demoAbsensi;
-    if(params.from) data=data.filter(r=>r.tanggal>=params.from);
-    if(params.to) data=data.filter(r=>r.tanggal<=params.to);
-    const csv='Tanggal,Tipe,Waktu,NIA,Nama\n'+data.map(r=>`${r.tanggal},${r.tipe},${r.waktu},${r.NIA},${r.nama}`).join('\n');
-    return {ok:true, csv};
+  if(params.action === 'deleteAnggota'){
+    demoAnggotaList = demoAnggotaList.filter(a=>a.NIA!==params.NIA);
+    saveAnggota();
+    return {ok:true};
   }
+
+  // ---- JADWAL (localStorage, tidak bergantung device lain) ----
+  if(params.action === 'setJadwal'){
+    jadwalMingguan[params.hari] = JSON.parse(params.anggota);
+    localStorage.setItem('jadwalMingguan',JSON.stringify(jadwalMingguan));
+    return {ok:true};
+  }
+
+  // ---- ABSENSI: VALIDASI SCAN → simpan ke GAS ----
   if(params.action === 'validateBarcode'){
-    // Token valid = token window saat ini ATAU window sebelumnya (toleransi 1 window)
     const validTokens = [
       getCurrentQRToken(),
       md5(Math.floor((Date.now() - QR_WINDOW_SEC*1000) / (QR_WINDOW_SEC*1000)) + QR_SECRET).substring(0,12).toUpperCase()
@@ -569,19 +580,66 @@ function api(params) {
     if(!validTokens.includes(params.token)) return {ok:false, msg:'QR Code tidak valid atau sudah kedaluwarsa'};
     const anggota = demoAnggotaList.find(a=>a.NIA===params.NIA);
     if(!anggota) return {ok:false, msg:'NIA tidak terdaftar'};
-    if(demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe===params.tipe)) return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
-    if(params.tipe==='PULANG' && !demoAbsensi.some(r=>r.tanggal===today && r.NIA===params.NIA && r.tipe==='DATANG')) return {ok:false, msg:'Harus absen DATANG dulu'};
-    const record = {tanggal:today, waktu:new Date().toTimeString().slice(0,8), NIA:params.NIA, nama:anggota.nama, tipe:params.tipe, status:'HADIR'};
-    demoAbsensi.push(record);
-    saveAbsensi(); // persist ke localStorage agar tidak hilang saat refresh
-    // Kirim ke Google Sheets via GAS (fire-and-forget, tidak block UI)
-    if(GAS_URL) {
-      const payload = new URLSearchParams({action:'addAbsensi', tanggal:record.tanggal, waktu:record.waktu, NIA:record.NIA, nama:record.nama, tipe:record.tipe});
-      fetch(GAS_URL, {method:'POST', body:payload}).then(r=>r.text()).then(t=>{ if(!t.includes('OK') && !t.includes('success')) console.warn('GAS response:', t); }).catch(e=>{ console.warn('GAS sync gagal (data tetap tersimpan lokal):', e); });
+
+    // Cek duplikat: tanya GAS apakah sudah absen hari ini
+    const cek = await gasCall({action:'cekAbsensi', NIA:params.NIA, tanggal:today, tipe:params.tipe});
+    if(cek.sudahAbsen) return {ok:false, msg:`Sudah absen ${params.tipe} hari ini`};
+    if(params.tipe==='PULANG'){
+      const cekDatang = await gasCall({action:'cekAbsensi', NIA:params.NIA, tanggal:today, tipe:'DATANG'});
+      if(!cekDatang.sudahAbsen) return {ok:false, msg:'Harus absen DATANG dulu'};
     }
+
+    // Simpan ke GAS (Google Sheets)
+    const waktu = new Date().toTimeString().slice(0,8);
+    const result = await gasCall({action:'addAbsensi', tanggal:today, waktu, NIA:params.NIA, nama:anggota.nama, tipe:params.tipe});
+    if(!result.ok) return {ok:false, msg:'Gagal simpan ke server: '+(result.msg||'')};
+
+    // Juga simpan lokal sebagai cache sementara
+    demoAbsensi.push({tanggal:today, waktu, NIA:params.NIA, nama:anggota.nama, tipe:params.tipe});
+    saveAbsensi();
     return {ok:true, msg:`Absen ${params.tipe} berhasil, ${anggota.nama}!`};
   }
-  return {ok:false};
+
+  // ---- JADWAL HARI INI: baca dari GAS ----
+  if(params.action === 'getJadwalHariIni'){
+    const dow = new Date().getDay();
+    const list = jadwalMingguan[dow] || [];
+    if(!list.length) return {ok:true, data:[]};
+    // Ambil data hadir hari ini dari GAS
+    const res = await gasCall({action:'getRekapAbsensi', from:today, to:today});
+    const hadirNIA = new Set((res.ok && res.data ? res.data : []).filter(r=>r.tipe==='DATANG').map(r=>r.NIA));
+    const data = list.map(nia=>{
+      const a = demoAnggotaList.find(x=>x.NIA===nia);
+      return a ? {NIA:a.NIA, nama:a.nama, divisi:a.divisi, status: hadirNIA.has(nia)?'HADIR':'BELUM'} : null;
+    }).filter(Boolean);
+    return {ok:true, data};
+  }
+
+  // ---- REKAP ABSENSI: baca dari GAS ----
+  if(params.action === 'getRekapAbsensi'){
+    const res = await gasCall({action:'getRekapAbsensi', from:params.from||today, to:params.to||today});
+    if(!res.ok) return {ok:true, data:[]};
+    return {ok:true, data: res.data||[]};
+  }
+
+  // ---- DASHBOARD STATS: baca dari GAS ----
+  if(params.action === 'getDashboardStats'){
+    const res = await gasCall({action:'getRekapAbsensi', from:today, to:today});
+    const data = res.ok && res.data ? res.data : [];
+    const hadirHari = new Set(data.filter(r=>r.tipe==='DATANG').map(r=>r.NIA)).size;
+    const jadwalHari = (jadwalMingguan[new Date().getDay()]||[]).length || 8;
+    return {ok:true, hadirHariIni:hadirHari, totalAnggota:demoAnggotaList.length, persenHariIni: jadwalHari>0?Math.round(hadirHari/jadwalHari*100):0};
+  }
+
+  // ---- EXPORT CSV: baca dari GAS ----
+  if(params.action === 'exportAbsensi'){
+    const res = await gasCall({action:'getRekapAbsensi', from:params.from||today, to:params.to||today});
+    const data = res.ok && res.data ? res.data : [];
+    const csv='Tanggal,Tipe,Waktu,NIA,Nama\n'+data.map(r=>`${r.tanggal},${r.tipe},${r.waktu},${r.NIA},${r.nama}`).join('\n');
+    return {ok:true, csv};
+  }
+
+  return {ok:false, msg:'Action tidak dikenal'};
 }
 
 // GLOBAL VARS
