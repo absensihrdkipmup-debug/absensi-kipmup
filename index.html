@@ -319,12 +319,10 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
 <body>
 
 <script>
-// =========================================================================
-// DATA DEFAULT (Diambil dari Screenshot Google Sheet Anda)
-// =========================================================================
-
+// --- URL GAS MILIK KAMU ---
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyS9eF5QUuTJrMzjwNXUL5-WyUPFMbFxVdSOqd5byXCQa_J1KwiiDfiYAIlGaiuZyyoVA/exec';
 
+// DATA BAWAAN (FALLBACK) JIKA SERVER GAS KOSONG
 const realAnggota = [
   {NIA:'082024022', nama:'Rifqy Rachmat', divisi:'Ketua Umum', telp:'87886993450'},
   {NIA:'082024015', nama:'Muhamad Alfan', divisi:'Wakil Ketua Umum I', telp:'85773694230'},
@@ -373,8 +371,7 @@ const realAnggota = [
   {NIA:'000000001', nama:'Alfan Tirta Admajaya Putra', divisi:'Founder', telp:'81918892779'}
 ];
 
-// Jadwal Senin - Jumat yang tersimpan di memori lokal atau fallback bawaan
-let jadwalMingguan = JSON.parse(localStorage.getItem('jadwalMingguan')) || {
+const jadwalMingguanDefault = {
   1: ['092025012','092025013','092025014','092025007','092025002','092025004','092025019','092025027'],
   2: ['092025033','092025032','092025015','092025011','092025009','082024029','092025005','092025016'],
   3: ['092025026','092025001','092025039','092025018','082024015','082024022','082024012','092025006'],
@@ -382,6 +379,7 @@ let jadwalMingguan = JSON.parse(localStorage.getItem('jadwalMingguan')) || {
   5: ['092025010','092025024','092025038','092025017','092025037','092025003','092025040','092025008']
 };
 
+let jadwalMingguan = JSON.parse(localStorage.getItem('jadwalMingguan')) || jadwalMingguanDefault;
 let allAnggota = [...realAnggota];
 </script>
 
@@ -481,7 +479,7 @@ let allAnggota = [...realAnggota];
       <!-- DASHBOARD TAB -->
       <div id="tab-dashboard" class="tab-panel active"><div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;" id="stats-grid"></div><div class="table-card"><div class="table-card-header">Absensi Hari Ini</div><div class="table-scroll"><table><thead><tr><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead><tbody id="tbl-today"></tbody></table></div></div></div>
       
-      <!-- JADWAL TAB - KEMBALI KE DROPDOWN SENIN-JUMAT -->
+      <!-- JADWAL TAB -->
       <div id="tab-jadwal" class="tab-panel">
         <div class="table-card" style="margin-bottom:20px;">
           <div class="table-card-header" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
@@ -537,30 +535,28 @@ let allAnggota = [...realAnggota];
 
 <script>
 // =========================================================================
-// LOGIKA SISTEM (SINKRONISASI JADWAL SENIN-JUMAT DENGAN SERVER ABSENSI)
+// LOGIKA SISTEM (ANTI-CRASH KAMERA & SINKRONISASI SERVER)
 // =========================================================================
 
 async function gasCall(params) {
-  if(!GAS_URL) return {ok:false, msg:'GAS_URL belum dikonfigurasi'};
   try {
     const payload = new URLSearchParams(params);
     const res = await fetch(GAS_URL, {method:'POST', body:payload});
     const text = await res.text();
     try { return JSON.parse(text); } catch(e) { return {ok:false, msg:'Response GAS tidak valid'}; }
   } catch(e) {
-    return {ok:false, msg:'Koneksi ke server gagal: '+e.message};
+    return {ok:false, msg:'Koneksi ke server gagal'};
   }
 }
 
-async function api(params) {
-  return await gasCall(params);
-}
+async function api(params) { return await gasCall(params); }
 
 // GLOBAL VARS
 let selectedAnggota = new Set();
 let currentScanType = 'DATANG';
 let scannerActive = false, html5Scanner = null;
 let qrRefreshInterval = null;
+let isProcessingQR = false; // FLAG ANTI-CRASH CAMERA
 
 // UTILS
 function showToast(msg, type='info'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);}
@@ -580,13 +576,12 @@ function goTo(page){
 }
 function setScanType(t){ currentScanType=t; document.getElementById('btn-tipe-datang').style.borderColor=t==='DATANG'?'var(--accent)':'var(--border2)'; document.getElementById('btn-tipe-pulang').style.borderColor=t==='PULANG'?'#c084fc':'var(--border2)';}
 
-// LOGIKA JADWAL SCAN: Menggunakan Jadwal Mingguan Lokal + Absensi Server
 async function loadJadwalScan(){ 
   const el = document.getElementById('jadwal-today'); 
   el.innerHTML = '<div class="loading" style="color:var(--accent);">Memuat jadwal & sinkronisasi status...</div>';
   
   try {
-    const dow = new Date().getDay(); // 1=Senin, 5=Jumat, dll.
+    const dow = new Date().getDay(); 
     const list = jadwalMingguan[dow] || [];
 
     if(!list.length) {
@@ -594,12 +589,10 @@ async function loadJadwalScan(){
       return;
     }
 
-    // Tanya server Google Sheets siapa saja yang sudah absen (HADIR) hari ini
     const today = new Date().toISOString().split('T')[0];
     const res = await api({action:'getRekapAbsensi', from:today, to:today});
     const hadirNIA = new Set((res.ok && res.data ? res.data : []).filter(r=>r.tipe==='DATANG').map(r=>r.NIA));
 
-    // Gabungkan jadwal lokal dengan status dari server
     const displayData = list.map(nia => {
       const a = allAnggota.find(x => x.NIA === nia);
       return a ? {NIA: a.NIA, nama: a.nama, divisi: a.divisi, status: hadirNIA.has(nia) ? 'HADIR' : 'BELUM'} : null;
@@ -611,24 +604,48 @@ async function loadJadwalScan(){
   }
 }
 
+// ============================================================
+// FIX UTAMA: SISTEM SCAN ANTI-CRASH CAMERA
+// ============================================================
 function toggleScan(){ 
   if(scannerActive){ 
-    if(html5Scanner) html5Scanner.stop().catch(e=>{}); 
+    if(html5Scanner) { html5Scanner.stop().catch(e=>console.log(e)); }
     scannerActive = false; 
+    isProcessingQR = false; // Reset lock
     document.getElementById('btn-start-scan').innerHTML = '▶ Mulai Scan'; 
   } else { 
     const nia = document.getElementById('input-NIA').value.trim(); 
     if(!nia){ showToast('Isi NIA dulu','error'); return; } 
+
+    isProcessingQR = false; // Pastikan lock terbuka saat mulai
     html5Scanner = new Html5Qrcode('qr-reader'); 
+    
     html5Scanner.start({facingMode:'environment'},{fps:10, qrbox:220}, async (text)=>{ 
-      html5Scanner.stop();
-      scannerActive = false;
-      document.getElementById('btn-start-scan').innerHTML = '▶ Mulai Scan';
-      showToast('Menghubungkan ke server...', 'info');
-      const res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:currentScanType}); 
-      showToast(res.ok ? `✅ ${res.msg}` : `❌ ${res.msg}`, res.ok ? 'success' : 'error'); 
-      if(res.ok){ loadJadwalScan(); } 
-    }).catch(e=>{ showToast('Gagal akses kamera','error'); }); 
+      // CEGAH SPAM: Jika sedang memproses data, abaikan deteksi QR selanjutnya
+      if (isProcessingQR) return; 
+      isProcessingQR = true; // KUNCI PROSES
+      
+      showToast('⏳ QR Terbaca! Mengirim ke server...', 'info');
+
+      // Stop kamera DENGAN AMAN di background agar tidak membekukan (freeze) browser
+      html5Scanner.stop().then(() => {
+          scannerActive = false;
+          document.getElementById('btn-start-scan').innerHTML = '▶ Mulai Scan';
+      }).catch(e => console.log('Stop camera error:', e));
+
+      // Kirim Data ke Google Sheets
+      try {
+        const res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:currentScanType}); 
+        showToast(res.ok ? `✅ ${res.msg}` : `❌ ${res.msg}`, res.ok ? 'success' : 'error'); 
+        if(res.ok){ loadJadwalScan(); }
+      } catch (err) {
+        showToast('Koneksi ke server gagal atau terputus', 'error');
+      }
+
+    }).catch(e=>{ 
+      showToast('Gagal akses kamera','error'); 
+    }); 
+    
     scannerActive = true; 
     document.getElementById('btn-start-scan').innerHTML = '⏹ Stop Scan'; 
   }
@@ -705,7 +722,7 @@ function switchTab(tab){
   if(tab==='jadwal'){ loadAnggotaForPicker(); renderJadwalPreview(); } 
 }
 
-// ADMIN: JADWAL LOGIC (SENIN-JUMAT)
+// ADMIN: JADWAL LOGIC
 async function loadAnggotaForPicker(){ 
   const hari = parseInt(document.getElementById('jadwal-hari-select').value);
   selectedAnggota = new Set(jadwalMingguan[hari] || []);
@@ -735,13 +752,11 @@ document.getElementById('jadwal-hari-select')?.addEventListener('change', () => 
   renderAnggotaPicker();
 });
 
-// Cetak Pratinjau Jadwal Seminggu Penuh
 function renderJadwalPreview(){ 
   const hariNama = ['','Senin','Selasa','Rabu','Kamis','Jumat'];
   let html = ''; 
   
   for(let h=1; h<=5; h++) {
-    // Jika hari yang sedang dirender adalah hari yang sedang diedit di dropdown
     const list = (h === parseInt(document.getElementById('jadwal-hari-select').value)) 
                   ? Array.from(selectedAnggota) 
                   : (jadwalMingguan[h] || []);
@@ -766,7 +781,6 @@ function saveJadwalHari(){
   const hari = parseInt(document.getElementById('jadwal-hari-select').value);
   if(selectedAnggota.size===0) return showToast('Centang minimal 1 anggota!','error'); 
   
-  // Simpan jadwal ke memori lokal
   jadwalMingguan[hari] = Array.from(selectedAnggota);
   localStorage.setItem('jadwalMingguan', JSON.stringify(jadwalMingguan));
 
@@ -789,9 +803,8 @@ function downloadJadwalPDF(){
   const win=window.open(); win.document.write(html); win.document.close(); win.print(); 
 }
 
-// ADMIN: DASHBOARD (Kombinasi Server dan Jadwal Mingguan Lokal)
+// ADMIN: DASHBOARD
 async function loadDashboard(){ 
-  showToast('Memuat data...', 'info');
   const today = new Date().toISOString().split('T')[0];
   const rekap = await api({action:'getRekapAbsensi', from: today, to: today}); 
   const dataAbsen = (rekap.ok && rekap.data) ? rekap.data : [];
@@ -872,7 +885,7 @@ async function deleteAnggota(NIA){
 
 window.goTo=goTo; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview;
 
-console.log('✅ Sistem sukses memadukan UI Template Mingguan dengan Sinkronisasi Absensi Realtime dari Server.');
+console.log('✅ Sistem scan anti-crash dan fix bug timezone aktif!');
 </script>
 </body>
 </html>
