@@ -244,6 +244,80 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
 .pick-name { font-size: 13px; font-weight: 500; }
 .pick-divisi { font-size: 11px; color: var(--text2); }
 .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* ============================================================
+   HOVER EFFECTS & ANIMATIONS — Modern Upgrade
+   ============================================================ */
+
+/* Table row hover */
+tr { transition: background 0.18s ease; }
+tbody tr:hover { background: rgba(255,255,255,0.04); cursor: default; }
+tbody tr:hover td { color: var(--text); }
+
+/* Nav item hover */
+.nav-item { transition: all 0.18s ease; }
+.nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--text); transform: translateX(3px); }
+
+/* Button hover glow effects */
+.btn-sm { transition: all 0.18s ease; }
+.btn-sm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn-sm.primary:hover { background: rgba(74,222,128,0.25); box-shadow: 0 4px 16px rgba(74,222,128,0.2); }
+.btn-sm.danger:hover { background: rgba(248,113,113,0.2); box-shadow: 0 4px 16px rgba(248,113,113,0.2); }
+
+/* btn-main landing hover */
+.btn-member { transition: all 0.22s ease; }
+.btn-member:hover { background: #6ee7a0; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,222,128,0.35); }
+.btn-admin { transition: all 0.22s ease; }
+.btn-admin:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.25); transform: translateY(-2px); }
+.btn-qr-live { transition: all 0.22s ease; }
+.btn-qr-live:hover { background: rgba(34,211,238,0.2); box-shadow: 0 8px 24px rgba(34,211,238,0.25); transform: translateY(-2px); }
+
+/* Stat cards hover */
+.stat-card { transition: all 0.22s ease !important; cursor: default; }
+.stat-card:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+
+/* Anggota picker item hover */
+.anggota-pick-item { transition: all 0.15s ease; }
+.anggota-pick-item:hover:not(.selected) { background: rgba(255,255,255,0.06); transform: translateX(3px); }
+.anggota-pick-item.selected { transition: all 0.15s ease; }
+
+/* Back button hover */
+.back-btn { transition: all 0.18s ease; }
+.back-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: scale(1.08); }
+
+/* Modal box entrance animation */
+.modal-overlay.show .modal-box { animation: modalIn 0.22s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+
+/* Badge hover */
+.badge { transition: all 0.15s ease; }
+.badge:hover { transform: scale(1.07); }
+
+/* Logo ring pulse on hover */
+.logo-ring { transition: all 0.22s ease; }
+.logo-ring:hover { box-shadow: 0 0 0 6px rgba(74,222,128,0.15), 0 0 0 12px rgba(74,222,128,0.07); }
+
+/* Table card hover */
+.table-card { transition: box-shadow 0.2s ease; }
+
+/* Form input focus glow */
+.form-input { transition: border-color 0.18s, box-shadow 0.18s; }
+.form-input:focus { box-shadow: 0 0 0 3px rgba(74,222,128,0.15); }
+
+/* Scan type buttons */
+.scan-type-btn { transition: all 0.18s ease !important; }
+.scan-type-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+
+/* Landing card entrance */
+.landing-card { animation: fadeUp 0.4s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+/* Jadwal item hover */
+.jadwal-item { transition: all 0.15s ease !important; }
+.jadwal-item:hover { background: rgba(255,255,255,0.03); border-radius: 6px; padding-left: 6px !important; }
+
+/* Sidebar footer button */
+.sidebar-footer .btn-sm:hover { background: rgba(248,113,113,0.1) !important; border-color: rgba(248,113,113,0.3) !important; color: var(--red) !important; }
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .jadwal-manager { grid-template-columns: 1fr; }
@@ -556,7 +630,7 @@ let allAnggota = [...realAnggota];
       </div>
 
       <!-- REKAP TAB -->
-      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
+      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Durasi</th><th>GPS</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
       
       <!-- ANGGOTA TAB -->
       <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
@@ -751,6 +825,19 @@ async function gasCall(params) {
 
 async function api(params) { return await gasCall(params); }
 
+// Helper: format waktu dari GAS (bisa berupa Date string panjang atau HH:mm:ss)
+function formatWaktu(val) {
+  if (!val) return '-';
+  const s = val.toString().trim();
+  // Jika sudah format HH:mm:ss atau HH:mm langsung return
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) return s.substring(0, 5);
+  // Jika berupa Date string panjang (mis: "Sat Dec 30 1899 21:53:00 GMT+0707...")
+  // Ambil bagian waktu saja: cari pola HH:mm
+  const match = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (match) return `${String(match[1]).padStart(2,'0')}:${match[2]}`;
+  return s;
+}
+
 // Helper: tanggal hari ini dalam WIB (sama seperti GAS backend)
 function getTodayWIB() {
   const now = new Date();
@@ -768,6 +855,29 @@ let qrRefreshInterval = null;
 let isProcessingQR = false;
 let lastAbsenNIA = '';   // Simpan NIA terakhir yang berhasil absen
 let lastAbsenTipe = ''; // Simpan tipe absen terakhir (DATANG/PULANG)
+let currentGPS = {lat: '', lng: '', acc: ''}; // GPS saat ini
+
+// Ambil GPS saat halaman scan dibuka
+function startGPSWatch() {
+  const gpsEl = document.getElementById('gps-status');
+  if (!navigator.geolocation) {
+    if (gpsEl) gpsEl.innerHTML = '⚠️ GPS tidak didukung browser ini';
+    return;
+  }
+  if (gpsEl) gpsEl.innerHTML = '📍 Mengambil lokasi GPS...';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      currentGPS.lat = pos.coords.latitude.toFixed(6);
+      currentGPS.lng = pos.coords.longitude.toFixed(6);
+      currentGPS.acc = Math.round(pos.coords.accuracy);
+      if (gpsEl) gpsEl.innerHTML = `✅ GPS: ±${currentGPS.acc}m`;
+    },
+    (err) => {
+      if (gpsEl) gpsEl.innerHTML = `⚠️ GPS tidak tersedia (${err.message})`;
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
 function showToast(msg, type='info'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);}
 
@@ -793,6 +903,7 @@ function goTo(page){
   if(page==='admin') initAdmin();
   if(page==='scan'){ 
     loadJadwalScan(); 
+    startGPSWatch();
     const tgl = document.getElementById('scan-tanggal');
     if(tgl) tgl.innerText = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   }
@@ -884,7 +995,7 @@ function toggleScan(){
 
       try {
         // Gunakan scanTipe (yang dicapture saat scan dimulai), bukan currentScanType
-        let res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe}); 
+        let res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe, lat:currentGPS.lat, lng:currentGPS.lng, acc:currentGPS.acc}); 
         
         // --- FIX ABSEN PULANG ---
         // Jika GAS tolak PULANG karena "belum datang", cek sendiri ke rekap
@@ -1131,7 +1242,12 @@ async function loadDashboard(){
     <div class="stat-card" style="background:var(--bg3); padding:14px; border-radius:12px;"><div class="stat-label" style="font-size:12px;">Total Anggota</div><div class="stat-value" style="font-size:28px;">${totalAnggota}</div></div>`;
 
   const tbody = document.getElementById('tbl-today'); 
-  if(dataAbsen.length) tbody.innerHTML = dataAbsen.map(r=>`<tr><td>${r.tipe}</td><td>${r.waktu}</td><td>${r.NIA}</td><td>${r.nama}</td></tr>`).join(''); 
+  if(dataAbsen.length) tbody.innerHTML = dataAbsen.map(r=>`<tr>
+    <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${r.tipe}</span></td>
+    <td style="font-family:var(--mono); font-size:12px;">${formatWaktu(r.waktu)}</td>
+    <td style="font-family:var(--mono); font-size:12px;">${r.NIA}</td>
+    <td>${r.nama}</td>
+  </tr>`).join(''); 
   else tbody.innerHTML='<tr><td colspan="4" class="empty-state">Belum ada absensi hari ini</td></tr>'; 
 }
 
@@ -1140,8 +1256,24 @@ async function loadRekap(){
   showToast('Memuat laporan...', 'info');
   const res=await api({action:'getRekapAbsensi', from, to}); 
   const tbody=document.getElementById('tbl-rekap'); 
-  if(res.ok && res.data.length) tbody.innerHTML = res.data.map(r=>`<tr><td>${r.tanggal}</td><td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${r.tipe}</span></td><td>${r.waktu}</td><td>${r.NIA}</td><td>${r.nama}</td></tr>`).join(''); 
-  else tbody.innerHTML='<tr><td colspan="5" class="empty-state">Tidak ada data di tanggal tersebut</td></tr>'; 
+  if(res.ok && res.data.length) {
+    tbody.innerHTML = res.data.map(r=>{
+      const waktuFmt = formatWaktu(r.waktu);
+      const durasi = r.durasi && r.durasi !== '-' && r.durasi !== 'NaNm' && r.durasi !== 'NaN m' ? r.durasi : '-';
+      const gpsLink = (r.gpsLat && r.gpsLng && r.gpsLat !== '') 
+        ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2); font-size:11px;">📍 Lihat</a>` 
+        : `<span style="color:var(--text3); font-size:11px;">—</span>`;
+      return `<tr>
+        <td>${r.tanggal}</td>
+        <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${r.tipe}</span></td>
+        <td style="font-family:var(--mono); font-size:12px;">${waktuFmt}</td>
+        <td style="font-family:var(--mono); font-size:12px;">${r.NIA}</td>
+        <td>${r.nama}</td>
+        <td style="font-family:var(--mono); font-size:12px; color:var(--accent2);">${durasi}</td>
+        <td>${gpsLink}</td>
+      </tr>`;
+    }).join('');
+  } else tbody.innerHTML='<tr><td colspan="7" class="empty-state">Tidak ada data di tanggal tersebut</td></tr>'; 
 }
 
 async function exportCSV(){ 
