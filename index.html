@@ -1782,8 +1782,17 @@ function toggleScan(){
       }).catch(e => console.log('Stop camera error:', e));
 
       try {
+        // Cek apakah hari ini adalah hari piket anggota sesuai jadwal lokal
+        const todayDow = (() => {
+          const now = new Date();
+          const wib = new Date(now.getTime() + 7 * 3600 * 1000);
+          return wib.getUTCDay(); // 0=Min,1=Sen,2=Sel,3=Rab,4=Kam,5=Jum,6=Sab
+        })();
+        const jadwalHariIni = jadwalMingguan[todayDow] || [];
+        const isJadwalPiket = jadwalHariIni.includes(nia) ? '1' : '0';
+
         // Gunakan scanTipe (yang dicapture saat scan dimulai), bukan currentScanType
-        let res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe, lat:currentGPS.lat, lng:currentGPS.lng, acc:currentGPS.acc}); 
+        let res = await api({action:'validateBarcode', token:text, NIA:nia, tipe:scanTipe, lat:currentGPS.lat, lng:currentGPS.lng, acc:currentGPS.acc, isJadwal:isJadwalPiket});
         
         // --- FIX ABSEN PULANG ---
         // Jika GAS tolak PULANG karena "belum datang", cek sendiri ke rekap
@@ -3167,14 +3176,52 @@ async function processRankingPiket(data) {
   const nonPiketMap = {};
   const pairs = {};
 
-  // Buat lookup: NIA → Set hari piket (1=Senin..5=Jumat)
-  // Dipakai sebagai fallback ketika status dari server kosong
-  const niaToHariPiket = {};
+  // ── Ambil jadwal aktual dari GAS (lebih akurat dari localStorage) ──
+  // Format GAS: array of {tanggal, NIA, nama, divisi}
+  // Kita buat lookup: NIA → Set<tanggal string "YYYY-MM-DD"> yang merupakan hari piket
+  const niaToTanggalPiket = {};   // NIA → Set of tanggal string
+  const niaToHariPiket = {};      // NIA → Set of day-of-week (1=Sen..5=Jum) — dari jadwalMingguan lokal
+
+  try {
+    // Ambil jadwal dari GAS untuk range yang lebih luas (12 bulan ke belakang)
+    const jadwalRes = await api({ action: 'getJadwalPiket' });
+    if (jadwalRes && jadwalRes.ok && Array.isArray(jadwalRes.data)) {
+      jadwalRes.data.forEach(j => {
+        if (!j.NIA || !j.tanggal) return;
+        if (!niaToTanggalPiket[j.NIA]) niaToTanggalPiket[j.NIA] = new Set();
+        niaToTanggalPiket[j.NIA].add(j.tanggal);
+      });
+    }
+  } catch(e) { /* fallback ke lokal */ }
+
+  // Selalu bangun jadwal lokal sebagai backup
   for(let h = 1; h <= 5; h++) {
     (jadwalMingguan[h] || []).forEach(nia => {
       if(!niaToHariPiket[nia]) niaToHariPiket[nia] = new Set();
       niaToHariPiket[nia].add(h);
     });
+  }
+
+  // Helper: apakah tanggal tertentu adalah hari piket anggota?
+  function isTanggalPiket(nia, tanggal) {
+    // Prioritas 1: cek dari data GAS (paling akurat)
+    if (niaToTanggalPiket[nia] && niaToTanggalPiket[nia].size > 0) {
+      return niaToTanggalPiket[nia].has(tanggal);
+    }
+    // Prioritas 2: fallback ke jadwalMingguan lokal
+    if (niaToHariPiket[nia] && niaToHariPiket[nia].size > 0 && tanggal) {
+      try {
+        // Parse YYYY-MM-DD pakai UTC supaya tidak ada timezone shift
+        const parts = tanggal.split('-');
+        if (parts.length === 3) {
+          const hariUTC = new Date(Date.UTC(Number(parts[0]), Number(parts[1])-1, Number(parts[2]))).getUTCDay();
+          // getUTCDay: 0=Min,1=Sen,2=Sel,3=Rab,4=Kam,5=Jum,6=Sab
+          return niaToHariPiket[nia].has(hariUTC);
+        }
+      } catch(e) {}
+    }
+    // Tidak ada data jadwal → anggap piket (lebih aman daripada non-piket)
+    return true;
   }
 
   // Konstanta jam kerja (WIB)
@@ -3230,28 +3277,14 @@ async function processRankingPiket(data) {
     const a = allAnggota.find(x => x.NIA === p.NIA);
     const divisi = a ? a.divisi : '-';
 
-    // Tentukan apakah ini hari piket atau tidak
+    // Tentukan apakah ini hari piket atau bukan
     let isLuarJadwal = false;
     if (p.status && p.status.trim()) {
-      // Percayai data dari server jika ada
+      // Percayai data dari GAS jika ada
       isLuarJadwal = p.status.toLowerCase().includes('luar jadwal');
-    } else if (p.tanggal) {
-      // Fallback: cek jadwalMingguan lokal berdasarkan hari tanggal
-      try {
-        const parts = p.tanggal.split('-');
-        if(parts.length === 3) {
-          const tglObj = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
-          const hariAbsen = tglObj.getDay(); // 0=Min,1=Sen..6=Sab
-          const hariPiketAnggota = niaToHariPiket[p.NIA];
-          // Jika anggota punya jadwal dan hari absen TIDAK ada di jadwalnya → luar jadwal
-          if(hariPiketAnggota && hariPiketAnggota.size > 0) {
-            isLuarJadwal = !hariPiketAnggota.has(hariAbsen);
-          } else {
-            // Tidak punya jadwal sama sekali → semua absennya dianggap non-piket
-            isLuarJadwal = true;
-          }
-        }
-      } catch(e) { /* biarkan isLuarJadwal = false */ }
+    } else {
+      // Fallback: gunakan helper jadwal (GAS data → lokal)
+      isLuarJadwal = !isTanggalPiket(p.NIA, p.tanggal);
     }
 
     if (isLuarJadwal) {
@@ -3446,18 +3479,33 @@ async function loadHistorisRank() {
           } catch(e) {}
         }
       });
-      // Buat lookup jadwal untuk klasifikasi piket vs non-piket
+      // Buat lookup jadwal lokal (UTC-safe)
       const niaToHariPiket2 = {};
       for(let h=1;h<=5;h++) { (jadwalMingguan[h]||[]).forEach(nia => { if(!niaToHariPiket2[nia]) niaToHariPiket2[nia]=new Set(); niaToHariPiket2[nia].add(h); }); }
+
+      // Coba ambil jadwal dari GAS untuk akurasi lebih tinggi
+      let niaToTanggalPiket2 = {};
+      try {
+        const jr = await api({ action: 'getJadwalPiket' });
+        if(jr && jr.ok && Array.isArray(jr.data)) {
+          jr.data.forEach(j => { if(!j.NIA||!j.tanggal) return; if(!niaToTanggalPiket2[j.NIA]) niaToTanggalPiket2[j.NIA]=new Set(); niaToTanggalPiket2[j.NIA].add(j.tanggal); });
+        }
+      } catch(e) {}
+
+      function isTanggalPiket2(nia, tanggal) {
+        if(niaToTanggalPiket2[nia] && niaToTanggalPiket2[nia].size > 0) return niaToTanggalPiket2[nia].has(tanggal);
+        if(niaToHariPiket2[nia] && niaToHariPiket2[nia].size > 0 && tanggal) {
+          try { const pts=tanggal.split('-'); if(pts.length===3){ const h=new Date(Date.UTC(Number(pts[0]),Number(pts[1])-1,Number(pts[2]))).getUTCDay(); return niaToHariPiket2[nia].has(h); } } catch(e) {}
+        }
+        return true; // tidak ada data → anggap piket
+      }
+
       Object.values(pairs).forEach(p => {
         let isLuar = false;
         if(p.status && p.status.trim()) {
           isLuar = p.status.toLowerCase().includes('luar jadwal');
-        } else if(p.tanggal) {
-          try {
-            const pts = p.tanggal.split('-');
-            if(pts.length===3) { const tobj=new Date(Number(pts[0]),Number(pts[1])-1,Number(pts[2])); const hari=tobj.getDay(); const hp=niaToHariPiket2[p.NIA]; isLuar = hp && hp.size>0 ? !hp.has(hari) : true; }
-          } catch(e) {}
+        } else {
+          isLuar = !isTanggalPiket2(p.NIA, p.tanggal);
         }
         if((kategori==='nonpiket') !== isLuar) return;
         if(!map[p.NIA]) { const a=allAnggota.find(x=>x.NIA===p.NIA); map[p.NIA]={nama:p.nama,divisi:a?a.divisi:'-',total:0}; }
