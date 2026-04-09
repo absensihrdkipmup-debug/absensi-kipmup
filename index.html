@@ -68,7 +68,7 @@ body {
 }
 .logo-canvas-wrap:hover {
   filter: drop-shadow(0 0 30px rgba(212,175,55,0.95));
-  transform: scale(1.1) rotate(-3deg);
+  transform: scale(1.1) rotate(-3deg) !important;
   animation-play-state: paused;
 }
 #logo-canvas { display:block; width:100px; height:100px; }
@@ -650,7 +650,8 @@ let allAnggota = [...realAnggota];
     var c = document.getElementById('logo-canvas');
     if(!c) return;
     c.width = 207; c.height = 239;
-    c.getContext('2d').drawImage(img, 0, 0, 207, 239);
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 207, 239);
   };
   img.src = 'data:image/png;base64,' + b64;
 })();
@@ -765,14 +766,6 @@ let allAnggota = [...realAnggota];
 
     <!-- Pengumuman -->
     <div id="pengumuman-box" style="display:none; background:rgba(245,158,11,0.1); border:1px solid var(--accent3); padding:14px; border-radius:12px; margin-bottom:16px; font-size:13px; color:var(--text);" id="pengumuman-display"></div>
-
-    <!-- Jadwal Piket Minggu Ini -->
-    <div class="table-card" style="padding:20px; background:var(--bg2); margin-bottom:16px;">
-      <h3 style="margin-bottom:16px; font-size:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">🗓️ Jadwal Piket Minggu Ini</h3>
-      <div id="kalender-jadwal-minggu" style="display:flex; flex-direction:column; gap:8px;">
-        <div style="color:var(--text2); font-size:13px;">Memuat jadwal...</div>
-      </div>
-    </div>
 
     <!-- Tombol kembali -->
     <div style="text-align:center; padding-bottom:24px;">
@@ -1856,8 +1849,9 @@ function toggleScan(){
                 selfieMini: selfieMini,
                 selfieDataURL: selfieDataURL,
                 sesiNama: 'Piket',
-                timestamp: Date.now()
+                savedAt: Date.now()
               });
+              if(selfieGallery.length > 50) selfieGallery.shift();
               saveSelfieGallery();
             }
             // ===============================================
@@ -2144,8 +2138,7 @@ async function loadRekap(){
   if(res.ok && res.data.length) {
     tbody.innerHTML = res.data.map(r=>{
       const waktuFmt = formatWaktu(r.waktu);
-      let durasi = r.durasi && r.durasi !== '-' && r.durasi !== 'NaNm' && r.durasi !== 'NaN m' ? r.durasi : '-';
-      if(r.tipe === 'DATANG' && durasi === '-') durasi = '<span style="color:var(--accent3);font-size:10px;">⏳ belum pulang</span>';
+      const durasi = r.durasi && r.durasi !== '-' && r.durasi !== 'NaNm' && r.durasi !== 'NaN m' ? r.durasi : '-';
       const gpsLink = (r.gpsLat && r.gpsLng && r.gpsLat !== '') 
         ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2); font-size:11px;">📍 Lihat</a>` 
         : `<span style="color:var(--text3); font-size:11px;">—</span>`;
@@ -2298,12 +2291,14 @@ function renderKalenderJadwal(){
 // =========================================================================
 let sesiList = JSON.parse(sessionStorage.getItem('sesiList') || '[]');
 let izinList = JSON.parse(localStorage.getItem('izinList') || '[]');
-function loadSelfieGallery() {
-  const raw = JSON.parse(localStorage.getItem('selfieGallery_kipm') || '[]');
-  const TTL = 24 * 60 * 60 * 1000;
-  return raw.filter(s => !s.timestamp || (Date.now() - s.timestamp) < TTL);
-}
-let selfieGallery = loadSelfieGallery();
+// Load selfie gallery — purge entries older than 24 jam
+let selfieGallery = (() => {
+  try {
+    const raw = JSON.parse(localStorage.getItem('selfieGallery_kipm') || '[]');
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000; // 24 jam yang lalu
+    return raw.filter(s => (s.savedAt || 0) >= cutoff);
+  } catch(e) { return []; }
+})();
 let selectedPesertaSesi = new Set();
 let kegiatanSelfieDataURL = null;
 let kegiatanSelfieStream = null;
@@ -2317,9 +2312,14 @@ let activeSesiId = null; // sesi yang sedang dibuka oleh anggota
 function saveSesi() { sessionStorage.setItem('sesiList', JSON.stringify(sesiList)); }
 function saveIzin() { localStorage.setItem('izinList', JSON.stringify(izinList)); }
 function saveSelfieGallery() {
-  const TTL = 24 * 60 * 60 * 1000;
-  selfieGallery = selfieGallery.filter(s => !s.timestamp || (Date.now() - s.timestamp) < TTL);
-  localStorage.setItem('selfieGallery_kipm', JSON.stringify(selfieGallery));
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  // Buang entri lebih lama dari 24 jam sebelum simpan
+  selfieGallery = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
+  try { localStorage.setItem('selfieGallery_kipm', JSON.stringify(selfieGallery)); } catch(e) {
+    // Kalau storage penuh, buang setengahnya dan coba lagi
+    selfieGallery = selfieGallery.slice(Math.floor(selfieGallery.length / 2));
+    try { localStorage.setItem('selfieGallery_kipm', JSON.stringify(selfieGallery)); } catch(e2) {}
+  }
 }
 
 function generateSesiQRToken(sesiId, secret) {
@@ -2932,7 +2932,8 @@ async function prosesAbsenKegiatan(nia, qrText) {
   saveSesi();
 
   // Simpan ke selfie gallery dashboard
-  selfieGallery.push({NIA: nia, nama: anggota.nama, waktu, tanggal: new Date().toLocaleDateString('id-ID'), selfieMini, sesiNama: sesi.nama, timestamp: Date.now()});
+  selfieGallery.push({NIA: nia, nama: anggota.nama, waktu, tanggal: new Date().toLocaleDateString('id-ID'), selfieMini, sesiNama: sesi.nama, savedAt: Date.now()});
+  if(selfieGallery.length > 50) selfieGallery.shift(); // limit
   saveSelfieGallery();
 
   showToast(`✅ Absen berhasil! Selamat ${sesi.nama === 'rapat'?'rapat':'belajar'}, ${anggota.nama}!`,'success');
@@ -2951,13 +2952,11 @@ function previewSelfieKegiatan(nia, src) {
 function renderSelfieGalleryDashboard() {
   const el = document.getElementById('selfie-gallery-dashboard');
   if(!el) return;
-  const today = getTodayWIB();
-  // Gabung selfie dari piket (selfieDataURL di session) dan kegiatan
-  const todayStr = new Date().toLocaleDateString('id-ID');
-  const _TTL = 24*60*60*1000;
-  const todaySelfies = selfieGallery.filter(s => s.timestamp ? (Date.now()-s.timestamp)<_TTL : s.tanggal===todayStr);
-  if(!todaySelfies.length){ el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie hari ini</div>'; return; }
-  el.innerHTML = todaySelfies.map(s => `
+  // Tampilkan semua selfie dalam 24 jam terakhir
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const recentSelfies = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
+  if(!recentSelfies.length){ el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie dalam 24 jam terakhir</div>'; return; }
+  el.innerHTML = recentSelfies.map(s => `
     <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieMini}')">
       <img src="${s.selfieMini}" alt="${s.nama}">
       <div class="selfie-label">${s.nama.split(' ')[0]}</div>
@@ -2998,25 +2997,6 @@ function formatMenitToStr(total) {
   if(!total || total <= 0) return '-';
   const j = Math.floor(total/60), m = total%60;
   return j > 0 ? `${j}j ${m}m` : `${m}m`;
-}
-
-// Normalisasi absensi: auto-pulang 2 jam jika lupa absen pulang
-function normalisasiAbsensi(rows) {
-  const map = {};
-  rows.forEach(r => {
-    const key = r.NIA + '_' + r.tanggal;
-    if(!map[key]) map[key] = {NIA:r.NIA, nama:r.nama, tanggal:r.tanggal, status:r.status||'', adaDatang:false, adaPulang:false, durasi:0};
-    if(r.tipe === 'DATANG') map[key].adaDatang = true;
-    if(r.tipe === 'PULANG') {
-      map[key].adaPulang = true;
-      const d = parseDurasiToMenit(r.durasi);
-      if(d > 0) map[key].durasi = d;
-    }
-  });
-  Object.values(map).forEach(p => {
-    if(p.adaDatang && !p.adaPulang && p.durasi === 0) p.durasi = 120; // penalti 2 jam
-  });
-  return map;
 }
 
 // Hitung range tanggal berdasarkan jumlah bulan ke belakang
@@ -3197,12 +3177,94 @@ async function loadAllRankings() {
 async function processRankingPiket(data) {
   const piketMap = {};
   const nonPiketMap = {};
-  const pairs = normalisasiAbsensi(data);
+  const pairs = {};
+
+  // Buat lookup: NIA → Set hari piket (1=Senin..5=Jumat)
+  // Dipakai sebagai fallback ketika status dari server kosong
+  const niaToHariPiket = {};
+  for(let h = 1; h <= 5; h++) {
+    (jadwalMingguan[h] || []).forEach(nia => {
+      if(!niaToHariPiket[nia]) niaToHariPiket[nia] = new Set();
+      niaToHariPiket[nia].add(h);
+    });
+  }
+
+  // Konstanta jam kerja (WIB)
+  const JAM_MULAI_MENIT = 7 * 60;   // 07:00 = 420 menit dari tengah malam
+  const JAM_SELESAI_MENIT = 19 * 60; // 19:00 = 1140 menit dari tengah malam
+
+  data.forEach(r => {
+    const key = r.NIA + '_' + r.tanggal;
+    if (!pairs[key]) pairs[key] = { NIA: r.NIA, nama: r.nama, tanggal: r.tanggal, status: r.status || '', durasi: 0, jamDatang: null, adaPulang: false };
+    if (r.tipe === 'PULANG' && r.durasi && r.durasi !== '-') {
+      pairs[key].durasi = parseDurasiToMenit(r.durasi);
+      pairs[key].adaPulang = true;
+    }
+    // Simpan jam datang untuk kalkulasi auto-pulang
+    if (r.tipe === 'DATANG' && r.waktu) {
+      pairs[key].jamDatang = r.waktu;
+    }
+    // Ambil status terbaru yang tidak kosong
+    if(r.status && r.status.trim()) pairs[key].status = r.status;
+  });
+
+  // Auto-checkout: jika tidak ada PULANG, hitung durasi dari jam datang → 19:00
+  Object.values(pairs).forEach(p => {
+    if (!p.adaPulang && p.jamDatang && p.tanggal) {
+      try {
+        // Cek apakah hari absen sudah lewat (bukan hari ini)
+        const today = getTodayWIB();
+        const isHariIni = p.tanggal === today;
+        const jamSekarangMenit = (() => {
+          const now = new Date();
+          const wib = new Date(now.getTime() + 7 * 3600 * 1000);
+          return wib.getUTCHours() * 60 + wib.getUTCMinutes();
+        })();
+
+        // Auto-pulang berlaku: untuk hari lalu, atau hari ini setelah jam 19:00
+        const sudahLewatJamKerja = !isHariIni || jamSekarangMenit >= JAM_SELESAI_MENIT;
+        if (sudahLewatJamKerja) {
+          // Parse jam datang
+          const wMatch = String(p.jamDatang).match(/(\d{1,2}):(\d{2})/);
+          if (wMatch) {
+            const jamDatangMenit = parseInt(wMatch[1]) * 60 + parseInt(wMatch[2]);
+            // Klem ke range jam kerja
+            const masukEfektif = Math.max(jamDatangMenit, JAM_MULAI_MENIT);
+            const durasi = JAM_SELESAI_MENIT - masukEfektif;
+            if (durasi > 0) p.durasi = durasi;
+          }
+        }
+      } catch(e) { /* biarkan durasi = 0 */ }
+    }
+  });
 
   Object.values(pairs).forEach(p => {
     const a = allAnggota.find(x => x.NIA === p.NIA);
     const divisi = a ? a.divisi : '-';
-    const isLuarJadwal = p.status && p.status.toLowerCase().includes('luar jadwal');
+
+    // Tentukan apakah ini hari piket atau tidak
+    let isLuarJadwal = false;
+    if (p.status && p.status.trim()) {
+      // Percayai data dari server jika ada
+      isLuarJadwal = p.status.toLowerCase().includes('luar jadwal');
+    } else if (p.tanggal) {
+      // Fallback: cek jadwalMingguan lokal berdasarkan hari tanggal
+      try {
+        const parts = p.tanggal.split('-');
+        if(parts.length === 3) {
+          const tglObj = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+          const hariAbsen = tglObj.getDay(); // 0=Min,1=Sen..6=Sab
+          const hariPiketAnggota = niaToHariPiket[p.NIA];
+          // Jika anggota punya jadwal dan hari absen TIDAK ada di jadwalnya → luar jadwal
+          if(hariPiketAnggota && hariPiketAnggota.size > 0) {
+            isLuarJadwal = !hariPiketAnggota.has(hariAbsen);
+          } else {
+            // Tidak punya jadwal sama sekali → semua absennya dianggap non-piket
+            isLuarJadwal = true;
+          }
+        }
+      } catch(e) { /* biarkan isLuarJadwal = false */ }
+    }
 
     if (isLuarJadwal) {
       if (!nonPiketMap[p.NIA]) nonPiketMap[p.NIA] = { nama: p.nama, divisi, total: 0 };
@@ -3371,9 +3433,44 @@ async function loadHistorisRank() {
       const res = await api({action:'getRekapAbsensi', from, to});
       const data = (res.ok && Array.isArray(res.data)) ? res.data : [];
       const map = {};
-      const pairs = normalisasiAbsensi(data);
+      const pairs = {};
+      const JAM_MULAI_MENIT = 7 * 60;
+      const JAM_SELESAI_MENIT = 19 * 60;
+      data.forEach(r => {
+        const key = r.NIA + '_' + r.tanggal;
+        if(!pairs[key]) pairs[key] = {NIA:r.NIA, nama:r.nama, tanggal:r.tanggal, status:r.status||'', durasi:0, jamDatang:null, adaPulang:false};
+        if(r.tipe==='PULANG' && r.durasi && r.durasi!=='-') { pairs[key].durasi = parseDurasiToMenit(r.durasi); pairs[key].adaPulang = true; }
+        if(r.tipe==='DATANG' && r.waktu) pairs[key].jamDatang = r.waktu;
+        if(r.status && r.status.trim()) pairs[key].status = r.status;
+      });
+      // Auto-checkout untuk yang tidak punya PULANG
       Object.values(pairs).forEach(p => {
-        const isLuar = p.status.toLowerCase().includes('luar jadwal');
+        if(!p.adaPulang && p.jamDatang && p.tanggal) {
+          try {
+            const today = getTodayWIB();
+            const isHariIni = p.tanggal === today;
+            const jamSekarangMenit = (() => { const now=new Date(); const wib=new Date(now.getTime()+7*3600*1000); return wib.getUTCHours()*60+wib.getUTCMinutes(); })();
+            const sudahLewat = !isHariIni || jamSekarangMenit >= JAM_SELESAI_MENIT;
+            if(sudahLewat) {
+              const wMatch = String(p.jamDatang).match(/(\d{1,2}):(\d{2})/);
+              if(wMatch) { const masuk = Math.max(parseInt(wMatch[1])*60+parseInt(wMatch[2]), JAM_MULAI_MENIT); const d = JAM_SELESAI_MENIT-masuk; if(d>0) p.durasi=d; }
+            }
+          } catch(e) {}
+        }
+      });
+      // Buat lookup jadwal untuk klasifikasi piket vs non-piket
+      const niaToHariPiket2 = {};
+      for(let h=1;h<=5;h++) { (jadwalMingguan[h]||[]).forEach(nia => { if(!niaToHariPiket2[nia]) niaToHariPiket2[nia]=new Set(); niaToHariPiket2[nia].add(h); }); }
+      Object.values(pairs).forEach(p => {
+        let isLuar = false;
+        if(p.status && p.status.trim()) {
+          isLuar = p.status.toLowerCase().includes('luar jadwal');
+        } else if(p.tanggal) {
+          try {
+            const pts = p.tanggal.split('-');
+            if(pts.length===3) { const tobj=new Date(Number(pts[0]),Number(pts[1])-1,Number(pts[2])); const hari=tobj.getDay(); const hp=niaToHariPiket2[p.NIA]; isLuar = hp && hp.size>0 ? !hp.has(hari) : true; }
+          } catch(e) {}
+        }
         if((kategori==='nonpiket') !== isLuar) return;
         if(!map[p.NIA]) { const a=allAnggota.find(x=>x.NIA===p.NIA); map[p.NIA]={nama:p.nama,divisi:a?a.divisi:'-',total:0}; }
         map[p.NIA].total += p.durasi;
