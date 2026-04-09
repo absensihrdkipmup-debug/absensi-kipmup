@@ -66,6 +66,7 @@ body {
   animation: logo-float 4s ease-in-out infinite;
   cursor:default;
 }
+#logo-canvas { display:block; width:100px; height:100px; }
 .logo-canvas-wrap:hover {
   filter: drop-shadow(0 0 30px rgba(212,175,55,0.95));
   transform: scale(1.1) rotate(-3deg) !important;
@@ -1161,7 +1162,7 @@ let allAnggota = [...realAnggota];
       </div>
 
       <!-- REKAP TAB -->
-      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Durasi</th><th>GPS</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
+      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><select class="form-input" id="rekap-filter-status" style="width:auto;"><option value="">Semua</option><option value="piket">Piket</option><option value="nonpiket">Non-Piket</option></select><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Status</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Divisi</th><th>Durasi</th><th>GPS</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
       
       <!-- ANGGOTA TAB -->
       <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
@@ -1179,6 +1180,7 @@ let allAnggota = [...realAnggota];
                 <option value="8">8 Bulan Terakhir</option>
               </select>
               <button class="btn-sm primary" onclick="loadAllRankings()">🔄 Refresh</button>
+              <button class="btn-sm danger" onclick="resetPapanPeringkat()" title="Reset semua data peringkat">⚠️ Reset</button>
             </div>
           </div>
         </div>
@@ -2152,28 +2154,57 @@ async function loadDashboard(){
 }
 
 async function loadRekap(){ 
-  const from=document.getElementById('rekap-from').value, to=document.getElementById('rekap-to').value; 
+  const from=document.getElementById('rekap-from').value, to=document.getElementById('rekap-to').value;
+  const filterStatus = document.getElementById('rekap-filter-status')?.value || '';
   showToast('Memuat laporan...', 'info');
   const res=await api({action:'getRekapAbsensi', from, to}); 
   const tbody=document.getElementById('tbl-rekap'); 
   if(res.ok && res.data.length) {
-    tbody.innerHTML = res.data.map(r=>{
+    // Tentukan status piket/non-piket berdasarkan jadwal mingguan lokal
+    const getStatusPiket = (nia, tanggal) => {
+      try {
+        const parts = tanggal.split('-');
+        if(parts.length===3){
+          const hariUTC = new Date(Date.UTC(Number(parts[0]),Number(parts[1])-1,Number(parts[2]))).getUTCDay();
+          for(let h=1;h<=5;h++){
+            if((jadwalMingguan[h]||[]).includes(nia) && h===hariUTC) return 'PIKET';
+          }
+          return 'NON-PIKET';
+        }
+      } catch(e){}
+      return '-';
+    };
+    let rows = res.data;
+    if(filterStatus === 'piket') rows = rows.filter(r => getStatusPiket(r.NIA, r.tanggal) === 'PIKET');
+    if(filterStatus === 'nonpiket') rows = rows.filter(r => getStatusPiket(r.NIA, r.tanggal) === 'NON-PIKET');
+    if(!rows.length){ tbody.innerHTML='<tr><td colspan="9" class="empty-state">Tidak ada data untuk filter tersebut</td></tr>'; return; }
+    tbody.innerHTML = rows.map(r=>{
       const waktuFmt = formatWaktu(r.waktu);
       const durasi = r.durasi && r.durasi !== '-' && r.durasi !== 'NaNm' && r.durasi !== 'NaN m' ? r.durasi : '-';
       const gpsLink = (r.gpsLat && r.gpsLng && r.gpsLat !== '') 
         ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2); font-size:11px;">📍 Lihat</a>` 
         : `<span style="color:var(--text3); font-size:11px;">—</span>`;
+      const statusPiket = getStatusPiket(r.NIA, r.tanggal);
+      const statusBadge = statusPiket==='PIKET' 
+        ? `<span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:rgba(74,222,128,0.15);color:var(--accent);">✅ Piket</span>`
+        : statusPiket==='NON-PIKET'
+        ? `<span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:rgba(245,158,11,0.15);color:#f59e0b;">⚡ Non-Piket</span>`
+        : `<span style="color:var(--text3);font-size:10px;">—</span>`;
+      const anggota = allAnggota.find(a=>a.NIA===r.NIA);
+      const divisi = anggota ? anggota.divisi : (r.divisi||'-');
       return `<tr>
-        <td>${r.tanggal}</td>
-        <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}">${r.tipe}</span></td>
+        <td style="font-size:12px;">${r.tanggal}</td>
+        <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}" style="font-size:10px;">${r.tipe}</span></td>
+        <td>${statusBadge}</td>
         <td style="font-family:var(--mono); font-size:12px;">${waktuFmt}</td>
         <td style="font-family:var(--mono); font-size:12px;">${r.NIA}</td>
         <td>${r.nama}</td>
+        <td style="font-size:11px;color:var(--text2);">${divisi}</td>
         <td style="font-family:var(--mono); font-size:12px; color:var(--accent2);">${durasi}</td>
         <td>${gpsLink}</td>
       </tr>`;
     }).join('');
-  } else tbody.innerHTML='<tr><td colspan="7" class="empty-state">Tidak ada data di tanggal tersebut</td></tr>'; 
+  } else tbody.innerHTML='<tr><td colspan="9" class="empty-state">Tidak ada data di tanggal tersebut</td></tr>'; 
 }
 
 async function exportCSV(){ 
@@ -2615,18 +2646,38 @@ function loadRekapKegiatan() {
   if(!filtered.length){ el.innerHTML = '<div style="color:var(--text3); text-align:center; padding:32px;">Tidak ada data</div>'; return; }
 
   el.innerHTML = filtered.map(sesi => {
+    const hadirSet = new Set(sesi.absensi.map(a=>a.NIA));
+    const izinSet = new Set((sesi.izin||[]).map(i=>i.NIA));
     const hadir = sesi.absensi.length;
     const total = sesi.peserta.length;
-    const izin = sesi.izin.length;
-    const alpha = total - hadir - izin;
-    const tgl = new Date(sesi.startTime).toLocaleDateString('id-ID');
+    const izin = (sesi.izin||[]).length;
+    const alpha = Math.max(0, total - hadir - izin);
+    const pct = total > 0 ? Math.round((hadir/total)*100) : 0;
+    const tgl = new Date(sesi.startTime).toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const mulai = new Date(sesi.startTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    const selesai = new Date(sesi.endTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    // Daftar alpha (tidak hadir & tidak izin)
+    const alphaList = sesi.peserta.filter(nia => !hadirSet.has(nia) && !izinSet.has(nia))
+      .map(nia => { const a=allAnggota.find(x=>x.NIA===nia); return a?a.nama.split(' ')[0]:nia; });
     return `<div class="sesi-card" style="margin-bottom:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div><div style="font-weight:600;">${sesi.nama}</div><div style="font-size:12px; color:var(--text2);">${jenisBadge(sesi.jenis)} · ${tgl}</div></div>
-        <div style="text-align:right; font-size:12px;">
-          <span style="color:var(--accent);">${hadir}✅</span> <span style="color:var(--accent3);">${izin}📋</span> <span style="color:var(--red);">${alpha}❌</span>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <div>
+          <div style="font-weight:600; font-size:14px;">${sesi.nama}</div>
+          <div style="font-size:11px; color:var(--text2); margin-top:2px;">${jenisBadge(sesi.jenis)} · ${tgl}</div>
+          <div style="font-size:11px; color:var(--text3); margin-top:1px;">🕐 ${mulai} – ${selesai}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:20px; font-weight:700; color:${pct>=80?'var(--accent)':pct>=60?'var(--accent3)':'var(--red)'}">${pct}%</div>
+          <div style="font-size:10px; color:var(--text3);">kehadiran</div>
         </div>
       </div>
+      <!-- Summary badges -->
+      <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+        <span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(74,222,128,0.15); color:var(--accent);">✅ Hadir: ${hadir}/${total}</span>
+        <span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(245,158,11,0.15); color:#f59e0b;">📋 Izin: ${izin}</span>
+        <span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(248,113,113,0.15); color:var(--red);">❌ Alpha: ${alpha}</span>
+      </div>
+      ${alpha > 0 ? `<div style="font-size:11px; color:var(--red); margin-bottom:8px; padding:6px 10px; background:rgba(248,113,113,0.06); border-radius:6px;">Alpha: ${alphaList.join(', ')}</div>` : ''}
       ${renderDetailSesi(sesi)}
     </div>`;
   }).join('');
@@ -3270,8 +3321,8 @@ async function processRankingPiket(data) {
   });
 
   // Auto-checkout: HANYA untuk hari LALU yang tidak punya PULANG
-  // Tidak berlaku untuk hari ini (durasi real masih berjalan)
-  // Tidak timpa durasi yang sudah ada dari PULANG
+  // SYARAT: jam datang harus >= JAM_MULAI_MENIT (07:00)
+  // Jika datang sebelum 07:00 (mis. 05:08), SKIP — bukan jam kerja piket
   const todayCheck = getTodayWIB();
   Object.values(pairs).forEach(p => {
     if (!p.adaPulang && p.jamDatang && p.tanggal && p.tanggal < todayCheck) {
@@ -3279,8 +3330,10 @@ async function processRankingPiket(data) {
         const wMatch = String(p.jamDatang).match(/(\d{1,2}):(\d{2})/);
         if (wMatch) {
           const jamDatangMenit = parseInt(wMatch[1]) * 60 + parseInt(wMatch[2]);
+          // SKIP jika datang sebelum jam kerja (bukan piket normal)
+          if (jamDatangMenit < JAM_MULAI_MENIT) return;
           const masukEfektif = Math.max(jamDatangMenit, JAM_MULAI_MENIT);
-          const durasi = JAM_SELESAI_MENIT - masukEfektif;
+          const durasi = Math.min(JAM_SELESAI_MENIT - masukEfektif, 720);
           if (durasi > 0) p.durasi = durasi;
         }
       } catch(e) {}
@@ -3342,6 +3395,36 @@ async function processRankingPiket(data) {
     }
   }
 }
+
+function resetPapanPeringkat() {
+  // Konfirmasi pertama
+  if(!confirm('⚠️ PERINGATAN: Reset Papan Peringkat\n\nIni akan menghapus cache jadwal lokal dan memuat ulang semua data dari server.\n\nData absensi di Google Sheets TIDAK akan terhapus.\n\nLanjutkan?')) return;
+  // Konfirmasi kedua
+  if(!confirm('🔴 Konfirmasi Terakhir\n\nApakah Anda yakin ingin mereset tampilan Papan Peringkat?\n\nTekan OK untuk reset.')) return;
+
+  // Hapus cache jadwal lokal
+  try {
+    localStorage.removeItem('jadwalMingguan');
+    sessionStorage.removeItem('rankCache');
+  } catch(e) {}
+  
+  // Reset jadwal ke default
+  jadwalMingguan = {...jadwalMingguanDefault};
+
+  // Reset tampilan
+  ['rank-piket','rank-nonpiket','rank-kegiatan'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">Data direset. Memuat ulang...</div>';
+  });
+  const histEl = document.getElementById('rank-historis-table');
+  if(histEl) histEl.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">Pilih bulan dan klik Tampilkan</div>';
+
+  showToast('✅ Papan peringkat direset! Memuat data ulang...', 'success');
+  
+  // Muat ulang setelah delay
+  setTimeout(() => loadAllRankings(), 800);
+}
+window.resetPapanPeringkat = resetPapanPeringkat;
 
 function processRankingKegiatan(from, to, allSesi) {
   const kegiatanMap = {};
