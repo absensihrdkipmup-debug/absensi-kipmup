@@ -157,6 +157,11 @@ body {
 .badge-hadir { background: rgba(74,222,128,0.15); color: var(--accent); }
 .badge-belum { background: rgba(248,113,113,0.15); color: var(--red); }
 .badge-pulang { background: rgba(167,139,250,0.2); color: #c084fc; }
+.badge-sakit { background: rgba(251,146,60,0.18); color: #fb923c; }
+.badge-izin-piket { background: rgba(245,158,11,0.18); color: #f59e0b; }
+.badge-tukar-jadwal { background: rgba(34,211,238,0.15); color: var(--accent2); }
+.badge-clickable { cursor: pointer; transition: all 0.18s; }
+.badge-clickable:hover { opacity: 0.8; transform: scale(1.08); }
 .form-input {
   width: 100%;
   background: var(--bg3);
@@ -1014,7 +1019,7 @@ let allAnggota = [...realAnggota];
           <select class="form-input" id="izin-anggota-jenis">
             <option value="sakit">🤒 Sakit</option>
             <option value="izin">📋 Izin (berhalangan hadir)</option>
-            <option value="dispensasi">🏫 Dispensasi</option>
+            <option value="tukar-jadwal">🔄 Tukar Jadwal</option>
           </select>
         </div>
         <div>
@@ -1233,7 +1238,7 @@ let allAnggota = [...realAnggota];
                 <select class="form-input" id="izin-jenis">
                   <option value="sakit">🤒 Sakit</option>
                   <option value="izin">📋 Izin (berhalangan)</option>
-                  <option value="dispensasi">🏫 Dispensasi</option>
+                  <option value="tukar-jadwal">🔄 Tukar Jadwal</option>
                 </select>
               </div>
               <div>
@@ -1439,6 +1444,38 @@ let allAnggota = [...realAnggota];
     </div>
   </div>
 </div>
+<!-- MODAL IZIN PIKET (dari daftar piket hari ini) -->
+<div class="modal-overlay" id="modal-izin-piket">
+  <div class="modal-box" style="max-width:360px;">
+    <button class="modal-close" onclick="closeModal('modal-izin-piket')">✕</button>
+    <div style="font-size:11px; font-weight:600; color:var(--accent3); letter-spacing:1px; margin-bottom:4px;">STATUS KETIDAKHADIRAN</div>
+    <div style="font-weight:600; font-size:15px; margin-bottom:4px;" id="modal-izin-piket-nama"></div>
+    <div style="font-size:12px; color:var(--text2); margin-bottom:16px;" id="modal-izin-piket-nia"></div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+      <button class="btn-main" style="background:rgba(251,146,60,0.15); color:#fb923c; border-color:rgba(251,146,60,0.4); padding:12px 16px; border-radius:12px;" onclick="setIzinPiket('sakit')">
+        <span class="btn-icon">🤒</span>
+        <span class="btn-text"><span class="btn-label">Sakit</span><span class="btn-sublabel">Tidak hadir karena sakit</span></span>
+      </button>
+      <button class="btn-main" style="background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.4); padding:12px 16px; border-radius:12px;" onclick="setIzinPiket('izin')">
+        <span class="btn-icon">📋</span>
+        <span class="btn-text"><span class="btn-label">Izin</span><span class="btn-sublabel">Berhalangan hadir</span></span>
+      </button>
+      <button class="btn-main" style="background:rgba(34,211,238,0.12); color:var(--accent2); border-color:rgba(34,211,238,0.35); padding:12px 16px; border-radius:12px;" onclick="setIzinPiket('tukar-jadwal')">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text"><span class="btn-label">Tukar Jadwal</span><span class="btn-sublabel">Jadwal digantikan hari lain</span></span>
+      </button>
+      <button class="btn-main" style="background:rgba(248,113,113,0.12); color:var(--red); border-color:rgba(248,113,113,0.35); padding:12px 16px; border-radius:12px;" onclick="setIzinPiket('hapus')">
+        <span class="btn-icon">✕</span>
+        <span class="btn-text"><span class="btn-label">Hapus Status</span><span class="btn-sublabel">Kembalikan ke BELUM</span></span>
+      </button>
+    </div>
+    <div>
+      <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px;">Keterangan (opsional)</label>
+      <input class="form-input" id="modal-izin-piket-ket" placeholder="Contoh: demam, ada kelas, dll">
+    </div>
+  </div>
+</div>
+
 <!-- MODAL QR SESI KEGIATAN -->
 <div class="modal-overlay" id="modal-qr-sesi">
   <div class="modal-box" style="text-align:center; max-width:360px;">
@@ -1868,12 +1905,22 @@ async function loadJadwalScan(){
 
   // Render jadwal lokal dulu (cepat), lalu update status dari server
   const renderJadwal = (datangNIA = new Set(), pulangNIA = new Set()) => {
+    // Ambil izin piket hari ini dari izinList lokal
+    const todayStr = getTodayWIB();
+    const izinHariIni = {};
+    izinList.forEach(i => {
+      if(i.tanggal === todayStr && (i.jenisKegiatan === 'piket' || i.jenisKegiatan === 'semua')) {
+        izinHariIni[i.NIA] = i.jenisIzin; // 'sakit' | 'izin' | 'tukar-jadwal'
+      }
+    });
+
     const displayData = list.map(nia => {
       const a = allAnggota.find(x => x.NIA === nia);
       if(!a) return null;
       let status = 'BELUM';
       if(pulangNIA.has(nia)) status = 'PULANG';
       else if(datangNIA.has(nia)) status = 'DATANG';
+      else if(izinHariIni[nia]) status = izinHariIni[nia].toUpperCase(); // SAKIT | IZIN | TUKAR-JADWAL
       return {NIA: a.NIA, nama: a.nama, divisi: a.divisi, status};
     }).filter(Boolean);
 
@@ -1881,9 +1928,31 @@ async function loadJadwalScan(){
       el.innerHTML = '<div class="empty-state" style="padding:10px;">Tidak ada data anggota untuk jadwal hari ini.</div>';
       return;
     }
-    const badgeClass = s => s==='DATANG'?'badge-hadir': s==='PULANG'?'badge-pulang':'badge-belum';
-    const badgeLabel = s => s==='DATANG'?'✅ DATANG': s==='PULANG'?'🟣 PULANG':'BELUM';
-    el.innerHTML = displayData.map(j => `<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:8px 0; border-bottom: 1px solid var(--border);"><div><b>${j.nama}</b><div style="font-size:11px; color:var(--text2);">${j.NIA} · ${j.divisi}</div></div><span class="badge ${badgeClass(j.status)}" style="align-self:center;">${badgeLabel(j.status)}</span></div>`).join('');
+
+    const badgeClass = s => {
+      if(s==='DATANG') return 'badge-hadir';
+      if(s==='PULANG') return 'badge-pulang';
+      if(s==='SAKIT') return 'badge-sakit';
+      if(s==='IZIN') return 'badge-izin-piket';
+      if(s==='TUKAR-JADWAL') return 'badge-tukar-jadwal';
+      return 'badge-belum';
+    };
+    const badgeLabel = s => {
+      if(s==='DATANG') return '✅ DATANG';
+      if(s==='PULANG') return '🟣 PULANG';
+      if(s==='SAKIT') return '🤒 SAKIT';
+      if(s==='IZIN') return '📋 IZIN';
+      if(s==='TUKAR-JADWAL') return '🔄 TUKAR JADWAL';
+      return 'BELUM';
+    };
+
+    // Cek apakah admin sedang login
+    const isAdmin = !!localStorage.getItem('adminSession');
+    const adminAttr = (nia, status) => isAdmin && (status==='BELUM'||status==='SAKIT'||status==='IZIN'||status==='TUKAR-JADWAL')
+      ? `class="badge ${badgeClass(status)} badge-clickable" onclick="bukaModalIzinPiket('${nia}')" title="Klik untuk set status ketidakhadiran"`
+      : `class="badge ${badgeClass(status)}"`;
+
+    el.innerHTML = displayData.map(j => `<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:8px 0; border-bottom: 1px solid var(--border);"><div><b>${j.nama}</b><div style="font-size:11px; color:var(--text2);">${j.NIA} · ${j.divisi}</div></div><span ${adminAttr(j.NIA, j.status)} style="align-self:center;">${badgeLabel(j.status)}</span></div>`).join('');
   };
 
   // Render dulu tanpa status
@@ -2807,6 +2876,65 @@ function switchSubIzin(sub) {
   if(sub==='daftar') loadDaftarIzin();
 }
 
+// ── Izin Piket Langsung dari Daftar Piket Hari Ini ──
+let izinPiketTargetNIA = null;
+
+function bukaModalIzinPiket(nia) {
+  const a = allAnggota.find(x => x.NIA === nia);
+  if(!a) return;
+  izinPiketTargetNIA = nia;
+  document.getElementById('modal-izin-piket-nama').textContent = a.nama;
+  document.getElementById('modal-izin-piket-nia').textContent = nia + ' · ' + a.divisi;
+  document.getElementById('modal-izin-piket-ket').value = '';
+  document.getElementById('modal-izin-piket').classList.add('show');
+}
+window.bukaModalIzinPiket = bukaModalIzinPiket;
+
+function setIzinPiket(jenis) {
+  if(!izinPiketTargetNIA) return;
+  const nia = izinPiketTargetNIA;
+  const a = allAnggota.find(x => x.NIA === nia);
+  const keterangan = document.getElementById('modal-izin-piket-ket').value.trim();
+  const todayStr = getTodayWIB();
+
+  if(jenis === 'hapus') {
+    // Hapus entri izin piket hari ini untuk NIA ini
+    izinList = izinList.filter(i => !(i.NIA === nia && i.tanggal === todayStr && (i.jenisKegiatan==='piket'||i.jenisKegiatan==='semua')));
+    saveIzin();
+    showToast('✅ Status ' + (a?a.nama:nia) + ' dikembalikan ke BELUM', 'success');
+    closeModal('modal-izin-piket');
+    loadJadwalScan();
+    return;
+  }
+
+  // Hapus izin lama untuk NIA & tanggal ini dulu (hindari duplikat)
+  izinList = izinList.filter(i => !(i.NIA === nia && i.tanggal === todayStr && (i.jenisKegiatan==='piket'||i.jenisKegiatan==='semua')));
+
+  const izin = {
+    id: 'IZN_' + Date.now(),
+    NIA: nia,
+    nama: a ? a.nama : nia,
+    jenisKegiatan: 'piket',
+    jenisIzin: jenis,
+    tanggal: todayStr,
+    keterangan: keterangan,
+    oleh: 'Admin',
+    waktu: new Date().toISOString()
+  };
+
+  izinList.push(izin);
+  saveIzin();
+
+  // Simpan ke GAS
+  gasSaveIzin({NIA:nia, nama:izin.nama, tanggal:todayStr, kegiatan:'piket', jenis, keterangan, oleh:'Admin'});
+
+  const labelMap = {sakit:'🤒 Sakit', izin:'📋 Izin', 'tukar-jadwal':'🔄 Tukar Jadwal'};
+  showToast('✅ ' + (a?a.nama:nia) + ' → ' + (labelMap[jenis]||jenis), 'success');
+  closeModal('modal-izin-piket');
+  loadJadwalScan();
+}
+window.setIzinPiket = setIzinPiket;
+
 // ── Rekap Kegiatan ──
 function loadRekapKegiatan() {
   const jenis = document.getElementById('filter-jenis-kegiatan')?.value || '';
@@ -2934,7 +3062,7 @@ function loadDaftarIzin() {
     return true;
   });
 
-  const jenisIzinBadge = {sakit:'🤒 Sakit', izin:'📋 Izin', dispensasi:'🏫 Dispensasi'};
+  const jenisIzinBadge = {sakit:'🤒 Sakit', izin:'📋 Izin', 'tukar-jadwal':'🔄 Tukar Jadwal', dispensasi:'🔄 Tukar Jadwal'};
   if(!filtered.length){ tbody.innerHTML='<tr><td colspan="7" class="empty-state">Tidak ada data izin</td></tr>'; return; }
   tbody.innerHTML = filtered.map(i => `<tr>
     <td>${i.tanggal}</td>
