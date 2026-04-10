@@ -691,35 +691,30 @@ let allAnggota = [...realAnggota];
       <div id="enroll-nama-display" style="font-size:12px; color:var(--accent); margin-top:6px; display:none;"></div>
     </div>
 
-    <!-- Camera -->
+    <!-- Info -->
     <div style="background:var(--bg2); border-radius:12px; padding:20px; text-align:center; margin-bottom:16px;">
-      <div style="font-size:14px; font-weight:600; margin-bottom:12px;">📸 Rekam Wajah (5 sudut berbeda)</div>
-      <div class="face-box" style="width:280px; height:280px; margin:0 auto 14px;">
-        <video id="enroll-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block;"></video>
-        <canvas id="enroll-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; transform:scaleX(-1);"></canvas>
-        <div class="face-overlay">
-          <div id="enroll-badge" style="background:rgba(0,0,0,0.7); border-radius:20px; padding:4px 12px; font-size:11px; color:white;">
-            <span class="face-status-ring scanning" id="enroll-ring"></span>
-            <span id="enroll-label">Klik Mulai Rekam</span>
-          </div>
-        </div>
+      <div style="font-size:14px; font-weight:600; margin-bottom:12px;">🤖 Daftar Face ID</div>
+      <div style="background:var(--bg3); border-radius:10px; padding:16px; color:var(--text2); font-size:13px; line-height:1.7;">
+        Fitur rekam wajah sementara <strong style="color:var(--red);">tidak tersedia</strong>.<br>
+        Silakan gunakan metode absen <strong style="color:var(--accent);">QR Code</strong> untuk sementara.<br><br>
+        <span style="font-size:11px; color:var(--text3);">Face ID akan hadir kembali setelah pembaruan sistem.</span>
       </div>
+      <div style="margin-top:16px;">
+        <button onclick="goTo('scan')" style="background:rgba(74,222,128,0.15); color:var(--accent); border:1px solid rgba(74,222,128,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:10px 24px; border-radius:30px; cursor:pointer;">← Kembali ke Absen QR</button>
+      </div>
+      <!-- Hidden elements agar JS tidak error -->
+      <video id="enroll-video" style="display:none;"></video>
+      <canvas id="enroll-canvas" style="display:none;"></canvas>
       <canvas id="enroll-capture-canvas" style="display:none;"></canvas>
-      
-      <!-- Progress samples -->
-      <div style="display:flex; gap:6px; justify-content:center; margin-bottom:14px;" id="enroll-samples">
-        <div class="sample-dot" id="dot-0" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">1</div>
-        <div class="sample-dot" id="dot-1" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">2</div>
-        <div class="sample-dot" id="dot-2" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">3</div>
-        <div class="sample-dot" id="dot-3" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">4</div>
-        <div class="sample-dot" id="dot-4" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">5</div>
+      <span id="enroll-ring" style="display:none;"></span>
+      <span id="enroll-label" style="display:none;"></span>
+      <div id="enroll-badge" style="display:none;"></div>
+      <div id="enroll-samples" style="display:none;">
+        <div id="dot-0"></div><div id="dot-1"></div><div id="dot-2"></div><div id="dot-3"></div><div id="dot-4"></div>
       </div>
-
-      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-        <button id="enroll-btn-mulai" onclick="mulaiEnrollFace()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:10px 24px; border-radius:30px; cursor:pointer;">▶ Mulai Rekam</button>
-        <button id="enroll-btn-simpan" onclick="simpanFaceID()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:600; padding:10px 24px; border-radius:30px; cursor:pointer;">✅ Simpan Face ID</button>
-        <button id="enroll-btn-ulang" onclick="ulangEnrollFace()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:12px; padding:10px 16px; border-radius:30px; cursor:pointer;">🔄 Ulangi</button>
-      </div>
+      <button id="enroll-btn-mulai" style="display:none;"></button>
+      <button id="enroll-btn-simpan" style="display:none;"></button>
+      <button id="enroll-btn-ulang" style="display:none;"></button>
     </div>
 
     <!-- Status -->
