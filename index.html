@@ -8,7 +8,32 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+// Load face-api.js dengan fallback multi-CDN
+(function() {
+  function loadScript(url, cb) {
+    var s = document.createElement('script');
+    s.src = url;
+    s.onload = function() { cb(null); };
+    s.onerror = function() { cb(new Error('failed')); };
+    document.head.appendChild(s);
+  }
+  var cdns = [
+    'https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js',
+    'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js'
+  ];
+  var idx = 0;
+  function tryNext() {
+    if (idx >= cdns.length) { console.error('Semua CDN face-api gagal'); return; }
+    loadScript(cdns[idx++], function(err) {
+      if (err) { console.warn('CDN face-api gagal, coba berikutnya...'); tryNext(); }
+      else { console.log('face-api loaded dari:', cdns[idx-1]); }
+    });
+  }
+  tryNext();
+})();
+</script>
 <style>
 :root {
   --bg: #0a0c10;
@@ -3994,24 +4019,53 @@ let faceScanActive = false;
 let faceScanInterval = null;
 let metodeAbsen = 'qr'; // 'qr' atau 'face'
 
-// Load face-api models dari CDN
+// Load face-api models dari CDN dengan fallback
 async function loadFaceApiModels() {
   if(faceApiLoaded) return true;
-  try {
-    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-    ]);
-    faceApiLoaded = true;
-    console.log('✅ Face API models loaded');
-    return true;
-  } catch(e) {
-    console.error('❌ Face API load failed:', e);
-    showToast('⚠️ Model Face ID gagal dimuat. Periksa koneksi internet.', 'error');
-    return false;
+
+  // Cek dulu apakah library face-api sudah ter-load
+  if(typeof faceapi === 'undefined') {
+    showToast('⌛ Menunggu library Face ID... coba lagi sebentar', 'error');
+    // Tunggu max 5 detik
+    for(let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 500));
+      if(typeof faceapi !== 'undefined') break;
+    }
+    if(typeof faceapi === 'undefined') {
+      showToast('❌ Library Face ID gagal dimuat. Coba refresh halaman atau ganti jaringan/WiFi.', 'error');
+      return false;
+    }
   }
+
+  const MODEL_URLS = [
+    'https://unpkg.com/face-api.js@0.22.2/weights',
+    'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights',
+    'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights'
+  ];
+
+  for(let i = 0; i < MODEL_URLS.length; i++) {
+    try {
+      const url = MODEL_URLS[i];
+      const label = i === 0 ? 'Memuat model AI...' : `Mencoba server ${i+1}/${MODEL_URLS.length}...`;
+      // Update status UI jika ada
+      const statusEl = document.getElementById('face-scan-status-msg') || document.getElementById('enroll-label');
+      if(statusEl) statusEl.textContent = label;
+
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(url),
+        faceapi.nets.faceLandmark68TinyNet.loadFromUri(url),
+        faceapi.nets.faceRecognitionNet.loadFromUri(url),
+      ]);
+      faceApiLoaded = true;
+      console.log('✅ Face API models loaded dari:', url);
+      return true;
+    } catch(e) {
+      console.warn(`❌ Model gagal dari URL #${i+1}:`, e.message);
+    }
+  }
+
+  showToast('❌ Model Face ID gagal dimuat dari semua server. Coba refresh atau ganti WiFi.', 'error');
+  return false;
 }
 
 // ── STORAGE Face Descriptor ──
