@@ -786,7 +786,7 @@ let allAnggota = [...realAnggota];
 
     <div style="background:var(--bg3); border-radius:10px; padding:12px; font-size:11px; color:var(--text3);">
       <div style="font-weight:600; color:var(--text2); margin-bottom:4px;">ℹ️ Info Face ID</div>
-      Data wajah disimpan lokal di perangkat ini. Untuk absen di HP lain, perlu daftar ulang. Data tidak dikirim ke server.
+      Data wajah disimpan di <strong style="color:var(--accent);">server (Google Sheets)</strong> — bisa absen dari HP manapun setelah daftar sekali. Data deskriptor wajah dienkripsi sebagai angka matematika, bukan foto.
     </div>
   </div>
 </div>
@@ -4145,36 +4145,47 @@ async function loadFaceApiModels(onProgress) {
   return false;
 }
 
-// ── STORAGE Face Descriptor ──
-function saveFaceDescriptor(nia, descriptors) {
-  // descriptors: array of Float32Array → simpan sebagai array of number[]
+// ── STORAGE Face Descriptor — disimpan di Google Sheets via GAS ──
+// Cache lokal agar tidak perlu fetch ulang setiap saat
+const _faceCache = {};
+
+async function saveFaceDescriptor(nia, descriptors) {
+  // descriptors: array of Float32Array → simpan sebagai JSON string
   const data = descriptors.map(d => Array.from(d));
-  localStorage.setItem('faceDesc_' + nia, JSON.stringify(data));
+  const jsonStr = JSON.stringify(data);
+  // Simpan ke cache lokal
+  _faceCache[nia] = descriptors;
+  // Simpan ke GAS (Google Sheets)
+  try {
+    const res = await api({action: 'saveFaceDescriptor', NIA: nia, descriptor: jsonStr});
+    if(!res.ok) { showToast('⚠️ Gagal simpan ke server: ' + res.msg, 'error'); return false; }
+    return true;
+  } catch(e) {
+    showToast('⚠️ Gagal koneksi server: ' + e.message, 'error');
+    return false;
+  }
 }
 
-function loadFaceDescriptor(nia) {
-  const raw = localStorage.getItem('faceDesc_' + nia);
-  if(!raw) return null;
+async function loadFaceDescriptor(nia) {
+  // Cek cache lokal dulu
+  if(_faceCache[nia]) return _faceCache[nia];
+  // Fetch dari GAS
   try {
-    const data = JSON.parse(raw);
-    return data.map(d => new Float32Array(d));
+    const res = await api({action: 'getFaceDescriptor', NIA: nia});
+    if(!res.ok || !res.descriptor) return null;
+    const data = JSON.parse(res.descriptor);
+    const descriptors = data.map(d => new Float32Array(d));
+    _faceCache[nia] = descriptors;
+    return descriptors;
   } catch(e) { return null; }
 }
 
-function hasFaceID(nia) {
-  return !!localStorage.getItem('faceDesc_' + nia);
-}
-
-function getAllFaceIDs() {
-  // Kembalikan semua NIA yang punya Face ID
-  const result = [];
-  for(let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if(key && key.startsWith('faceDesc_')) {
-      result.push(key.replace('faceDesc_', ''));
-    }
-  }
-  return result;
+async function hasFaceID(nia) {
+  if(_faceCache[nia]) return true;
+  try {
+    const res = await api({action: 'getFaceDescriptor', NIA: nia});
+    return !!(res.ok && res.descriptor);
+  } catch(e) { return false; }
 }
 
 // ── ENROLLMENT ──
@@ -4314,21 +4325,31 @@ function ulangEnrollFace() {
 }
 window.ulangEnrollFace = ulangEnrollFace;
 
-function simpanFaceID() {
+async function simpanFaceID() {
   const nia = document.getElementById('enroll-nia').value.trim();
   if(!nia || enrollDescriptors.length < FACE_SAMPLES_NEEDED) {
     showToast('Data tidak lengkap','error'); return;
   }
   const anggota = allAnggota.find(a => a.NIA === nia);
-  saveFaceDescriptor(nia, enrollDescriptors);
   stopEnrollFace();
-  
-  document.getElementById('enroll-status-box').style.display = 'block';
-  document.getElementById('enroll-success-msg').textContent = 
-    (anggota ? anggota.nama : nia) + ' kini bisa absen dengan wajah di perangkat ini';
-  document.getElementById('enroll-btn-simpan').style.display = 'none';
-  document.getElementById('enroll-btn-ulang').style.display = 'none';
-  showToast('✅ Face ID berhasil disimpan!','success');
+
+  // Tampilkan loading
+  const btnSimpan = document.getElementById('enroll-btn-simpan');
+  if(btnSimpan) { btnSimpan.textContent = '⌛ Menyimpan ke server...'; btnSimpan.disabled = true; }
+  showToast('⌛ Menyimpan Face ID ke server...', 'info');
+
+  const ok = await saveFaceDescriptor(nia, enrollDescriptors);
+
+  if(btnSimpan) { btnSimpan.textContent = '✅ Simpan Face ID'; btnSimpan.disabled = false; }
+
+  if(ok) {
+    document.getElementById('enroll-status-box').style.display = 'block';
+    document.getElementById('enroll-success-msg').textContent =
+      (anggota ? anggota.nama : nia) + ' kini bisa absen dengan Face ID dari perangkat manapun! 🎉';
+    document.getElementById('enroll-btn-simpan').style.display = 'none';
+    document.getElementById('enroll-btn-ulang').style.display = 'none';
+    showToast('✅ Face ID berhasil disimpan ke server!','success');
+  }
 }
 window.simpanFaceID = simpanFaceID;
 
@@ -4361,9 +4382,12 @@ async function mulaiScanFaceID() {
   const nia = document.getElementById('input-NIA').value.trim();
   if(!nia) { showToast('Isi NIA dulu','error'); return; }
   
-  // Cek apakah punya Face ID
-  if(!hasFaceID(nia)) {
-    showToast('⚠️ Kamu belum punya Face ID di perangkat ini. Daftar dulu!','error');
+  // Cek apakah punya Face ID (async ke server)
+  document.getElementById('face-scan-status-msg').textContent = 'Memeriksa Face ID di server...';
+  const punya = await hasFaceID(nia);
+  if(!punya) {
+    showToast('⚠️ Kamu belum punya Face ID. Daftar dulu!','error');
+    document.getElementById('btn-face-mulai').style.display = 'inline-block';
     setTimeout(() => goToFaceEnroll(), 1500);
     return;
   }
@@ -4396,10 +4420,11 @@ async function mulaiScanFaceID() {
     document.getElementById('face-scan-label').textContent = 'Mendeteksi wajah...';
     document.getElementById('face-scan-status-msg').textContent = 'Arahkan wajah ke kamera';
     
-    // Load descriptor milik NIA ini
-    const storedDescriptors = loadFaceDescriptor(nia);
+    // Load descriptor milik NIA ini dari server
+    document.getElementById('face-scan-status-msg').textContent = 'Memuat data wajah dari server...';
+    const storedDescriptors = await loadFaceDescriptor(nia);
     if(!storedDescriptors || !storedDescriptors.length) {
-      showToast('Face ID data rusak. Daftar ulang.','error');
+      showToast('Face ID data tidak ditemukan. Daftar ulang.','error');
       stopScanFaceID();
       return;
     }
