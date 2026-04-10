@@ -198,6 +198,36 @@ td { padding: 11px 16px; border-top: 1px solid var(--border); color: var(--text)
 .face-status-ring.fail { background: var(--red); }
 @keyframes pulse-ring { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
+.face-model-progress {
+  background: var(--bg3);
+  border: 1px solid rgba(192,132,252,0.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  font-size: 12px;
+  color: #c084fc;
+  text-align: center;
+  display: none;
+}
+.face-model-bar-wrap {
+  height: 4px;
+  background: var(--bg2);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.face-model-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #c084fc, #7c3aed);
+  border-radius: 4px;
+  animation: bar-pulse 1.5s ease-in-out infinite;
+  width: 100%;
+}
+@keyframes bar-pulse {
+  0% { opacity: 0.4; transform: scaleX(0.3) translateX(-100%); }
+  50% { opacity: 1; transform: scaleX(0.7) translateX(20%); }
+  100% { opacity: 0.4; transform: scaleX(0.3) translateX(200%); }
+}
 .toast {
   position: fixed;
   bottom: 24px;
@@ -439,29 +469,51 @@ tbody tr:hover td { color: var(--text); }
 }
 .selfie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
   margin-top: 12px;
 }
 .selfie-item {
   position: relative;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   aspect-ratio: 1;
   border: 2px solid var(--border2);
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.selfie-item:hover { border-color: var(--accent); transform: scale(1.05); }
+.selfie-item:hover { border-color: var(--accent); transform: scale(1.04); box-shadow: 0 6px 20px rgba(74,222,128,0.2); }
 .selfie-item img { width: 100%; height: 100%; object-fit: cover; }
 .selfie-item .selfie-label {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.7);
-  font-size: 9px;
-  padding: 2px 4px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  font-size: 10px;
+  font-weight: 600;
+  padding: 16px 6px 5px;
   text-align: center;
   color: white;
+}
+.selfie-item .selfie-time {
+  position: absolute;
+  top: 5px; right: 5px;
+  background: rgba(0,0,0,0.65);
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 8px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.selfie-item .selfie-tipe {
+  position: absolute;
+  top: 5px; left: 5px;
+  background: rgba(0,0,0,0.65);
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 8px;
+  color: #f59e0b;
+  font-weight: 600;
 }
 .izin-form { background: var(--bg3); border-radius: var(--radius); padding: 16px; margin-top: 12px; }
 .tab-sub { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -691,30 +743,39 @@ let allAnggota = [...realAnggota];
       <div id="enroll-nama-display" style="font-size:12px; color:var(--accent); margin-top:6px; display:none;"></div>
     </div>
 
-    <!-- Info -->
+    <!-- Camera -->
     <div style="background:var(--bg2); border-radius:12px; padding:20px; text-align:center; margin-bottom:16px;">
-      <div style="font-size:14px; font-weight:600; margin-bottom:12px;">🤖 Daftar Face ID</div>
-      <div style="background:var(--bg3); border-radius:10px; padding:16px; color:var(--text2); font-size:13px; line-height:1.7;">
-        Fitur rekam wajah sementara <strong style="color:var(--red);">tidak tersedia</strong>.<br>
-        Silakan gunakan metode absen <strong style="color:var(--accent);">QR Code</strong> untuk sementara.<br><br>
-        <span style="font-size:11px; color:var(--text3);">Face ID akan hadir kembali setelah pembaruan sistem.</span>
+      <div style="font-size:14px; font-weight:600; margin-bottom:12px;">📸 Rekam Wajah (5 sudut berbeda)</div>
+      <div class="face-box" style="width:280px; height:280px; margin:0 auto 14px;">
+        <video id="enroll-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block;"></video>
+        <canvas id="enroll-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; transform:scaleX(-1);"></canvas>
+        <div class="face-overlay">
+          <div id="enroll-badge" style="background:rgba(0,0,0,0.7); border-radius:20px; padding:4px 12px; font-size:11px; color:white;">
+            <span class="face-status-ring scanning" id="enroll-ring"></span>
+            <span id="enroll-label">Klik Mulai Rekam</span>
+          </div>
+        </div>
       </div>
-      <div style="margin-top:16px;">
-        <button onclick="goTo('scan')" style="background:rgba(74,222,128,0.15); color:var(--accent); border:1px solid rgba(74,222,128,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:10px 24px; border-radius:30px; cursor:pointer;">← Kembali ke Absen QR</button>
-      </div>
-      <!-- Hidden elements agar JS tidak error -->
-      <video id="enroll-video" style="display:none;"></video>
-      <canvas id="enroll-canvas" style="display:none;"></canvas>
       <canvas id="enroll-capture-canvas" style="display:none;"></canvas>
-      <span id="enroll-ring" style="display:none;"></span>
-      <span id="enroll-label" style="display:none;"></span>
-      <div id="enroll-badge" style="display:none;"></div>
-      <div id="enroll-samples" style="display:none;">
-        <div id="dot-0"></div><div id="dot-1"></div><div id="dot-2"></div><div id="dot-3"></div><div id="dot-4"></div>
+      
+      <!-- Progress samples -->
+      <div style="display:flex; gap:6px; justify-content:center; margin-bottom:14px;" id="enroll-samples">
+        <div class="sample-dot" id="dot-0" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">1</div>
+        <div class="sample-dot" id="dot-1" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">2</div>
+        <div class="sample-dot" id="dot-2" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">3</div>
+        <div class="sample-dot" id="dot-3" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">4</div>
+        <div class="sample-dot" id="dot-4" style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;">5</div>
       </div>
-      <button id="enroll-btn-mulai" style="display:none;"></button>
-      <button id="enroll-btn-simpan" style="display:none;"></button>
-      <button id="enroll-btn-ulang" style="display:none;"></button>
+
+      <div class="face-model-progress" id="enroll-model-progress">
+        <span id="enroll-model-progress-msg">Memuat model AI...</span>
+        <div class="face-model-bar-wrap"><div class="face-model-bar"></div></div>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        <button id="enroll-btn-mulai" onclick="mulaiEnrollFace()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:10px 24px; border-radius:30px; cursor:pointer;">▶ Mulai Rekam</button>
+        <button id="enroll-btn-simpan" onclick="simpanFaceID()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:600; padding:10px 24px; border-radius:30px; cursor:pointer;">✅ Simpan Face ID</button>
+        <button id="enroll-btn-ulang" onclick="ulangEnrollFace()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:12px; padding:10px 16px; border-radius:30px; cursor:pointer;">🔄 Ulangi</button>
+      </div>
     </div>
 
     <!-- Status -->
@@ -809,7 +870,11 @@ let allAnggota = [...realAnggota];
     <div id="face-id-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:16px; text-align:center; display:none;">
       <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Face ID</div>
       <div style="font-size:15px; font-weight:600; margin-bottom:4px; color:#c084fc;">🤖 Pengenalan Wajah</div>
-      <div style="font-size:12px; color:var(--text2); margin-bottom:14px;" id="face-scan-status-msg">Klik Mulai untuk scan wajah</div>
+      <div style="font-size:12px; color:var(--text2); margin-bottom:8px;" id="face-scan-status-msg">Klik Mulai untuk scan wajah</div>
+      <div class="face-model-progress" id="scan-model-progress">
+        <span id="scan-model-progress-msg">Memuat model AI...</span>
+        <div class="face-model-bar-wrap"><div class="face-model-bar"></div></div>
+      </div>
       <div class="face-box" style="width:260px; height:260px; margin:0 auto 14px;">
         <video id="face-scan-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block;"></video>
         <canvas id="face-scan-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; transform:scaleX(-1);"></canvas>
@@ -1063,7 +1128,15 @@ let allAnggota = [...realAnggota];
             <div class="table-scroll"><table><thead><tr><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead><tbody id="tbl-today"></tbody></table></div>
           </div>
           <div class="table-card" style="padding:16px;">
-            <div style="font-weight:600; font-size:13px; margin-bottom:12px;">📸 Foto Selfie Hari Ini <span style="font-size:11px; color:var(--text3); font-weight:400;">(sesi ini saja)</span></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+              <div style="font-weight:600; font-size:13px;">📸 Foto Selfie Hari Ini</div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-sm" id="filter-semua" onclick="filterSelfieGallery('semua')" style="background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.4); color:var(--accent);">Semua</button>
+                <button class="btn-sm" id="filter-datang" onclick="filterSelfieGallery('DATANG')">Datang</button>
+                <button class="btn-sm" id="filter-pulang" onclick="filterSelfieGallery('PULANG')">Pulang</button>
+              </div>
+            </div>
+            <div id="selfie-count" style="font-size:11px; color:var(--text3); margin-bottom:8px;">0 foto</div>
             <div id="selfie-gallery-dashboard" class="selfie-grid"><div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie hari ini</div></div>
           </div>
         </div>
@@ -1423,11 +1496,15 @@ let allAnggota = [...realAnggota];
 </div>
 
 <!-- MODAL PREVIEW SELFIE -->
-<div class="modal-overlay" id="modal-selfie-preview">
-  <div class="modal-box" style="text-align:center; max-width:360px;">
+<div class="modal-overlay" id="modal-selfie-preview" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal-box" style="text-align:center; max-width:420px; padding:20px;">
     <button class="modal-close" onclick="document.getElementById('modal-selfie-preview').classList.remove('show')">✕</button>
-    <div class="modal-title" id="selfie-preview-nama" style="margin-bottom:12px;"></div>
-    <img id="selfie-preview-img" style="width:100%; border-radius:12px; object-fit:cover; max-height:400px;" alt="">
+    <div id="selfie-preview-nama" style="margin-bottom:12px; text-align:left;"></div>
+    <img id="selfie-preview-img" style="width:100%; border-radius:16px; object-fit:cover; max-height:480px; box-shadow:0 4px 24px rgba(0,0,0,0.5);" alt="">
+    <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+      <a id="selfie-download-btn" download="selfie.jpg" style="background:rgba(74,222,128,0.15); color:var(--accent); border:1px solid rgba(74,222,128,0.3); font-family:var(--font); font-size:12px; font-weight:600; padding:8px 16px; border-radius:20px; cursor:pointer; text-decoration:none;">⬇ Unduh Foto</a>
+      <button onclick="document.getElementById('modal-selfie-preview').classList.remove('show')" style="background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:12px; padding:8px 16px; border-radius:20px; cursor:pointer;">Tutup</button>
+    </div>
   </div>
 </div>
 
@@ -1958,12 +2035,12 @@ function toggleScan(){
               let selfieMini = selfieDataURL;
               try {
                 const cvs = document.createElement('canvas');
-                cvs.width = 60; cvs.height = 60;
+                cvs.width = 200; cvs.height = 200;
                 const ctx2 = cvs.getContext('2d');
                 const tmpImg = new window.Image();
                 tmpImg.src = selfieDataURL;
-                await new Promise(r => { tmpImg.onload = () => { ctx2.drawImage(tmpImg,0,0,60,60); r(); }; img.onerror = r; });
-                selfieMini = cvs.toDataURL('image/jpeg', 0.5);
+                await new Promise(r => { tmpImg.onload = () => { ctx2.drawImage(tmpImg,0,0,200,200); r(); }; tmpImg.onerror = r; });
+                selfieMini = cvs.toDataURL('image/jpeg', 0.75);
               } catch(e) { selfieMini = selfieDataURL; }
               selfieGallery.push({
                 NIA: nia,
@@ -3215,24 +3292,69 @@ async function prosesAbsenKegiatan(nia, qrText) {
 function previewSelfieKegiatan(nia, src) {
   document.getElementById('modal-selfie-preview').classList.add('show');
   document.getElementById('selfie-preview-img').src = src || '';
+  const dlBtn = document.getElementById('selfie-download-btn');
+  if(dlBtn) { dlBtn.href = src || ''; dlBtn.download = 'selfie_' + nia + '.jpg'; }
   const a = allAnggota.find(x => x.NIA === nia);
-  document.getElementById('selfie-preview-nama').textContent = a ? a.nama : nia;
+  document.getElementById('selfie-preview-nama').innerHTML = '<div style="font-weight:700;font-size:15px;">' + (a ? a.nama : nia) + '</div>';
 }
 
 // ── Dashboard selfie gallery ──
+let _selfieFilter = 'semua';
+function filterSelfieGallery(tipe) {
+  _selfieFilter = tipe;
+  ['semua','datang','pulang'].forEach(t => {
+    const btn = document.getElementById('filter-' + t.toLowerCase());
+    if(btn) { btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = ''; }
+  });
+  const active = document.getElementById('filter-' + tipe.toLowerCase());
+  if(active) { active.style.background = 'rgba(74,222,128,0.15)'; active.style.borderColor = 'rgba(74,222,128,0.4)'; active.style.color = 'var(--accent)'; }
+  renderSelfieGalleryDashboard();
+}
+window.filterSelfieGallery = filterSelfieGallery;
+
 function renderSelfieGalleryDashboard() {
   const el = document.getElementById('selfie-gallery-dashboard');
   if(!el) return;
-  // Tampilkan semua selfie dalam 24 jam terakhir
   const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-  const recentSelfies = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
-  if(!recentSelfies.length){ el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie dalam 24 jam terakhir</div>'; return; }
-  el.innerHTML = recentSelfies.map(s => `
-    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieMini}')">
-      <img src="${s.selfieMini}" alt="${s.nama}">
+  let recentSelfies = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
+  if(_selfieFilter !== 'semua') {
+    recentSelfies = recentSelfies.filter(s => (s.tipe||'').toUpperCase() === _selfieFilter.toUpperCase());
+  }
+  const countEl = document.getElementById('selfie-count');
+  if(countEl) countEl.textContent = recentSelfies.length + ' foto';
+  if(!recentSelfies.length){
+    el.innerHTML = '<div style="color:var(--text3); font-size:12px; grid-column:1/-1; text-align:center; padding:20px;">Belum ada foto selfie' + (_selfieFilter !== 'semua' ? ' untuk filter ini' : ' hari ini') + '</div>';
+    return;
+  }
+  // Group by NIA to show latest per person
+  const byNia = {};
+  recentSelfies.forEach(s => {
+    if(!byNia[s.NIA]) byNia[s.NIA] = [];
+    byNia[s.NIA].push(s);
+  });
+  const allEntries = recentSelfies.slice().reverse(); // terbaru di depan
+  el.innerHTML = allEntries.map(s => {
+    const imgSrc = s.selfieDataURL || s.selfieMini || '';
+    const tipeBadge = s.tipe === 'PULANG' ? '<div class="selfie-tipe">PULANG</div>' : '<div class="selfie-tipe">DATANG</div>';
+    return `<div class="selfie-item" onclick="previewSelfieAnggotaAdmin('${s.NIA}', '${imgSrc}', '${s.nama}', '${s.waktu||''}', '${s.tipe||''}', '${s.sesiNama||'Piket'}')">
+      <img src="${imgSrc}" alt="${s.nama}">
+      ${tipeBadge}
+      <div class="selfie-time">${s.waktu||''}</div>
       <div class="selfie-label">${s.nama.split(' ')[0]}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
+
+function previewSelfieAnggotaAdmin(nia, src, nama, waktu, tipe, sesi) {
+  const modal = document.getElementById('modal-selfie-preview');
+  modal.classList.add('show');
+  document.getElementById('selfie-preview-img').src = src || '';
+  const dlBtn = document.getElementById('selfie-download-btn');
+  if(dlBtn) { dlBtn.href = src || ''; dlBtn.download = 'selfie_' + nia + '_' + waktu.replace(':','') + '.jpg'; }
+  const tipeBadge = tipe === 'PULANG' ? '<span style="background:rgba(192,132,252,0.2);color:#c084fc;padding:2px 8px;border-radius:10px;font-size:11px;">PULANG</span>' : '<span style="background:rgba(74,222,128,0.2);color:var(--accent);padding:2px 8px;border-radius:10px;font-size:11px;">DATANG</span>';
+  document.getElementById('selfie-preview-nama').innerHTML = `<div style="font-weight:700;font-size:15px;">${nama}</div><div style="font-size:12px;color:var(--text2);margin-top:4px;display:flex;gap:8px;align-items:center;">${tipeBadge} <span>⏰ ${waktu}</span> <span>📋 ${sesi}</span></div>`;
+}
+window.previewSelfieAnggotaAdmin = previewSelfieAnggotaAdmin;
 
 // ── Dashboard sesi aktif ──
 function renderDashboardSesiAktif() {
@@ -3989,24 +4111,38 @@ let faceScanActive = false;
 let faceScanInterval = null;
 let metodeAbsen = 'qr'; // 'qr' atau 'face'
 
-// Load face-api models dari CDN
-async function loadFaceApiModels() {
+// Load face-api models dari CDN — dengan progress & retry
+const FACE_MODEL_CDNS = [
+  'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights',
+  'https://unpkg.com/face-api.js@0.22.2/weights',
+];
+async function loadFaceApiModels(onProgress) {
   if(faceApiLoaded) return true;
-  try {
-    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-    ]);
-    faceApiLoaded = true;
-    console.log('✅ Face API models loaded');
-    return true;
-  } catch(e) {
-    console.error('❌ Face API load failed:', e);
-    showToast('⚠️ Model Face ID gagal dimuat. Periksa koneksi internet.', 'error');
-    return false;
+  if(onProgress) onProgress('Memuat model AI... (pertama kali ~15 detik)');
+  for(let i = 0; i < FACE_MODEL_CDNS.length; i++) {
+    const MODEL_URL = FACE_MODEL_CDNS[i];
+    try {
+      if(onProgress) onProgress(`Mengunduh model dari server ${i+1}/${FACE_MODEL_CDNS.length}...`);
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+      ]);
+      faceApiLoaded = true;
+      console.log('✅ Face API models loaded from', MODEL_URL);
+      if(onProgress) onProgress('✅ Model siap!');
+      return true;
+    } catch(e) {
+      console.warn(`CDN ${i+1} gagal:`, e.message);
+      if(i < FACE_MODEL_CDNS.length - 1) {
+        if(onProgress) onProgress(`Server ${i+1} gagal, mencoba server cadangan...`);
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
   }
+  console.error('❌ Semua CDN gagal');
+  showToast('⚠️ Model AI gagal dimuat. Coba lagi atau gunakan QR Code.', 'error');
+  return false;
 }
 
 // ── STORAGE Face Descriptor ──
@@ -4085,7 +4221,16 @@ async function mulaiEnrollFace() {
   document.getElementById('enroll-btn-mulai').style.display = 'none';
   document.getElementById('enroll-label').textContent = 'Memuat model...';
 
-  const ok = await loadFaceApiModels();
+  // Tampilkan progress bar
+  const progressBox = document.getElementById('enroll-model-progress');
+  const progressMsg = document.getElementById('enroll-model-progress-msg');
+  if(progressBox) progressBox.style.display = 'block';
+
+  const ok = await loadFaceApiModels((msg) => {
+    if(progressMsg) progressMsg.textContent = msg;
+    document.getElementById('enroll-label').textContent = msg;
+  });
+  if(progressBox) progressBox.style.display = 'none';
   if(!ok) { document.getElementById('enroll-btn-mulai').style.display = 'inline-block'; return; }
 
   try {
@@ -4226,8 +4371,17 @@ async function mulaiScanFaceID() {
   document.getElementById('face-scan-status-msg').textContent = 'Memuat model AI...';
   document.getElementById('btn-face-mulai').style.display = 'none';
   document.getElementById('face-scan-label').textContent = 'Memuat...';
-  
-  const ok = await loadFaceApiModels();
+
+  // Tampilkan progress bar
+  const scanProgressBox = document.getElementById('scan-model-progress');
+  const scanProgressMsg = document.getElementById('scan-model-progress-msg');
+  if(scanProgressBox) scanProgressBox.style.display = 'block';
+
+  const ok = await loadFaceApiModels((msg) => {
+    if(scanProgressMsg) scanProgressMsg.textContent = msg;
+    document.getElementById('face-scan-status-msg').textContent = msg;
+  });
+  if(scanProgressBox) scanProgressBox.style.display = 'none';
   if(!ok) { document.getElementById('btn-face-mulai').style.display = 'inline-block'; return; }
   
   try {
