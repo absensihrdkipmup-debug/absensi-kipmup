@@ -92,7 +92,7 @@ body {
   animation: logo-float 4s ease-in-out infinite;
   cursor:default;
 }
-#logo-img { display:block; width:100px; height:100px; object-fit:contain; border-radius:8px; filter: drop-shadow(0 0 14px rgba(212,175,55,0.55)); }
+#logo-img { display:block; width:100px; height:100px; object-fit:contain; filter: drop-shadow(0 0 14px rgba(212,175,55,0.55)); }
 .logo-canvas-wrap:hover {
   filter: drop-shadow(0 0 30px rgba(212,175,55,0.95));
   transform: scale(1.1) rotate(-3deg) !important;
@@ -101,6 +101,7 @@ body {
 .logo-canvas-wrap:hover #logo-img {
   filter: drop-shadow(0 0 30px rgba(212,175,55,0.95));
 }
+#logo-img { display:block; width:100px; height:100px; object-fit:contain; border-radius:8px; }
 @keyframes logo-float {
   0%,100% { transform:translateY(0); }
   50%      { transform:translateY(-8px); }
@@ -675,6 +676,11 @@ let allAnggota = [...realAnggota];
     <div class="landing-title">KIPM-UP</div>
     <div class="landing-sub">Jadwal Piket dan Kegiatan KIPM UP</div>
     <div class="btn-choice">
+      <button class="btn-main btn-qr-live" onclick="goTo('qr')">
+        <span class="btn-icon">📲</span>
+        <span class="btn-text"><span class="btn-label">QR Code Live</span><span class="btn-sublabel">Piket Hari Ini</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
       <button class="btn-main btn-member" onclick="goTo('scan')">
         <span class="btn-icon">📱</span>
         <span class="btn-text"><span class="btn-label">Saya Anggota</span><span class="btn-sublabel">Absen Piket</span></span>
@@ -690,9 +696,9 @@ let allAnggota = [...realAnggota];
         <span class="btn-text"><span class="btn-label">Ajukan Izin</span><span class="btn-sublabel">Tidak bisa hadir piket / kegiatan</span></span>
         <span class="btn-arrow">›</span>
       </button>
-      <button class="btn-main btn-qr-live" onclick="goTo('qr')">
-        <span class="btn-icon">📲</span>
-        <span class="btn-text"><span class="btn-label">QR Code Live</span><span class="btn-sublabel">Piket Hari Ini</span></span>
+      <button class="btn-main" onclick="goTo('pengaduan')" style="background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(6,182,212,0.06)); color:var(--accent2); border-color:rgba(34,211,238,0.32);">
+        <span class="btn-icon">💬</span>
+        <span class="btn-text"><span class="btn-label">Pengaduan / Masukan</span><span class="btn-sublabel">Saran, solusi &amp; aspirasi anggota</span></span>
         <span class="btn-arrow">›</span>
       </button>
       <button class="btn-main btn-streamlit" onclick="window.open('https://kipmup-sigma.streamlit.app/','_blank')">
@@ -776,33 +782,36 @@ let allAnggota = [...realAnggota];
     <div><div class="scan-header-title">Absensi Piket</div><div id="scan-tanggal"></div></div>
   </div>
   <div class="scan-body" style="padding:20px; max-width:480px; margin:0 auto;">
-    <div class="identity-section" style="background:var(--bg2); border-radius:12px; padding:16px;">
-      <label class="form-label">NIA (Nomor Induk Anggota)</label>
-      <input class="form-input" id="input-NIA" placeholder="Contoh: 082024022">
-      <div style="margin:12px 0 8px;"><label class="form-label">Jenis Absen</label>
-        <div style="display:flex; gap:10px;">
-          <button class="scan-type-btn" id="btn-tipe-datang" onclick="setScanType('DATANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--accent); color:var(--accent); border-radius:8px;">🟢 Datang</button>
-          <button class="scan-type-btn" id="btn-tipe-pulang" onclick="setScanType('PULANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--border2); border-radius:8px;">🟣 Pulang</button>
-        </div>
-      </div>
-      <div class="gps-status" id="gps-status" style="font-size:11px; margin-top:6px;">📍 Siap mengambil lokasi...</div>
-    </div>
-    <!-- INFO ATURAN PIKET — di atas metode absen -->
-    <div style="background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.22); border-radius:12px; padding:16px; margin-top:16px;">
-      <div style="font-size:12px; font-weight:700; color:var(--accent3); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+
+    <!-- 1. ATURAN PIKET — paling atas -->
+    <div style="background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.22); border-radius:12px; padding:14px;">
+      <div style="font-size:12px; font-weight:700; color:var(--accent3); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
         <span>📌</span> Aturan Piket KIPM-UP
       </div>
-      <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--text2); line-height:1.6;">
-        <div style="display:flex; gap:8px;"><span style="color:var(--accent3); flex-shrink:0;">⏰</span><span>Jam piket berlangsung <b style="color:var(--text);">09.00 – 16.00 WIB</b>, Senin s/d Jumat sesuai jadwal divisi.</span></div>
-        <div style="display:flex; gap:8px;"><span style="color:var(--accent); flex-shrink:0;">✅</span><span>Wajib <b style="color:var(--text);">absen Datang</b> saat tiba <b>dan</b> <b style="color:var(--text);">absen Pulang</b> saat meninggalkan GIBEI FEBUP.</span></div>
-        <div style="display:flex; gap:8px;"><span style="color:var(--red); flex-shrink:0;">⚠️</span><span>Jika <b style="color:var(--text);">lupa absen Pulang</b>, durasi piket hanya dihitung <b style="color:var(--red);">2 jam</b> — meski sudah hadir lebih dari 10 jam atau lebih.</span></div>
-        <div style="display:flex; gap:8px;"><span style="color:var(--red); flex-shrink:0;">❌</span><span>Jika tidak absen sama sekali (tidak Datang &amp; tidak Pulang), tercatat <b style="color:var(--red);">Alpha</b>.</span></div>
-        <div style="display:flex; gap:8px;"><span style="color:var(--accent2); flex-shrink:0;">📝</span><span>Tidak bisa hadir? Ajukan <b style="color:var(--text);">Izin</b> lewat tombol "📝 Ajukan Izin" di beranda sebelum hari piket dan jgn lupa juga kabari divisi HR.</span></div>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; color:var(--text2); line-height:1.55;">
+        <div style="display:flex; gap:7px;"><span style="color:var(--accent3); flex-shrink:0;">⏰</span><span>Jam piket <b style="color:var(--text);">09.00 – 16.00 WIB</b>, Senin–Jumat sesuai jadwal divisi.</span></div>
+        <div style="display:flex; gap:7px;"><span style="color:var(--accent); flex-shrink:0;">✅</span><span>Wajib <b style="color:var(--text);">absen Datang</b> saat tiba <b>dan</b> <b style="color:var(--text);">absen Pulang</b> saat meninggalkan GIBEI FEBUP.</span></div>
+        <div style="display:flex; gap:7px;"><span style="color:var(--red); flex-shrink:0;">⚠️</span><span>Lupa absen Pulang → durasi dihitung <b style="color:var(--red);">hanya 2 jam</b>, meski hadir lebih lama.</span></div>
+        <div style="display:flex; gap:7px;"><span style="color:var(--red); flex-shrink:0;">❌</span><span>Tidak absen sama sekali → tercatat <b style="color:var(--red);">Alpha</b>.</span></div>
+        <div style="display:flex; gap:7px;"><span style="color:var(--accent2); flex-shrink:0;">📝</span><span>Tidak bisa hadir? Ajukan <b style="color:var(--text);">Izin</b> di beranda &amp; kabari divisi HR.</span></div>
       </div>
     </div>
 
-    <!-- PILIH METODE ABSEN -->
-    <div style="background:var(--bg2); border-radius:12px; padding:14px; margin-top:16px;">
+    <!-- 2. JENIS ABSEN + NIA -->
+    <div class="identity-section" style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:14px;">
+      <div style="margin-bottom:12px;"><label class="form-label">Jenis Absen</label>
+        <div style="display:flex; gap:10px; margin-top:6px;">
+          <button class="scan-type-btn" id="btn-tipe-datang" onclick="setScanType('DATANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:13px; cursor:pointer;">🟢 Datang</button>
+          <button class="scan-type-btn" id="btn-tipe-pulang" onclick="setScanType('PULANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; font-family:var(--font); font-size:13px; cursor:pointer;">🟣 Pulang</button>
+        </div>
+      </div>
+      <label class="form-label">NIA (Nomor Induk Anggota)</label>
+      <input class="form-input" id="input-NIA" placeholder="Contoh: 082024022" style="margin-top:6px;">
+      <div class="gps-status" id="gps-status" style="font-size:11px; margin-top:6px;">📍 Siap mengambil lokasi...</div>
+    </div>
+
+    <!-- 3. PILIH METODE ABSEN -->
+    <div style="background:var(--bg2); border-radius:12px; padding:14px; margin-top:14px;">
       <div style="font-size:12px; color:var(--text3); font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.8px;">Metode Absen</div>
       <div style="display:flex; gap:8px;">
         <button class="face-mode-btn active" id="btn-metode-qr" onclick="setMetodeAbsen('qr')">📱 QR Code</button>
@@ -810,8 +819,8 @@ let allAnggota = [...realAnggota];
       </div>
     </div>
 
-    <!-- STEP 1: FOTO SELFIE -->
-    <div id="selfie-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:16px; text-align:center;">
+    <!-- 4. STEP 1: FOTO SELFIE -->
+    <div id="selfie-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:14px; text-align:center;">
       <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Step 1 dari 2</div>
       <div style="font-size:16px; font-weight:600; margin-bottom:4px;">📸 Foto Selfie Dulu</div>
       <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">Ambil foto langsung dari kamera — tidak bisa dari galeri</div>
@@ -897,8 +906,8 @@ let allAnggota = [...realAnggota];
       <button class="btn-scan" id="btn-start-scan" onclick="toggleScan()" style="background:var(--accent); color:#0a1a0f; padding:10px 20px; border-radius:30px; border:none; font-family:var(--font); font-size:14px; font-weight:600; cursor:pointer;">▶ Mulai Scan</button>
     </div>
 
-    <!-- PIKET HARI INI — paling bawah -->
-    <div class="jadwal-card" style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:16px;">
+    <!-- 6. PIKET HARI INI — paling bawah -->
+    <div class="jadwal-card" style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:14px; margin-bottom:20px;">
       <div class="jadwal-card-title">📋 Piket Hari Ini</div>
       <div id="jadwal-today"><div class="loading" style="color:var(--accent);">Memuat jadwal &amp; status...</div></div>
     </div>
@@ -1065,6 +1074,19 @@ let allAnggota = [...realAnggota];
     <div><div style="font-weight:600;">Ajukan Izin / Ketidakhadiran</div><div style="font-size:12px; color:var(--text2);">Isi form izin sebelum atau saat kegiatan</div></div>
   </div>
   <div style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
+
+    <!-- WARNING komunikasi HR -->
+    <div style="background:rgba(248,113,113,0.09); border:1px solid rgba(248,113,113,0.35); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; gap:10px;">
+      <span style="font-size:20px; flex-shrink:0;">⚠️</span>
+      <div>
+        <div style="font-size:13px; font-weight:700; color:var(--red); margin-bottom:4px;">Wajib Double Check — Jangan Hanya Isi Form!</div>
+        <div style="font-size:12px; color:var(--text2); line-height:1.6;">
+          Setelah mengisi form ini, <b style="color:var(--text);">wajib memberi kabar langsung ke divisi HR</b> mengenai alasan sakit, izin, atau ketidakhadiranmu.<br>
+          <span style="color:var(--accent3);">📲 Jaga komunikasi sesama anggota dengan baik.</span>
+        </div>
+      </div>
+    </div>
+
     <div class="table-card" style="padding:20px;">
       <div style="display:flex; flex-direction:column; gap:12px;">
         <div>
@@ -1099,6 +1121,56 @@ let allAnggota = [...realAnggota];
         </div>
         <button class="btn-sm primary" style="width:100%; padding:12px; font-size:14px;" onclick="submitIzinAnggota()">📤 Kirim Izin</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- HALAMAN PENGADUAN / MASUKAN -->
+<div id="page-pengaduan" class="page">
+  <div style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px; align-items:center;">
+    <div class="back-btn" onclick="goTo('landing')">←</div>
+    <div><div style="font-weight:600;">💬 Pengaduan / Masukan / Solusi</div><div style="font-size:12px; color:var(--text2);">Aspirasi &amp; saran untuk KIPM-UP</div></div>
+  </div>
+  <div style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
+    <div style="background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; gap:10px;">
+      <span style="font-size:20px; flex-shrink:0;">💡</span>
+      <div style="font-size:12px; color:var(--text2); line-height:1.6;">
+        Sampaikan pengaduan, masukan, ide perbaikan, atau laporan masalah terkait sistem absensi, piket, kegiatan, maupun keorganisasian.<br>
+        <b style="color:var(--accent2);">Nama tidak ditampilkan ke publik.</b>
+      </div>
+    </div>
+    <div class="table-card" style="padding:20px;">
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px;">Jenis Pengaduan / Masukan</label>
+          <select class="form-input" id="pengaduan-kategori">
+            <option value="sistem">🖥️ Masalah Sistem Absensi</option>
+            <option value="piket">📋 Terkait Piket / Jadwal</option>
+            <option value="kegiatan">🎯 Terkait Kegiatan / Rapat</option>
+            <option value="organisasi">🏛️ Terkait Keorganisasian</option>
+            <option value="ide">💡 Ide / Saran Perbaikan</option>
+            <option value="lainnya">📌 Lainnya</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px;">NIA Kamu <span style="color:var(--text3);">(opsional, untuk tindak lanjut)</span></label>
+          <input class="form-input" id="pengaduan-nia" placeholder="Kosongkan jika ingin anonim">
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px;">Isi Pengaduan / Masukan <span style="color:var(--red);">*</span></label>
+          <textarea class="form-input" id="pengaduan-isi" style="height:120px; resize:vertical;" placeholder="Tulis pengaduanmu di sini secara jelas dan konstruktif..."></textarea>
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px;">Solusi yang Kamu Sarankan <span style="color:var(--text3);">(opsional)</span></label>
+          <textarea class="form-input" id="pengaduan-solusi" style="height:80px; resize:vertical;" placeholder="Ada ide solusi? Tulis di sini..."></textarea>
+        </div>
+        <button class="btn-sm primary" style="width:100%; padding:12px; font-size:14px;" onclick="submitPengaduan()">📤 Kirim Pengaduan</button>
+        <div id="pengaduan-status" style="display:none; font-size:12px; text-align:center; padding:10px; border-radius:8px;"></div>
+      </div>
+    </div>
+    <div id="pengaduan-riwayat-box" style="margin-top:16px; display:none;">
+      <div style="font-size:12px; font-weight:600; color:var(--text2); margin-bottom:8px;">📋 Pengaduan Terkirim (sesi ini)</div>
+      <div id="pengaduan-riwayat-list"></div>
     </div>
   </div>
 </div>
@@ -1978,7 +2050,11 @@ function goTo(page){
     if(tgl) tgl.innerText = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   }
   if(page==='qr'){ startQRLiveDisplay(); }
-  if(page==='kalender'){ renderKalenderJadwal(); renderAgendaPublic(); }
+  if(page==='kalender'){ 
+    // Render konten kalender setelah frame pertama (tidak block animasi transisi)
+    setTimeout(() => { renderKalenderJadwal(); renderAgendaPublic(); }, 50);
+  }
+  if(page==='pengaduan'){ setTimeout(() => renderPengaduanRiwayat(), 50); }
   if(page!=='scan') stopSelfieCam();
   if(page!=='kegiatan-scan') { 
     if(kegiatanSelfieStream){ kegiatanSelfieStream.getTracks().forEach(t=>t.stop()); kegiatanSelfieStream=null; }
@@ -2164,8 +2240,6 @@ function toggleScan(){
                 await new Promise(r => { tmpImg.onload = () => { ctx2.drawImage(tmpImg,0,0,60,60); r(); }; tmpImg.onerror = r; });
                 selfieMini = cvs.toDataURL('image/jpeg', 0.5);
               } catch(e) { selfieMini = selfieDataURL; }
-
-              // Simpan ke localStorage lokal (fallback jika admin di device yang sama)
               selfieGallery.push({
                 NIA: nia,
                 nama: anggota ? anggota.nama : nia,
@@ -2179,26 +2253,6 @@ function toggleScan(){
               });
               if(selfieGallery.length > 50) selfieGallery.shift();
               saveSelfieGallery();
-
-              // Kirim selfie mini ke GAS disimpan di shared key (agar bisa dibaca admin lintas device)
-              // Key: "selfie_piket_{tanggal}" — nilai: array JSON {NIA, nama, waktu, tipe, selfieMini}
-              try {
-                const today = getTodayWIB();
-                const selfieKey = 'selfie_piket_' + today;
-                // Ambil data selfie hari ini yang sudah ada
-                let existing = [];
-                try {
-                  const stored = localStorage.getItem(selfieKey);
-                  if(stored) existing = JSON.parse(stored);
-                } catch(e) {}
-                // Tambah/update entry untuk NIA+tipe ini
-                const idx = existing.findIndex(x => x.NIA === nia && x.tipe === scanTipe);
-                const entry = {NIA: nia, nama: anggota ? anggota.nama : nia, waktu, tipe: scanTipe, selfieMini, savedAt: Date.now()};
-                if(idx >= 0) existing[idx] = entry; else existing.push(entry);
-                localStorage.setItem(selfieKey, JSON.stringify(existing));
-                // Juga simpan ke shared selfie gallery (key untuk admin)
-                localStorage.setItem('selfieGallery_shared_' + today, JSON.stringify(existing));
-              } catch(e) {}
             }
             // ===============================================
 
@@ -2282,16 +2336,18 @@ function startQRLiveDisplay() {
 
 // ADMIN PANEL
 async function adminLogin(){ 
-  const u=document.getElementById('admin-username').value;
-  const p=document.getElementById('admin-password').value; 
+  const u=document.getElementById('admin-username').value.trim();
+  const p=document.getElementById('admin-password').value.trim(); 
+  if(!u||!p){ showToast('Username & password wajib diisi','error'); return; }
   document.getElementById('login-err').style.display='none';
+  const btn = document.querySelector('#page-admin-login .btn-login');
+  if(btn){ btn.disabled=true; btn.textContent='⌛ Memeriksa...'; }
   showToast('Memeriksa kredensial...', 'info');
   try {
     const res=await api({action:'adminLogin', username:u, password:p}); 
     if(res.ok){ 
       const namaEl = document.getElementById('admin-nama-display');
       if(namaEl) namaEl.innerText = res.nama || 'Admin';
-      // Simpan session admin ke localStorage agar bertahan saat refresh
       localStorage.setItem('adminSession', JSON.stringify({nama: res.nama || 'Admin', role: res.role || 'admin', ts: Date.now()}));
       goTo('admin'); 
     } else { 
@@ -2303,6 +2359,8 @@ async function adminLogin(){
     const errEl = document.getElementById('login-err');
     errEl.innerText = 'Koneksi server gagal. Periksa jaringan.';
     errEl.style.display='block';
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='Masuk →'; }
   }
 }
 function adminLogout(){ 
@@ -2310,10 +2368,21 @@ function adminLogout(){
   goTo('landing'); 
   if(qrRefreshInterval) clearInterval(qrRefreshInterval); 
 }
-async function initAdmin(){ 
-  await loadAnggotaForPicker(); 
+function initAdmin(){ 
+  // Tampilkan dashboard langsung, load data async di background
   startClock(); 
-  switchTab('dashboard'); 
+  switchTab('dashboard');
+  // Load anggota picker di background (tidak block tampilan)
+  setTimeout(() => loadAnggotaForPickerSilent(), 200);
+}
+// Load anggota dari GAS di background tanpa block UI
+async function loadAnggotaForPickerSilent() {
+  try {
+    const res = await api({action:'getAnggota'});
+    if(res.ok && res.data && res.data.length > 0) {
+      allAnggota = [...res.data];
+    }
+  } catch(e) { /* pakai data lokal */ }
 }
 function startClock(){ setInterval(()=>{ document.getElementById('topbar-clock').innerText = new Date().toLocaleTimeString('id-ID'); },1000); }
 function switchTab(tab){ 
@@ -3719,36 +3788,17 @@ function previewSelfieKegiatan(nia, src) {
 function renderSelfieGalleryDashboard() {
   const el = document.getElementById('selfie-gallery-dashboard');
   if(!el) return;
-  const today = getTodayWIB();
+  // Tampilkan semua selfie dalam 24 jam terakhir
   const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-
-  // Gabungkan dari selfieGallery lokal + shared key hari ini
-  let allSelfies = [...selfieGallery.filter(s => (s.savedAt || 0) >= cutoff)];
-  
-  // Baca dari shared key (diisi oleh HP anggota yang pakai browser/device yang sama dengan admin)
-  try {
-    const sharedRaw = localStorage.getItem('selfieGallery_shared_' + today);
-    if(sharedRaw) {
-      const shared = JSON.parse(sharedRaw);
-      shared.forEach(s => {
-        // Tambah jika NIA+tipe belum ada
-        if(!allSelfies.find(x => x.NIA === s.NIA && x.tipe === s.tipe)) {
-          allSelfies.push({...s, savedAt: s.savedAt || Date.now()});
-        }
-      });
-    }
-  } catch(e) {}
-
-  if(!allSelfies.length){ 
-    el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie hari ini.<br><span style="font-size:10px; opacity:0.7;">Foto tersimpan di perangkat anggota. Gunakan 1 perangkat/HP yang sama untuk admin & anggota agar foto tampil di sini.</span></div>'; 
-    return; 
-  }
-  el.innerHTML = allSelfies.map(s => `
-    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieDataURL || s.selfieMini}')">
+  const recentSelfies = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
+  if(!recentSelfies.length){ el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie dalam 24 jam terakhir</div>'; return; }
+  el.innerHTML = recentSelfies.map(s => `
+    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieMini}')">
       <img src="${s.selfieMini}" alt="${s.nama}">
-      <div class="selfie-label">${(s.nama||'').split(' ')[0]}${s.tipe ? ' · ' + s.tipe : ''}</div>
+      <div class="selfie-label">${s.nama.split(' ')[0]}</div>
     </div>`).join('');
 }
+
 // ── Dashboard sesi aktif ──
 function renderDashboardSesiAktif() {
   const el = document.getElementById('dashboard-sesi-aktif');
@@ -4012,8 +4062,9 @@ async function processRankingPiket(data) {
     return true;
   }
 
-  // Konstanta jam kerja (WIB) — dipakai untuk validasi jam datang
-  const JAM_MULAI_MENIT = 7 * 60;   // 07:00 — batas minimum jam piket valid
+  // Konstanta jam kerja minimum
+  const JAM_MULAI_MENIT = 7 * 60;   // 07:00 — batas minimum jam datang yang valid
+  const DURASI_LUPA_PULANG = 2 * 60; // 2 jam — aturan jika lupa absen pulang
 
   data.forEach(r => {
     const key = r.NIA + '_' + r.tanggal;
@@ -4033,9 +4084,8 @@ async function processRankingPiket(data) {
   });
 
   // Auto-checkout: HANYA untuk hari LALU yang tidak punya PULANG
-  // ATURAN: lupa absen pulang = durasi hanya dihitung 2 JAM dari jam datang
-  // Pengecualian: jika datang sebelum 07:00 (bukan jam piket normal), SKIP
-  const DURASI_LUPA_PULANG = 2 * 60; // 2 jam dalam menit
+  // ATURAN: lupa absen Pulang = durasi dihitung hanya 2 JAM
+  // SKIP: datang sebelum 07:00 (bukan jam piket normal)
   const todayCheck = getTodayWIB();
   Object.values(pairs).forEach(p => {
     if (!p.adaPulang && p.jamDatang && p.tanggal && p.tanggal < todayCheck) {
@@ -4043,10 +4093,8 @@ async function processRankingPiket(data) {
         const wMatch = String(p.jamDatang).match(/(\d{1,2}):(\d{2})/);
         if (wMatch) {
           const jamDatangMenit = parseInt(wMatch[1]) * 60 + parseInt(wMatch[2]);
-          // SKIP jika datang sebelum jam kerja 07:00 (kemungkinan data error / bukan piket)
-          if (jamDatangMenit < JAM_MULAI_MENIT) return;
-          // Lupa pulang = 2 jam saja, bukan dihitung sampai 19:00
-          p.durasi = DURASI_LUPA_PULANG;
+          if (jamDatangMenit < JAM_MULAI_MENIT) return; // skip datang sebelum 07:00
+          p.durasi = DURASI_LUPA_PULANG; // 2 jam flat
         }
       } catch(e) {}
     }
@@ -4263,6 +4311,8 @@ async function loadHistorisRank() {
       const data = (res.ok && Array.isArray(res.data)) ? res.data : [];
       const map = {};
       const pairs = {};
+      const JAM_MULAI_PIKET = 7 * 60; // 07:00 — batas minimum jam datang valid
+      const DURASI_LUPA_PULANG = 2 * 60; // 2 jam flat jika lupa absen pulang
       data.forEach(r => {
         const key = r.NIA + '_' + r.tanggal;
         if(!pairs[key]) pairs[key] = {NIA:r.NIA, nama:r.nama, tanggal:r.tanggal, status:r.status||'', durasi:0, jamDatang:null, adaPulang:false};
@@ -4270,26 +4320,20 @@ async function loadHistorisRank() {
         if(r.tipe==='DATANG' && r.waktu) pairs[key].jamDatang = r.waktu;
         if(r.status && r.status.trim()) pairs[key].status = r.status;
       });
-
-      // Auto-checkout: lupa absen Pulang = durasi hanya 2 jam
-      // Berlaku untuk semua hari lalu yang tidak punya PULANG
-      // Hari ini yang belum pulang: belum dihitung (masih ongoing)
-      const DURASI_LUPA_PULANG = 2 * 60; // 2 jam dalam menit
-      const JAM_MULAI_PIKET = 7 * 60;   // 07:00 — batas bawah jam piket valid
-      const todayCheckH = getTodayWIB();
+      // Lupa absen Pulang = 2 jam (berlaku untuk hari lalu saja)
+      const todayH = getTodayWIB();
       Object.values(pairs).forEach(p => {
-        if(!p.adaPulang && p.jamDatang && p.tanggal && p.tanggal < todayCheckH) {
+        if(!p.adaPulang && p.jamDatang && p.tanggal && p.tanggal < todayH) {
           try {
             const wMatch = String(p.jamDatang).match(/(\d{1,2}):(\d{2})/);
             if(wMatch) {
-              const jamDatangMenit = parseInt(wMatch[1]) * 60 + parseInt(wMatch[2]);
-              if(jamDatangMenit < JAM_MULAI_PIKET) return; // skip datang sebelum 07:00
+              const jamMenit = parseInt(wMatch[1])*60 + parseInt(wMatch[2]);
+              if(jamMenit < JAM_MULAI_PIKET) return; // skip datang sebelum 07:00
               p.durasi = DURASI_LUPA_PULANG;
             }
           } catch(e) {}
         }
       });
-
       // Buat lookup jadwal lokal (UTC-safe)
       const niaToHariPiket2 = {};
       for(let h=1;h<=5;h++) { (jadwalMingguan[h]||[]).forEach(nia => { if(!niaToHariPiket2[nia]) niaToHariPiket2[nia]=new Set(); niaToHariPiket2[nia].add(h); }); }
@@ -4310,6 +4354,15 @@ async function loadHistorisRank() {
         }
         return true; // tidak ada data → anggap piket
       }
+
+      // Auto-checkout historis: hanya hari lalu yang tidak punya PULANG
+      // ATURAN: lupa pulang = 2 jam (bukan sampai 19:00)
+      const todayCheckH = getTodayWIB();
+      Object.values(pairs).forEach(p => {
+        if(!p.adaPulang && p.jamDatang && p.tanggal && p.tanggal < todayCheckH) {
+          p.durasi = DURASI_LUPA_PULANG; // 2 jam
+        }
+      });
 
       Object.values(pairs).forEach(p => {
         // Klasifikasi MURNI dari jadwal, abaikan status GAS
@@ -4604,7 +4657,7 @@ window.goTo=goTo;
 // Restore halaman dari hash URL saat refresh (termasuk admin jika session aktif)
 (function restorePageFromHash() {
   const hash = window.location.hash.replace('#', '');
-  const publicPages = ['scan', 'qr', 'kalender', 'kegiatan-scan', 'izin-anggota'];
+  const publicPages = ['scan', 'qr', 'kalender', 'kegiatan-scan', 'izin-anggota', 'pengaduan'];
   const adminPages = ['admin', 'admin-login'];
 
   // Cek session admin di localStorage
@@ -4645,6 +4698,8 @@ window.loadRekapKegiatan=loadRekapKegiatan;
 window.cariAnggotaIzin=cariAnggotaIzin; window.pilihAnggotaIzin=pilihAnggotaIzin;
 window.submitIzinAdmin=submitIzinAdmin; window.loadDaftarIzin=loadDaftarIzin;
 window.submitIzinAnggota=submitIzinAnggota; window.goToIzinAnggota=goToIzinAnggota;
+window.submitPengaduan=submitPengaduan;
+window.loadAnggotaForPickerSilent=loadAnggotaForPickerSilent;
 window.goToKegiatanScan=goToKegiatanScan;
 window.kegiatanBukaKamera=kegiatanBukaKamera; window.kegiatanAmbilFoto=kegiatanAmbilFoto;
 window.kegiatanUlangFoto=kegiatanUlangFoto; window.kegiatanLanjutScan=kegiatanLanjutScan;
@@ -4655,6 +4710,86 @@ window.loadAllRankings=loadAllRankings; window.loadHistorisRank=loadHistorisRank
 window.setMetodeAbsen=setMetodeAbsen; window.mulaiScanFaceID=mulaiScanFaceID; window.stopScanFaceID=stopScanFaceID;
 window.goToFaceEnroll=goToFaceEnroll; window.mulaiEnrollFace=mulaiEnrollFace; window.ulangEnrollFace=ulangEnrollFace; window.simpanFaceID=simpanFaceID;
 window.resetFilterRekap=resetFilterRekap; window.hapusDataRekap=hapusDataRekap;
+
+// =========================================================================
+// PENGADUAN / MASUKAN
+// =========================================================================
+let pengaduanList = JSON.parse(sessionStorage.getItem('pengaduanList') || '[]');
+
+async function submitPengaduan() {
+  const kategori = document.getElementById('pengaduan-kategori').value;
+  const nia = (document.getElementById('pengaduan-nia').value || '').trim();
+  const isi = (document.getElementById('pengaduan-isi').value || '').trim();
+  const solusi = (document.getElementById('pengaduan-solusi').value || '').trim();
+  const statusEl = document.getElementById('pengaduan-status');
+
+  if(!isi) { showToast('Isi pengaduan tidak boleh kosong','error'); return; }
+
+  const btn = document.querySelector('#page-pengaduan .btn-sm.primary');
+  if(btn) { btn.disabled=true; btn.textContent='⌛ Mengirim...'; }
+  if(statusEl) statusEl.style.display='none';
+
+  const entry = {
+    id: 'PDU_' + Date.now(),
+    kategori, nia: nia||'Anonim', isi, solusi,
+    tanggal: getTodayWIB(),
+    waktu: new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})
+  };
+
+  const anggotaNama = nia ? (allAnggota.find(a=>a.NIA===nia)?.nama||nia) : 'Anonim';
+  const keteranganGAS = (solusi ? '[Solusi: '+solusi+'] ' : '') + '[Isi: '+isi+']';
+
+  let berhasil = false;
+  try {
+    await api({
+      action:'saveIzin',
+      NIA: nia||'000000000',
+      nama: anggotaNama,
+      tanggal: entry.tanggal,
+      jenis_kegiatan: 'pengaduan',
+      jenis_izin: kategori,
+      keterangan: keteranganGAS,
+      oleh: 'anggota'
+    });
+    berhasil = true;
+  } catch(e) { berhasil = false; }
+
+  pengaduanList.push(entry);
+  try { sessionStorage.setItem('pengaduanList', JSON.stringify(pengaduanList)); } catch(e){}
+  renderPengaduanRiwayat();
+
+  if(statusEl) {
+    statusEl.style.display='block';
+    if(berhasil) {
+      statusEl.style.cssText='display:block;font-size:12px;text-align:center;padding:10px;border-radius:8px;background:rgba(74,222,128,0.12);color:var(--accent);border:1px solid rgba(74,222,128,0.3);';
+      statusEl.textContent='✅ Pengaduan berhasil dikirim! Terima kasih atas masukanmu.';
+      showToast('✅ Pengaduan terkirim!','success');
+    } else {
+      statusEl.style.cssText='display:block;font-size:12px;text-align:center;padding:10px;border-radius:8px;background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);';
+      statusEl.textContent='⚠️ Gagal kirim ke server, tapi sudah dicatat lokal.';
+    }
+  }
+
+  document.getElementById('pengaduan-isi').value='';
+  document.getElementById('pengaduan-solusi').value='';
+  document.getElementById('pengaduan-nia').value='';
+  if(btn) { btn.disabled=false; btn.textContent='📤 Kirim Pengaduan'; }
+}
+
+function renderPengaduanRiwayat() {
+  const box = document.getElementById('pengaduan-riwayat-box');
+  const list = document.getElementById('pengaduan-riwayat-list');
+  if(!box||!list) return;
+  if(!pengaduanList.length) { box.style.display='none'; return; }
+  box.style.display='block';
+  const kMap={'sistem':'🖥️','piket':'📋','kegiatan':'🎯','organisasi':'🏛️','ide':'💡','lainnya':'📌'};
+  list.innerHTML = pengaduanList.slice().reverse().map(p=>`
+    <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid var(--accent2);">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${p.tanggal} ${p.waktu} · ${kMap[p.kategori]||'📌'} ${p.kategori} · ${p.nia}</div>
+      <div style="font-size:12px;color:var(--text);">${p.isi}</div>
+      ${p.solusi?`<div style="font-size:11px;color:var(--accent2);margin-top:4px;">💡 ${p.solusi}</div>`:''}
+    </div>`).join('');
+}
 
 
 // =========================================================================
