@@ -676,9 +676,9 @@ let allAnggota = [...realAnggota];
     <div class="landing-title">KIPM-UP</div>
     <div class="landing-sub">Jadwal Piket dan Kegiatan KIPM UP</div>
     <div class="btn-choice">
-      <button class="btn-main btn-qr-live" onclick="goTo('qr')">
-        <span class="btn-icon">📲</span>
-        <span class="btn-text"><span class="btn-label">QR Code Live</span><span class="btn-sublabel">Piket Hari Ini</span></span>
+      <button class="btn-main" onclick="goTo('kiosk-login')" style="background:linear-gradient(135deg,rgba(74,222,128,0.16),rgba(34,197,94,0.08)); color:var(--accent); border-color:rgba(74,222,128,0.38);">
+        <span class="btn-icon">🖥️</span>
+        <span class="btn-text"><span class="btn-label">Komputer Bursa</span><span class="btn-sublabel">Mode Kiosk Scanner — khusus petugas</span></span>
         <span class="btn-arrow">›</span>
       </button>
       <button class="btn-main btn-member" onclick="goTo('scan')">
@@ -775,142 +775,208 @@ let allAnggota = [...realAnggota];
   </div>
 </div>
 
-<!-- SCAN (Anggota) -->
+<!-- SCAN (Anggota HP) — hanya tampilkan QR pribadi untuk di-scan ke komputer bursa -->
 <div id="page-scan" class="page">
-  <div class="scan-header" style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px;">
+  <div class="scan-header" style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px; align-items:center;">
     <div class="back-btn" onclick="goTo('landing')">←</div>
-    <div><div class="scan-header-title">Absensi Piket</div><div id="scan-tanggal"></div></div>
+    <div><div class="scan-header-title">📱 QR Absensi Piket</div><div id="scan-tanggal" style="font-size:12px; color:var(--text2);"></div></div>
   </div>
-  <div class="scan-body" style="padding:20px; max-width:480px; margin:0 auto;">
+  <div style="padding:20px; max-width:440px; margin:0 auto; width:100%;">
 
-    <!-- 1. ATURAN PIKET — paling atas -->
-    <div style="background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.22); border-radius:12px; padding:14px;">
-      <div style="font-size:12px; font-weight:700; color:var(--accent3); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-        <span>📌</span> Aturan Piket KIPM-UP
+    <!-- Instruksi singkat -->
+    <div style="background:rgba(74,222,128,0.07); border:1px solid rgba(74,222,128,0.2); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; gap:10px; align-items:flex-start;">
+      <span style="font-size:22px;">ℹ️</span>
+      <div style="font-size:12px; color:var(--text2); line-height:1.6;">
+        Tunjukkan QR Code di bawah ke <b style="color:var(--text);">kamera komputer bursa</b> untuk absen.<br>
+        QR berlaku <b style="color:var(--accent);">hari ini saja</b> dan berubah setiap hari.
       </div>
+    </div>
+
+    <!-- Input NIA -->
+    <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:16px;">
+      <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:6px; font-weight:600;">NIA (Nomor Induk Anggota)</label>
+      <div style="display:flex; gap:8px;">
+        <input class="form-input" id="input-NIA" placeholder="Contoh: 082024022" style="flex:1;" oninput="resetQRAnggota()">
+        <button onclick="generateQRAnggota()" style="background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:600; padding:10px 18px; border-radius:8px; cursor:pointer; white-space:nowrap;">Tampilkan QR</button>
+      </div>
+      <div id="anggota-nama-display" style="font-size:12px; color:var(--accent); margin-top:6px; display:none; font-weight:500;"></div>
+    </div>
+
+    <!-- QR Code Tampilan -->
+    <div id="qr-anggota-box" style="display:none; background:var(--bg2); border-radius:16px; padding:24px; text-align:center;">
+      <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; letter-spacing:1px; text-transform:uppercase;">QR Absensi Pribadi</div>
+      <div id="anggota-qr-nama" style="font-size:16px; font-weight:700; margin-bottom:16px; color:var(--text);"></div>
+      <div id="qr-anggota-canvas" style="background:white; padding:16px; border-radius:16px; display:inline-block; margin-bottom:16px; box-shadow:0 4px 24px rgba(0,0,0,0.4);"></div>
+      <div style="background:var(--bg3); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
+        <div style="font-size:11px; color:var(--text3); margin-bottom:2px;">Token hari ini</div>
+        <div id="qr-anggota-token" style="font-family:var(--mono); font-size:12px; color:var(--accent2); letter-spacing:1px; word-break:break-all;"></div>
+      </div>
+      <div style="font-size:11px; color:var(--text3); margin-bottom:16px;">
+        🔄 QR berubah dalam <span id="qr-anggota-countdown" style="color:var(--accent3); font-weight:600;">--</span> detik
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom:8px;">
+        <button id="btn-tipe-datang" onclick="setScanType('DATANG')" style="flex:1; padding:10px; background:rgba(74,222,128,0.15); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer;">🟢 Datang</button>
+        <button id="btn-tipe-pulang" onclick="setScanType('PULANG')" style="flex:1; padding:10px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:13px; cursor:pointer;">🟣 Pulang</button>
+      </div>
+      <div style="font-size:11px; color:var(--text3);">Pilih jenis absen lalu tunjukkan QR ke komputer bursa</div>
+    </div>
+
+    <!-- Aturan Piket -->
+    <div style="background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.22); border-radius:12px; padding:14px; margin-top:16px;">
+      <div style="font-size:12px; font-weight:700; color:var(--accent3); margin-bottom:8px;">📌 Aturan Piket KIPM-UP</div>
       <div style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; color:var(--text2); line-height:1.55;">
         <div style="display:flex; gap:7px;"><span style="color:var(--accent3); flex-shrink:0;">⏰</span><span>Jam piket <b style="color:var(--text);">09.00 – 16.00 WIB</b>, Senin–Jumat sesuai jadwal divisi.</span></div>
-        <div style="display:flex; gap:7px;"><span style="color:var(--accent); flex-shrink:0;">✅</span><span>Wajib <b style="color:var(--text);">absen Datang</b> saat tiba <b>dan</b> <b style="color:var(--text);">absen Pulang</b> saat meninggalkan GIBEI FEBUP.</span></div>
-        <div style="display:flex; gap:7px;"><span style="color:var(--red); flex-shrink:0;">⚠️</span><span>Lupa absen Pulang → durasi dihitung <b style="color:var(--red);">hanya 2 jam</b>, meski hadir lebih lama.</span></div>
-        <div style="display:flex; gap:7px;"><span style="color:var(--red); flex-shrink:0;">❌</span><span>Tidak absen sama sekali → tercatat <b style="color:var(--red);">Alpha</b>.</span></div>
+        <div style="display:flex; gap:7px;"><span style="color:var(--accent); flex-shrink:0;">✅</span><span>Wajib absen <b style="color:var(--text);">Datang</b> saat tiba &amp; <b style="color:var(--text);">Pulang</b> saat meninggalkan GIBEI FEBUP.</span></div>
+        <div style="display:flex; gap:7px;"><span style="color:var(--red); flex-shrink:0;">⚠️</span><span>Lupa absen Pulang → durasi dihitung <b style="color:var(--red);">hanya 2 jam</b>.</span></div>
         <div style="display:flex; gap:7px;"><span style="color:var(--accent2); flex-shrink:0;">📝</span><span>Tidak bisa hadir? Ajukan <b style="color:var(--text);">Izin</b> di beranda &amp; kabari divisi HR.</span></div>
       </div>
     </div>
 
-    <!-- 2. JENIS ABSEN + NIA -->
-    <div class="identity-section" style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:14px;">
-      <div style="margin-bottom:12px;"><label class="form-label">Jenis Absen</label>
-        <div style="display:flex; gap:10px; margin-top:6px;">
-          <button class="scan-type-btn" id="btn-tipe-datang" onclick="setScanType('DATANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:13px; cursor:pointer;">🟢 Datang</button>
-          <button class="scan-type-btn" id="btn-tipe-pulang" onclick="setScanType('PULANG')" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; font-family:var(--font); font-size:13px; cursor:pointer;">🟣 Pulang</button>
+    <!-- Piket Hari Ini -->
+    <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:16px; margin-bottom:20px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📋 Piket Hari Ini</div>
+      <div id="jadwal-today"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- KIOSK BURSA — Mode scanner terkunci untuk komputer galeri bursa -->
+<div id="page-kiosk-login" class="page">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:20px;">
+    <div style="background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:40px; width:100%; max-width:380px; text-align:center;">
+      <div style="font-size:40px; margin-bottom:12px;">🖥️</div>
+      <div style="font-size:20px; font-weight:700; margin-bottom:4px;">Mode Kiosk Bursa</div>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:28px;">Masukkan PIN kiosk untuk membuka scanner absensi</div>
+      <input class="form-input" id="kiosk-pin" type="password" placeholder="PIN Kiosk" style="text-align:center; font-size:20px; letter-spacing:4px; margin-bottom:16px;" onkeydown="if(event.key==='Enter') kioskLogin()">
+      <button onclick="kioskLogin()" style="width:100%; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:15px; font-weight:700; padding:14px; border-radius:12px; cursor:pointer;">Buka Scanner →</button>
+      <div id="kiosk-err" style="display:none; color:var(--red); font-size:13px; margin-top:12px;">PIN salah. Coba lagi.</div>
+      <button onclick="goTo('landing')" style="background:none; border:none; color:var(--text3); font-size:12px; margin-top:16px; cursor:pointer;">← Kembali ke Beranda</button>
+    </div>
+  </div>
+</div>
+
+<!-- KIOSK SCANNER — Layar penuh, kamera aktif terus, scan QR anggota -->
+<div id="page-kiosk" class="page" style="background:var(--bg); overflow:hidden;">
+  <!-- Top bar -->
+  <div style="background:var(--bg2); border-bottom:1px solid var(--border); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:10px; height:10px; border-radius:50%; background:var(--accent); animation:pulse-ring 1.5s infinite;"></div>
+      <div>
+        <div style="font-weight:700; font-size:14px;">KIPM-UP · Absensi Piket</div>
+        <div id="kiosk-tanggal" style="font-size:11px; color:var(--text2);"></div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div id="kiosk-clock" style="font-family:var(--mono); font-size:16px; color:var(--accent2);"></div>
+      <button onclick="kioskLock()" style="background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.3); color:var(--red); font-family:var(--font); font-size:11px; padding:5px 12px; border-radius:6px; cursor:pointer;">🔒 Kunci</button>
+    </div>
+  </div>
+
+  <!-- Main kiosk area -->
+  <div style="display:flex; flex:1; height:calc(100vh - 58px); overflow:hidden;">
+    
+    <!-- LEFT: Kamera + Scanner -->
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; gap:16px;">
+      
+      <!-- Step indicator -->
+      <div id="kiosk-step-indicator" style="display:flex; gap:8px; align-items:center;">
+        <div id="kiosk-step-1-dot" style="display:flex; align-items:center; gap:6px; background:rgba(74,222,128,0.15); border:1px solid var(--accent); border-radius:20px; padding:5px 12px; font-size:12px; color:var(--accent); font-weight:600;">
+          <span>1</span><span>Foto Selfie</span>
+        </div>
+        <div style="width:24px; height:1px; background:var(--border2);"></div>
+        <div id="kiosk-step-2-dot" style="display:flex; align-items:center; gap:6px; background:var(--bg3); border:1px solid var(--border2); border-radius:20px; padding:5px 12px; font-size:12px; color:var(--text3);">
+          <span>2</span><span>Scan QR</span>
         </div>
       </div>
-      <label class="form-label">NIA (Nomor Induk Anggota)</label>
-      <input class="form-input" id="input-NIA" placeholder="Contoh: 082024022" style="margin-top:6px;">
-      <div class="gps-status" id="gps-status" style="font-size:11px; margin-top:6px;">📍 Siap mengambil lokasi...</div>
-    </div>
 
-    <!-- 3. PILIH METODE ABSEN -->
-    <div style="background:var(--bg2); border-radius:12px; padding:14px; margin-top:14px;">
-      <div style="font-size:12px; color:var(--text3); font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.8px;">Metode Absen</div>
-      <div style="display:flex; gap:8px;">
-        <button class="face-mode-btn active" id="btn-metode-qr" onclick="setMetodeAbsen('qr')">📱 QR Code</button>
-        <button class="face-mode-btn" id="btn-metode-face" onclick="setMetodeAbsen('face')">🤖 Face ID</button>
-      </div>
-    </div>
-
-    <!-- 4. STEP 1: FOTO SELFIE -->
-    <div id="selfie-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:14px; text-align:center;">
-      <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Step 1 dari 2</div>
-      <div style="font-size:16px; font-weight:600; margin-bottom:4px;">📸 Foto Selfie Dulu</div>
-      <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">Ambil foto langsung dari kamera — tidak bisa dari galeri</div>
-
-      <!-- Preview kamera selfie -->
-      <div id="selfie-cam-wrapper" style="position:relative; width:240px; height:240px; margin:0 auto 14px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); display:flex; align-items:center; justify-content:center;">
-        <video id="selfie-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
-        <div id="selfie-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text3);">
-          <div style="font-size:40px;">👤</div>
-          <div style="font-size:11px;">Kamera belum aktif</div>
-        </div>
-        <!-- Preview hasil foto -->
-        <img id="selfie-preview" style="display:none; width:100%; height:100%; object-fit:cover;" alt="Selfie">
-        <!-- Countdown overlay -->
-        <div id="selfie-countdown" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; font-size:64px; font-weight:700; color:white;"></div>
-      </div>
-
-      <!-- Canvas tersembunyi untuk capture -->
-      <canvas id="selfie-canvas" style="display:none;"></canvas>
-
-      <!-- Status foto -->
-      <div id="selfie-status" style="font-size:12px; color:var(--text3); margin-bottom:12px;">Belum ada foto</div>
-
-      <!-- Tombol aksi -->
-      <div id="selfie-btn-group" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-        <button id="btn-buka-kamera" onclick="bukaKameraSelfie()" style="background:rgba(34,211,238,0.12); color:var(--accent2); border:1px solid rgba(34,211,238,0.3); font-family:var(--font); font-size:13px; font-weight:500; padding:10px 20px; border-radius:30px; cursor:pointer; transition:all 0.2s;">
-          📷 Buka Kamera
-        </button>
-        <button id="btn-ambil-foto" onclick="ambilFotoSelfie()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:600; padding:10px 20px; border-radius:30px; cursor:pointer; transition:all 0.2s;">
-          📸 Ambil Foto
-        </button>
-        <button id="btn-ulang-foto" onclick="ulangFotoSelfie()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:10px 18px; border-radius:30px; cursor:pointer; transition:all 0.2s;">
-          🔄 Ulangi
-        </button>
-      </div>
-
-      <!-- Tombol lanjut ke scan (muncul setelah foto berhasil) -->
-      <button id="btn-lanjut-scan" onclick="lanjutKeScan()" style="display:none; width:100%; margin-top:16px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:600; padding:12px 20px; border-radius:30px; cursor:pointer; transition:all 0.2s;">
-        ✅ Foto OK — Lanjut Scan QR →
-      </button>
-    </div>
-
-    <!-- PANEL FACE ID SCAN (alternatif selfie+qr) -->
-    <div id="face-id-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:16px; text-align:center; display:none;">
-      <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Face ID</div>
-      <div style="font-size:15px; font-weight:600; margin-bottom:4px; color:#c084fc;">🤖 Pengenalan Wajah</div>
-      <div style="font-size:12px; color:var(--text2); margin-bottom:14px;" id="face-scan-status-msg">Klik Mulai untuk scan wajah</div>
-      <div class="face-box" style="width:260px; height:260px; margin:0 auto 14px;">
-        <video id="face-scan-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block;"></video>
-        <canvas id="face-scan-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; transform:scaleX(-1);"></canvas>
-        <div class="face-overlay">
-          <div id="face-scan-badge" style="background:rgba(0,0,0,0.7); border-radius:20px; padding:4px 12px; font-size:11px; color:white;">
-            <span class="face-status-ring scanning" id="face-ring"></span>
-            <span id="face-scan-label">Menginisialisasi...</span>
+      <!-- STEP 1: Kamera selfie -->
+      <div id="kiosk-selfie-section" style="text-align:center;">
+        <div style="font-size:15px; font-weight:600; margin-bottom:8px; color:var(--text);">📸 Ambil Foto Selfie Dulu</div>
+        <div style="font-size:12px; color:var(--text2); margin-bottom:14px;">Hadapkan wajah ke kamera, lalu tekan tombol</div>
+        <div id="kiosk-cam-wrapper" style="position:relative; width:280px; height:280px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); margin:0 auto 14px; display:flex; align-items:center; justify-content:center;">
+          <video id="kiosk-selfie-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
+          <img id="kiosk-selfie-preview" style="display:none; width:100%; height:100%; object-fit:cover;" alt="Selfie">
+          <div id="kiosk-selfie-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text3);">
+            <div style="font-size:48px;">👤</div>
+            <div style="font-size:12px;">Kamera belum aktif</div>
           </div>
+          <div id="kiosk-countdown-overlay" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; font-size:72px; font-weight:800; color:white;"></div>
         </div>
-      </div>
-      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-        <button id="btn-face-mulai" onclick="mulaiScanFaceID()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:9px 20px; border-radius:30px; cursor:pointer;">▶ Mulai Face Scan</button>
-        <button id="btn-face-stop" onclick="stopScanFaceID()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:9px 16px; border-radius:30px; cursor:pointer;">⏹ Stop</button>
-      </div>
-      <div style="margin-top:12px; font-size:11px; color:var(--text3);">
-        Belum terdaftar Face ID? <button onclick="goToFaceEnroll()" style="background:none; border:none; color:#c084fc; font-size:11px; cursor:pointer; text-decoration:underline;">Daftar sekarang</button>
-      </div>
-    </div>
-
-    <!-- STEP 2: SCAN QR (tersembunyi sampai foto selesai) -->
-    <div id="scan-section" style="background:var(--bg2); border-radius:12px; padding:20px; margin-top:16px; text-align:center; display:none;">
-      <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Step 2 dari 2</div>
-
-      <!-- Thumbnail selfie kecil sebagai konfirmasi -->
-      <div style="display:flex; align-items:center; gap:10px; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:10px 14px; margin-bottom:14px; text-align:left;">
-        <img id="selfie-thumb" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--accent);" alt="">
-        <div>
-          <div style="font-size:12px; font-weight:600; color:var(--accent);">✅ Foto selfie tersimpan</div>
-          <div style="font-size:11px; color:var(--text2);">Sekarang scan QR Code di layar admin</div>
+        <canvas id="kiosk-selfie-canvas" style="display:none;"></canvas>
+        <div id="kiosk-selfie-status" style="font-size:12px; color:var(--text3); margin-bottom:14px;">Kamera belum aktif</div>
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button id="kiosk-btn-buka" onclick="kioskBukaKamera()" style="background:rgba(34,211,238,0.12); color:var(--accent2); border:1px solid rgba(34,211,238,0.3); font-family:var(--font); font-size:13px; font-weight:500; padding:10px 22px; border-radius:30px; cursor:pointer;">📷 Buka Kamera</button>
+          <button id="kiosk-btn-ambil" onclick="kioskAmbilFoto()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:700; padding:10px 22px; border-radius:30px; cursor:pointer;">📸 Ambil Foto</button>
+          <button id="kiosk-btn-ulang" onclick="kioskUlangFoto()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:10px 18px; border-radius:30px; cursor:pointer;">🔄 Ulang</button>
         </div>
-        <button onclick="kembaliKeSelfie()" style="margin-left:auto; background:none; border:none; color:var(--text3); font-size:11px; cursor:pointer; text-decoration:underline;">Ganti foto</button>
+        <button id="kiosk-btn-lanjut-scan" onclick="kioskLanjutScan()" style="display:none; margin-top:14px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; padding:12px 32px; border-radius:30px; cursor:pointer;">✅ Foto OK — Lanjut Scan QR →</button>
       </div>
 
-      <div class="scan-label">Arahkan kamera ke QR Code yang ditampilkan admin / layar</div>
-      <div id="qr-reader-wrapper" style="width:260px; height:260px; margin:12px auto; position:relative;"><div id="qr-reader"></div></div>
-      <button class="btn-scan" id="btn-start-scan" onclick="toggleScan()" style="background:var(--accent); color:#0a1a0f; padding:10px 20px; border-radius:30px; border:none; font-family:var(--font); font-size:14px; font-weight:600; cursor:pointer;">▶ Mulai Scan</button>
+      <!-- STEP 2: QR Scanner -->
+      <div id="kiosk-scan-section" style="display:none; text-align:center;">
+        <div style="font-size:15px; font-weight:600; margin-bottom:8px; color:var(--text);">📲 Scan QR Code Anggota</div>
+        <div style="font-size:12px; color:var(--text2); margin-bottom:14px;">Minta anggota tunjukkan QR dari HP mereka ke kamera</div>
+        
+        <!-- Selfie thumb konfirmasi -->
+        <div style="display:flex; align-items:center; gap:10px; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:10px 14px; margin-bottom:14px; text-align:left; max-width:380px; margin-left:auto; margin-right:auto;">
+          <img id="kiosk-selfie-thumb" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--accent); flex-shrink:0;" alt="">
+          <div>
+            <div style="font-size:12px; font-weight:600; color:var(--accent);">✅ Foto tersimpan</div>
+            <div style="font-size:11px; color:var(--text2);">Arahkan QR anggota ke kamera di bawah</div>
+          </div>
+          <button onclick="kioskUlangFoto()" style="margin-left:auto; background:none; border:none; color:var(--text3); font-size:11px; cursor:pointer; text-decoration:underline; flex-shrink:0;">Ganti foto</button>
+        </div>
+        
+        <div id="kiosk-qr-reader-wrapper" style="width:280px; height:280px; margin:0 auto 14px; position:relative; border-radius:12px; overflow:hidden;">
+          <div id="kiosk-qr-reader"></div>
+        </div>
+        <button id="kiosk-btn-scan" onclick="kioskToggleScan()" style="background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; padding:12px 32px; border-radius:30px; cursor:pointer;">▶ Mulai Scan QR</button>
+      </div>
+
     </div>
 
-    <!-- 6. PIKET HARI INI — paling bawah -->
-    <div class="jadwal-card" style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:14px; margin-bottom:20px;">
-      <div class="jadwal-card-title">📋 Piket Hari Ini</div>
-      <div id="jadwal-today"><div class="loading" style="color:var(--accent);">Memuat jadwal &amp; status...</div></div>
+    <!-- RIGHT: Status & Riwayat -->
+    <div style="width:320px; flex-shrink:0; background:var(--bg2); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden;">
+      
+      <!-- Status absen terakhir -->
+      <div id="kiosk-last-absen" style="padding:16px; border-bottom:1px solid var(--border);">
+        <div style="font-size:11px; color:var(--text3); font-weight:600; letter-spacing:1px; margin-bottom:8px;">ABSEN TERAKHIR</div>
+        <div style="color:var(--text3); font-size:13px;">Belum ada absensi sesi ini</div>
+      </div>
+
+      <!-- Jadwal piket hari ini -->
+      <div style="flex:1; overflow-y:auto; padding:16px;">
+        <div style="font-size:11px; color:var(--text3); font-weight:600; letter-spacing:1px; margin-bottom:10px;">JADWAL PIKET HARI INI</div>
+        <div id="kiosk-jadwal-today"><div style="color:var(--accent); font-size:12px;">Memuat...</div></div>
+      </div>
+
+      <!-- GPS Status -->
+      <div style="padding:12px 16px; border-top:1px solid var(--border);">
+        <div id="kiosk-gps-status" style="font-size:11px; color:var(--text3);">📍 GPS belum diambil</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Success overlay -->
+  <div id="kiosk-success-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:500; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px;">
+    <div id="kiosk-success-selfie-wrap" style="margin-bottom:16px;">
+      <img id="kiosk-success-selfie" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:4px solid var(--accent);" alt="">
+    </div>
+    <div style="font-size:60px; margin-bottom:8px;" id="kiosk-success-icon">✅</div>
+    <div style="font-size:26px; font-weight:800; color:var(--accent); margin-bottom:6px;" id="kiosk-success-tipe">DATANG</div>
+    <div style="font-size:22px; font-weight:700; margin-bottom:4px;" id="kiosk-success-nama"></div>
+    <div style="font-size:14px; color:var(--text2); margin-bottom:6px;" id="kiosk-success-nia"></div>
+    <div style="font-size:16px; color:var(--accent3); font-weight:600;" id="kiosk-success-waktu"></div>
+    <div style="font-size:13px; color:var(--text2); margin-top:8px;" id="kiosk-success-status"></div>
+    <div style="margin-top:20px; font-size:12px; color:var(--text3);">Layar akan otomatis reset dalam <span id="kiosk-reset-countdown" style="color:var(--accent3); font-weight:700;">5</span> detik...</div>
+  </div>
+
+  <!-- Error overlay -->
+  <div id="kiosk-error-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:500; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px;">
+    <div style="font-size:60px; margin-bottom:12px;">❌</div>
+    <div style="font-size:20px; font-weight:700; color:var(--red); margin-bottom:8px;" id="kiosk-error-title">Absen Gagal</div>
+    <div style="font-size:14px; color:var(--text2); max-width:340px; margin-bottom:20px;" id="kiosk-error-msg"></div>
+    <button onclick="kioskDismissError()" style="background:var(--red); color:white; border:none; font-family:var(--font); font-size:14px; font-weight:600; padding:12px 28px; border-radius:30px; cursor:pointer;">Coba Lagi</button>
   </div>
 </div>
 
@@ -1559,7 +1625,14 @@ let allAnggota = [...realAnggota];
       <!-- KONTEN TAB -->
       <div id="tab-konten" class="tab-panel">
         <div class="table-card" style="padding:20px; margin-bottom:16px;">
-          <div style="font-weight:600; font-size:15px; margin-bottom:4px;">🖊️ Edit Agenda Rutin Komunitas</div>
+          <div style="font-weight:600; font-size:15px; margin-bottom:4px;">🖥️ Pengaturan Kiosk Bursa</div>
+          <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">PIN untuk membuka mode scanner di komputer bursa</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input class="form-input" id="kiosk-pin-input" type="password" placeholder="PIN baru (min. 4 karakter)" style="flex:1;">
+            <button class="btn-sm primary" style="padding:10px 16px; white-space:nowrap;" onclick="setKioskPinAdmin()">💾 Simpan PIN</button>
+          </div>
+          <div style="font-size:11px; color:var(--text3); margin-top:8px;">PIN tersimpan di browser ini. Default: <span style="font-family:var(--mono); color:var(--accent2);">kipm2024</span></div>
+        </div>
           <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">Perubahan langsung tampil di halaman anggota setelah absen</div>
           <div id="agenda-editor-list" style="display:flex; flex-direction:column; gap:10px;"></div>
           <button class="btn-sm primary" style="margin-top:14px; width:100%; padding:10px;" onclick="addAgendaItem()">+ Tambah Agenda</button>
@@ -1866,22 +1939,23 @@ let selfieBlob = null;
 
 async function bukaKameraSelfie() {
   try {
-    // Paksa facingMode: user (kamera depan), tidak ada fallback ke file input
     selfieStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 480 } },
       audio: false
     });
     const video = document.getElementById('selfie-video');
+    if(!video) { showToast('Elemen kamera tidak ditemukan','error'); return; }
     video.srcObject = selfieStream;
     video.style.display = 'block';
-    document.getElementById('selfie-placeholder').style.display = 'none';
-    document.getElementById('btn-buka-kamera').style.display = 'none';
-    document.getElementById('btn-ambil-foto').style.display = 'inline-block';
-    document.getElementById('selfie-status').textContent = '📷 Kamera aktif — posisikan wajah di lingkaran';
-    document.getElementById('selfie-status').style.color = 'var(--accent2)';
+    const ph = document.getElementById('selfie-placeholder'); if(ph) ph.style.display='none';
+    const bb = document.getElementById('btn-buka-kamera'); if(bb) bb.style.display='none';
+    const ba = document.getElementById('btn-ambil-foto'); if(ba) ba.style.display='inline-block';
+    const st = document.getElementById('selfie-status');
+    if(st){ st.textContent='📷 Kamera aktif — posisikan wajah di lingkaran'; st.style.color='var(--accent2)'; }
   } catch(err) {
     showToast('❌ Gagal akses kamera: ' + err.message, 'error');
-    document.getElementById('selfie-status').textContent = '⚠️ Kamera tidak dapat diakses';
+    const st = document.getElementById('selfie-status');
+    if(st) st.textContent = '⚠️ Kamera tidak dapat diakses';
   }
 }
 
@@ -1947,44 +2021,41 @@ function stopSelfieCam() {
     selfieStream = null;
   }
   const video = document.getElementById('selfie-video');
-  video.srcObject = null;
-  video.style.display = 'none';
+  if (video) { video.srcObject = null; video.style.display = 'none'; }
 }
 
 function ulangFotoSelfie() {
   // Reset state
   selfieDataURL = null;
   selfieBlob = null;
-  document.getElementById('selfie-preview').style.display = 'none';
-  document.getElementById('selfie-preview').src = '';
-  document.getElementById('btn-ulang-foto').style.display = 'none';
-  document.getElementById('btn-lanjut-scan').style.display = 'none';
-  document.getElementById('btn-buka-kamera').style.display = 'inline-block';
-  document.getElementById('selfie-status').textContent = 'Belum ada foto';
-  document.getElementById('selfie-status').style.color = 'var(--text3)';
-  document.getElementById('selfie-cam-wrapper').style.border = '3px solid var(--border2)';
-  // Reset scan section juga kalau sudah terbuka
-  document.getElementById('scan-section').style.display = 'none';
-  document.getElementById('selfie-section').style.display = 'block';
+  const _sp = document.getElementById('selfie-preview');
+  if(_sp){ _sp.style.display='none'; _sp.src=''; }
+  const _bu = document.getElementById('btn-ulang-foto'); if(_bu) _bu.style.display='none';
+  const _bl = document.getElementById('btn-lanjut-scan'); if(_bl) _bl.style.display='none';
+  const _bb = document.getElementById('btn-buka-kamera'); if(_bb) _bb.style.display='inline-block';
+  const _ss = document.getElementById('selfie-status'); if(_ss){ _ss.textContent='Belum ada foto'; _ss.style.color='var(--text3)'; }
+  const _cw = document.getElementById('selfie-cam-wrapper'); if(_cw) _cw.style.border='3px solid var(--border2)';
+  const _sc = document.getElementById('scan-section'); if(_sc) _sc.style.display='none';
+  const _sf = document.getElementById('selfie-section'); if(_sf) _sf.style.display='block';
 }
 
 function lanjutKeScan() {
   if (!selfieDataURL) { showToast('Ambil foto selfie dulu!', 'error'); return; }
-  // Tempel thumbnail di step 2
-  document.getElementById('selfie-thumb').src = selfieDataURL;
-  // Sembunyikan step 1, tampilkan step 2
-  document.getElementById('selfie-section').style.display = 'none';
-  document.getElementById('scan-section').style.display = 'block';
-  // Refresh GPS sekali lagi
+  const thumb = document.getElementById('selfie-thumb');
+  if(thumb) thumb.src = selfieDataURL;
+  const sf = document.getElementById('selfie-section');
+  const sc = document.getElementById('scan-section');
+  if(sf) sf.style.display = 'none';
+  if(sc) sc.style.display = 'block';
   startGPSWatch();
 }
 
 function kembaliKeSelfie() {
-  // Stop scanner kalau aktif
   if (scannerActive && html5Scanner) {
     html5Scanner.stop().catch(()=>{});
     scannerActive = false;
-    document.getElementById('btn-start-scan').innerHTML = '▶ Mulai Scan';
+    const btn = document.getElementById('btn-start-scan');
+    if(btn) btn.innerHTML = '▶ Mulai Scan';
   }
   ulangFotoSelfie();
 }
@@ -2018,16 +2089,20 @@ function resetSelfieState() {
   if (wrapper) wrapper.style.border = '3px solid var(--border2)';
 }
 function goToAbsenPulang(){
-  // goTo('scan') memanggil resetSelfieState() di dalamnya — jangan set PULANG sebelumnya
   goTo('scan');
   // Set NIA jika ada
   if(lastAbsenNIA){
     const niaInput = document.getElementById('input-NIA');
-    if(niaInput) niaInput.value = lastAbsenNIA;
+    if(niaInput) { niaInput.value = lastAbsenNIA; }
   }
-  // Set PULANG setelah goTo + resetSelfieState selesai (gunakan setTimeout agar dipastikan setelah semua sync code)
+  // Set PULANG setelah goTo selesai
   currentScanType = 'PULANG';
-  setTimeout(() => setScanType('PULANG'), 80);
+  setTimeout(() => {
+    setScanType('PULANG');
+    // Jika NIA ada, langsung generate QR PULANG
+    const niaInput = document.getElementById('input-NIA');
+    if(niaInput && niaInput.value.trim()) generateQRAnggota();
+  }, 100);
 }
 
 function goTo(page){
@@ -2035,27 +2110,33 @@ function goTo(page){
   document.getElementById('page-'+page).style.display='flex';
   document.getElementById('page-'+page).classList.add('active');
   // Simpan halaman saat ini di hash URL agar tidak hilang saat refresh
-  if(page !== 'landing') {
-    history.replaceState(null, '', '#' + page);
-  } else {
-    history.replaceState(null, '', window.location.pathname);
-  }
+  try {
+    if(page !== 'landing') {
+      history.replaceState(null, '', '#' + page);
+    } else {
+      history.replaceState(null, '', window.location.pathname);
+    }
+  } catch(e) { /* iframe / srcdoc environment — skip hash update */ }
   
   if(page==='admin') initAdmin();
   if(page==='scan'){ 
     loadJadwalScan(); 
     startGPSWatch();
-    resetSelfieState();
     const tgl = document.getElementById('scan-tanggal');
     if(tgl) tgl.innerText = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    // Jika NIA sudah terisi sebelumnya, generate ulang QR
+    const niaEl = document.getElementById('input-NIA');
+    if(niaEl && niaEl.value.trim()) setTimeout(() => generateQRAnggota(), 100);
   }
   if(page==='qr'){ startQRLiveDisplay(); }
   if(page==='kalender'){ 
-    // Render konten kalender setelah frame pertama (tidak block animasi transisi)
     setTimeout(() => { renderKalenderJadwal(); renderAgendaPublic(); }, 50);
   }
   if(page==='pengaduan'){ setTimeout(() => renderPengaduanRiwayat(), 50); }
-  if(page!=='scan') stopSelfieCam();
+  if(page==='kiosk'){ /* initKiosk dipanggil dari kioskLogin */ }
+  if(page==='kiosk-login'){ setTimeout(() => { const i = document.getElementById('kiosk-pin'); if(i) i.focus(); }, 200); }
+  if(page!=='scan' && page!=='face-enroll') stopSelfieCam();
+  if(page!=='kiosk') stopKioskCam();
   if(page!=='kegiatan-scan') { 
     if(kegiatanSelfieStream){ kegiatanSelfieStream.getTracks().forEach(t=>t.stop()); kegiatanSelfieStream=null; }
     if(kegiatanScannerActive && kegiatanHtml5Scanner){ kegiatanHtml5Scanner.stop().catch(()=>{}); kegiatanScannerActive=false; }
@@ -2065,7 +2146,13 @@ function goTo(page){
   if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; qrLastToken=null; }
 }
 
-function setScanType(t){ currentScanType=t; document.getElementById('btn-tipe-datang').style.borderColor=t==='DATANG'?'var(--accent)':'var(--border2)'; document.getElementById('btn-tipe-pulang').style.borderColor=t==='PULANG'?'#c084fc':'var(--border2)';}
+function setScanType(t){ 
+  currentScanType=t; 
+  const _d=document.getElementById('btn-tipe-datang'); 
+  const _p=document.getElementById('btn-tipe-pulang');
+  if(_d) _d.style.borderColor=t==='DATANG'?'var(--accent)':'var(--border2)'; 
+  if(_p) _p.style.borderColor=t==='PULANG'?'#c084fc':'var(--border2)';
+}
 
 async function loadJadwalScan(){ 
   const el = document.getElementById('jadwal-today'); 
@@ -3788,14 +3875,29 @@ function previewSelfieKegiatan(nia, src) {
 function renderSelfieGalleryDashboard() {
   const el = document.getElementById('selfie-gallery-dashboard');
   if(!el) return;
-  // Tampilkan semua selfie dalam 24 jam terakhir
+  const today = getTodayWIB();
   const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-  const recentSelfies = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
-  if(!recentSelfies.length){ el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie dalam 24 jam terakhir</div>'; return; }
-  el.innerHTML = recentSelfies.map(s => `
-    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieMini}')">
-      <img src="${s.selfieMini}" alt="${s.nama}">
-      <div class="selfie-label">${s.nama.split(' ')[0]}</div>
+
+  // Gabung selfie dari memory + shared localStorage key (kiosk / HP yg sama device)
+  let allSelfies = selfieGallery.filter(s => (s.savedAt || 0) >= cutoff);
+  try {
+    const sharedRaw = localStorage.getItem('selfieGallery_shared_' + today);
+    if(sharedRaw) {
+      JSON.parse(sharedRaw).forEach(s => {
+        if(!allSelfies.find(x => x.NIA === s.NIA && x.tipe === s.tipe))
+          allSelfies.push({...s, savedAt: s.savedAt || Date.now()});
+      });
+    }
+  } catch(e) {}
+
+  if(!allSelfies.length){ 
+    el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie hari ini.<br><span style="font-size:10px; opacity:0.7;">Foto masuk saat anggota absen via Kiosk Bursa.</span></div>'; 
+    return; 
+  }
+  el.innerHTML = allSelfies.map(s => `
+    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieDataURL || s.selfieMini}')">
+      <img src="${s.selfieMini}" alt="${s.nama || ''}">
+      <div class="selfie-label">${(s.nama||'').split(' ')[0]}${s.tipe ? ' · '+s.tipe : ''}</div>
     </div>`).join('');
 }
 
@@ -3818,15 +3920,24 @@ function renderDashboardSesiAktif() {
 // SISTEM RANKING — Piket, Non-Piket, Kegiatan
 // =========================================================================
 
-// Parse durasi string "2j 15m" or "45m" ke menit
+// Parse durasi string dari GAS ke menit
+// Mendukung: "2j 15m", "45m", "1j", "2:30", "2:30:00", angka murni (menit)
 function parseDurasiToMenit(str) {
   if(!str || str==='-' || str==='NaNm' || str==='NaN m') return 0;
+  const s = str.toString().trim();
+  // Format angka murni — anggap sudah dalam menit
+  if(/^\d+$/.test(s)) return parseInt(s);
+  // Format "Xj Ym" atau "Xj" atau "Ym"
   let total = 0;
-  const jam = str.match(/(\d+)j/);
-  const menit = str.match(/(\d+)m/);
+  const jam = s.match(/(\d+)\s*j/);
+  const menit = s.match(/(\d+)\s*m(?!s)/); // 'm' tapi bukan 'ms'
   if(jam) total += parseInt(jam[1]) * 60;
   if(menit) total += parseInt(menit[1]);
-  return total;
+  if(total > 0) return total;
+  // Format "H:MM" atau "H:MM:SS"
+  const timeFmt = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if(timeFmt) return parseInt(timeFmt[1]) * 60 + parseInt(timeFmt[2]);
+  return 0;
 }
 
 function formatMenitToStr(total) {
@@ -4657,7 +4768,7 @@ window.goTo=goTo;
 // Restore halaman dari hash URL saat refresh (termasuk admin jika session aktif)
 (function restorePageFromHash() {
   const hash = window.location.hash.replace('#', '');
-  const publicPages = ['scan', 'qr', 'kalender', 'kegiatan-scan', 'izin-anggota', 'pengaduan'];
+  const publicPages = ['scan', 'kalender', 'kegiatan-scan', 'izin-anggota', 'pengaduan', 'kiosk-login'];
   const adminPages = ['admin', 'admin-login'];
 
   // Cek session admin di localStorage
@@ -4712,8 +4823,572 @@ window.goToFaceEnroll=goToFaceEnroll; window.mulaiEnrollFace=mulaiEnrollFace; wi
 window.resetFilterRekap=resetFilterRekap; window.hapusDataRekap=hapusDataRekap;
 
 // =========================================================================
-// PENGADUAN / MASUKAN
+// QR ANGGOTA — Generate QR pribadi untuk ditampilkan di HP anggota
+// Format: KIPM-NIA:{NIA}:{tipeAbsen}:{tokenHarian}
+// tokenHarian = md5(NIA + tanggalWIB + SECRET_ANGGOTA).slice(0,8)
 // =========================================================================
+const SECRET_ANGGOTA = 'KIPMUP_MEMBER_2024';
+let qrAnggotaInterval = null;
+let qrAnggotaCountdownInterval = null;
+let currentNIAAnggota = '';
+
+function getTokenHarianAnggota(nia, tipe) {
+  const today = getTodayWIB().replace(/-/g,''); // YYYYMMDD
+  const raw = nia + '_' + today + '_' + tipe + '_' + SECRET_ANGGOTA;
+  return md5(raw).substring(0, 12).toUpperCase();
+}
+
+function generateQRAnggota() {
+  const nia = (document.getElementById('input-NIA')?.value || '').trim();
+  if(!nia) { showToast('Masukkan NIA dulu','error'); return; }
+  const anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+
+  currentNIAAnggota = nia;
+  const namaEl = document.getElementById('anggota-nama-display');
+  if(namaEl) { namaEl.textContent = '✅ ' + anggota.nama + ' · ' + anggota.divisi; namaEl.style.display='block'; }
+
+  const box = document.getElementById('qr-anggota-box');
+  if(box) box.style.display = 'block';
+  const namaQR = document.getElementById('anggota-qr-nama');
+  if(namaQR) namaQR.textContent = anggota.nama;
+
+  renderQRAnggota(nia);
+
+  // Auto-refresh setiap 30 detik (token harian tidak berubah, tapi countdown tetap)
+  if(qrAnggotaCountdownInterval) clearInterval(qrAnggotaCountdownInterval);
+  qrAnggotaCountdownInterval = setInterval(() => {
+    const el = document.getElementById('qr-anggota-countdown');
+    if(el) {
+      const wib = new Date(Date.now() + 7*3600*1000);
+      const sisa = 86400 - (wib.getUTCHours()*3600 + wib.getUTCMinutes()*60 + wib.getUTCSeconds());
+      const h = Math.floor(sisa/3600), m = Math.floor((sisa%3600)/60), s = sisa%60;
+      el.textContent = h > 0 ? `${h}j ${m}m` : (m > 0 ? `${m}m ${s}s` : `${s}s`);
+    }
+  }, 1000);
+}
+
+function renderQRAnggota(nia) {
+  const tipe = typeof currentScanType !== 'undefined' ? currentScanType : 'DATANG';
+  const token = getTokenHarianAnggota(nia, tipe);
+  const qrText = `KIPM-NIA:${nia}:${tipe}:${token}`;
+
+  const canvas = document.getElementById('qr-anggota-canvas');
+  if(canvas) {
+    canvas.innerHTML = '';
+    new QRCode(canvas, { text: qrText, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
+  }
+  const tokenEl = document.getElementById('qr-anggota-token');
+  if(tokenEl) tokenEl.textContent = qrText;
+}
+
+function resetQRAnggota() {
+  currentNIAAnggota = '';
+  const box = document.getElementById('qr-anggota-box');
+  if(box) box.style.display = 'none';
+  const namaEl = document.getElementById('anggota-nama-display');
+  if(namaEl) namaEl.style.display = 'none';
+  if(qrAnggotaCountdownInterval) { clearInterval(qrAnggotaCountdownInterval); qrAnggotaCountdownInterval = null; }
+}
+
+// Override setScanType agar juga update QR anggota jika sudah tampil
+const _origSetScanType = window.setScanType;
+window.setScanType = function(t) {
+  currentScanType = t;
+  const btnD = document.getElementById('btn-tipe-datang');
+  const btnP = document.getElementById('btn-tipe-pulang');
+  if(btnD) {
+    btnD.style.background = t==='DATANG' ? 'rgba(74,222,128,0.15)' : 'var(--bg3)';
+    btnD.style.borderColor = t==='DATANG' ? 'var(--accent)' : 'var(--border2)';
+    btnD.style.color = t==='DATANG' ? 'var(--accent)' : 'var(--text2)';
+    btnD.style.fontWeight = t==='DATANG' ? '600' : '400';
+  }
+  if(btnP) {
+    btnP.style.background = t==='PULANG' ? 'rgba(192,132,252,0.15)' : 'var(--bg3)';
+    btnP.style.borderColor = t==='PULANG' ? '#c084fc' : 'var(--border2)';
+    btnP.style.color = t==='PULANG' ? '#c084fc' : 'var(--text2)';
+    btnP.style.fontWeight = t==='PULANG' ? '600' : '400';
+  }
+  // Re-render QR anggota jika sudah ditampilkan
+  if(currentNIAAnggota) renderQRAnggota(currentNIAAnggota);
+};
+
+window.generateQRAnggota = generateQRAnggota;
+window.resetQRAnggota = resetQRAnggota;
+
+// =========================================================================
+// KIOSK BURSA — Mode scanner terkunci untuk komputer galeri bursa
+// =========================================================================
+const KIOSK_PIN_KEY = 'kipmup_kiosk_pin';
+let kioskStream = null;
+let kioskSelfieDataURL = null;
+let kioskScannerActive = false;
+let kioskHtml5Scanner = null;
+let kioskGPS = {lat:'', lng:'', acc:''};
+let kioskClockInterval = null;
+let kioskIsProcessing = false;
+let kioskSessionSelfies = []; // selfie gallery sesi kiosk
+
+// Default PIN kiosk — admin bisa ganti via admin panel
+function getKioskPin() {
+  return localStorage.getItem(KIOSK_PIN_KEY) || 'kipm2024';
+}
+
+function kioskLogin() {
+  const pin = (document.getElementById('kiosk-pin')?.value || '').trim();
+  const errEl = document.getElementById('kiosk-err');
+  if(pin === getKioskPin()) {
+    if(errEl) errEl.style.display = 'none';
+    document.getElementById('kiosk-pin').value = '';
+    goTo('kiosk');
+    initKiosk();
+  } else {
+    if(errEl) errEl.style.display = 'block';
+    document.getElementById('kiosk-pin').value = '';
+    document.getElementById('kiosk-pin').focus();
+  }
+}
+
+function kioskLock() {
+  // Stop semua kamera/scanner
+  stopKioskCam();
+  if(kioskScannerActive && kioskHtml5Scanner) {
+    kioskHtml5Scanner.stop().catch(()=>{});
+    kioskScannerActive = false;
+  }
+  if(kioskClockInterval) { clearInterval(kioskClockInterval); kioskClockInterval = null; }
+  goTo('kiosk-login');
+  setTimeout(() => { const inp = document.getElementById('kiosk-pin'); if(inp) inp.focus(); }, 300);
+}
+
+function initKiosk() {
+  // Clock
+  if(kioskClockInterval) clearInterval(kioskClockInterval);
+  kioskClockInterval = setInterval(() => {
+    const el = document.getElementById('kiosk-clock');
+    if(el) el.textContent = new Date().toLocaleTimeString('id-ID');
+    const tgl = document.getElementById('kiosk-tanggal');
+    if(tgl) tgl.textContent = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  }, 1000);
+
+  // GPS
+  kioskAmbilGPS();
+
+  // Jadwal
+  loadKioskJadwal();
+
+  // Reset ke state awal
+  kioskResetState();
+
+  // Update selfie gallery di dashboard admin (jika ada)
+  // — sync dilakukan via saveSelfieGallery yang sudah ada
+}
+
+function kioskAmbilGPS() {
+  const el = document.getElementById('kiosk-gps-status');
+  if(!navigator.geolocation) { if(el) el.textContent = '⚠️ GPS tidak didukung'; return; }
+  if(el) el.textContent = '📍 Mengambil GPS...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    kioskGPS.lat = pos.coords.latitude.toFixed(6);
+    kioskGPS.lng = pos.coords.longitude.toFixed(6);
+    kioskGPS.acc = Math.round(pos.coords.accuracy);
+    if(el) el.textContent = `✅ GPS: ±${kioskGPS.acc}m`;
+  }, () => { if(el) el.textContent = '⚠️ GPS tidak tersedia'; }, {enableHighAccuracy:true, timeout:8000});
+}
+
+async function loadKioskJadwal() {
+  const el = document.getElementById('kiosk-jadwal-today');
+  if(!el) return;
+  const dow = new Date().getDay();
+  const list = jadwalMingguan[dow] || [];
+  if(!list.length) { el.innerHTML = '<div style="font-size:12px; color:var(--text3);">Tidak ada jadwal hari ini</div>'; return; }
+
+  // Tampilkan lokal dulu
+  const renderK = (datangNIA = new Set(), pulangNIA = new Set()) => {
+    el.innerHTML = list.map(nia => {
+      const a = allAnggota.find(x => x.NIA === nia);
+      if(!a) return '';
+      let s = pulangNIA.has(nia) ? 'PULANG' : datangNIA.has(nia) ? 'DATANG' : 'BELUM';
+      const dot = s==='PULANG' ? '🟣' : s==='DATANG' ? '🟢' : '⚪';
+      return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px;">
+        <div><div style="font-weight:500;">${a.nama.split(' ')[0]}</div><div style="font-size:10px; color:var(--text3);">${a.NIA}</div></div>
+        <span style="font-size:11px;">${dot} ${s}</span>
+      </div>`;
+    }).join('');
+  };
+  renderK();
+
+  try {
+    const today = getTodayWIB();
+    const res = await api({action:'getRekapAbsensi', from:today, to:today});
+    if(res && res.ok) {
+      const dSet = new Set(res.data.filter(r=>r.tipe==='DATANG').map(r=>r.NIA));
+      const pSet = new Set(res.data.filter(r=>r.tipe==='PULANG').map(r=>r.NIA));
+      renderK(dSet, pSet);
+    }
+  } catch(e) {}
+}
+
+// ── Kiosk Selfie ──
+async function kioskBukaKamera() {
+  try {
+    kioskStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: {ideal:480}, height: {ideal:480} }, audio: false
+    });
+    const video = document.getElementById('kiosk-selfie-video');
+    video.srcObject = kioskStream;
+    video.style.display = 'block';
+    document.getElementById('kiosk-selfie-placeholder').style.display = 'none';
+    document.getElementById('kiosk-btn-buka').style.display = 'none';
+    document.getElementById('kiosk-btn-ambil').style.display = 'inline-block';
+    document.getElementById('kiosk-selfie-status').textContent = '📷 Kamera aktif — hadapkan wajah ke lingkaran';
+    document.getElementById('kiosk-selfie-status').style.color = 'var(--accent2)';
+  } catch(e) {
+    showToast('Gagal akses kamera: ' + e.message, 'error');
+    document.getElementById('kiosk-selfie-status').textContent = '⚠️ Kamera tidak dapat diakses';
+  }
+}
+
+function kioskAmbilFoto() {
+  const video = document.getElementById('kiosk-selfie-video');
+  if(!kioskStream || !video.srcObject) { showToast('Kamera belum aktif','error'); return; }
+
+  let count = 3;
+  const overlay = document.getElementById('kiosk-countdown-overlay');
+  overlay.style.display = 'flex';
+  overlay.textContent = count;
+
+  const iv = setInterval(() => {
+    count--;
+    if(count > 0) { overlay.textContent = count; }
+    else {
+      clearInterval(iv);
+      overlay.style.display = 'none';
+
+      const canvas = document.getElementById('kiosk-selfie-canvas');
+      canvas.width = video.videoWidth || 480;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      kioskSelfieDataURL = canvas.toDataURL('image/jpeg', 0.75);
+
+      stopKioskCam();
+
+      const preview = document.getElementById('kiosk-selfie-preview');
+      preview.src = kioskSelfieDataURL;
+      preview.style.display = 'block';
+      document.getElementById('kiosk-selfie-placeholder').style.display = 'none';
+      document.getElementById('kiosk-btn-ambil').style.display = 'none';
+      document.getElementById('kiosk-btn-ulang').style.display = 'inline-block';
+      document.getElementById('kiosk-btn-lanjut-scan').style.display = 'inline-block';
+      document.getElementById('kiosk-selfie-status').textContent = '✅ Foto berhasil!';
+      document.getElementById('kiosk-selfie-status').style.color = 'var(--accent)';
+      document.getElementById('kiosk-cam-wrapper').style.borderColor = 'var(--accent)';
+    }
+  }, 1000);
+}
+
+function stopKioskCam() {
+  if(kioskStream) { kioskStream.getTracks().forEach(t => t.stop()); kioskStream = null; }
+  const v = document.getElementById('kiosk-selfie-video');
+  if(v) { v.srcObject = null; v.style.display = 'none'; }
+}
+
+function kioskUlangFoto() {
+  kioskSelfieDataURL = null;
+  stopKioskCam();
+  document.getElementById('kiosk-selfie-preview').style.display = 'none';
+  document.getElementById('kiosk-selfie-placeholder').style.display = 'flex';
+  document.getElementById('kiosk-btn-ulang').style.display = 'none';
+  document.getElementById('kiosk-btn-lanjut-scan').style.display = 'none';
+  document.getElementById('kiosk-btn-buka').style.display = 'inline-block';
+  document.getElementById('kiosk-selfie-status').textContent = 'Kamera belum aktif';
+  document.getElementById('kiosk-selfie-status').style.color = 'var(--text3)';
+  document.getElementById('kiosk-cam-wrapper').style.borderColor = 'var(--border2)';
+  // Kalau scanner sedang aktif, stop
+  if(kioskScannerActive && kioskHtml5Scanner) {
+    kioskHtml5Scanner.stop().catch(()=>{});
+    kioskScannerActive = false;
+  }
+  // Kembali ke step 1
+  document.getElementById('kiosk-selfie-section').style.display = 'block';
+  document.getElementById('kiosk-scan-section').style.display = 'none';
+  updateKioskStepIndicator(1);
+}
+
+function kioskLanjutScan() {
+  if(!kioskSelfieDataURL) { showToast('Ambil foto selfie dulu!','error'); return; }
+  document.getElementById('kiosk-selfie-thumb').src = kioskSelfieDataURL;
+  document.getElementById('kiosk-selfie-section').style.display = 'none';
+  document.getElementById('kiosk-scan-section').style.display = 'block';
+  updateKioskStepIndicator(2);
+}
+
+function updateKioskStepIndicator(step) {
+  const s1 = document.getElementById('kiosk-step-1-dot');
+  const s2 = document.getElementById('kiosk-step-2-dot');
+  if(!s1 || !s2) return;
+  if(step === 1) {
+    s1.style.cssText = 'display:flex;align-items:center;gap:6px;background:rgba(74,222,128,0.15);border:1px solid var(--accent);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--accent);font-weight:600;';
+    s2.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text3);';
+  } else {
+    s1.style.cssText = 'display:flex;align-items:center;gap:6px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--accent);';
+    s2.style.cssText = 'display:flex;align-items:center;gap:6px;background:rgba(34,211,238,0.15);border:1px solid var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--accent2);font-weight:600;';
+  }
+}
+
+// ── Kiosk QR Scanner ──
+function kioskToggleScan() {
+  if(kioskScannerActive) {
+    kioskHtml5Scanner.stop().catch(()=>{});
+    kioskScannerActive = false;
+    document.getElementById('kiosk-btn-scan').textContent = '▶ Mulai Scan QR';
+    return;
+  }
+  kioskIsProcessing = false;
+  kioskHtml5Scanner = new Html5Qrcode('kiosk-qr-reader');
+  kioskHtml5Scanner.start(
+    {facingMode:'environment'},
+    {fps:12, qrbox:240},
+    async (qrText) => {
+      if(kioskIsProcessing) return;
+      kioskIsProcessing = true;
+      if(kioskScannerActive && kioskHtml5Scanner) {
+        kioskHtml5Scanner.stop().catch(()=>{});
+        kioskScannerActive = false;
+        document.getElementById('kiosk-btn-scan').textContent = '▶ Mulai Scan QR';
+      }
+      await kioskProsesAbsen(qrText);
+    }
+  ).then(() => {
+    kioskScannerActive = true;
+    document.getElementById('kiosk-btn-scan').textContent = '⏹ Stop Scan';
+  }).catch(e => showToast('Gagal akses kamera: ' + e.message, 'error'));
+}
+
+async function kioskProsesAbsen(qrText) {
+  // Parse QR: KIPM-NIA:{NIA}:{tipe}:{token}
+  if(!qrText.startsWith('KIPM-NIA:')) {
+    kioskShowError('QR Tidak Valid', 'QR Code bukan milik sistem KIPM-UP. Pastikan anggota membuka halaman "Saya Anggota" di aplikasi.');
+    return;
+  }
+
+  const parts = qrText.split(':');
+  if(parts.length < 4) { kioskShowError('QR Tidak Lengkap', 'Format QR tidak valid.'); return; }
+
+  const nia = parts[1];
+  const tipe = parts[2];
+  const tokenDiterima = parts[3];
+
+  // Verifikasi token harian
+  const tokenExpected = getTokenHarianAnggota(nia, tipe);
+  if(tokenDiterima !== tokenExpected) {
+    kioskShowError('QR Kadaluarsa', 'QR Code sudah tidak berlaku. Minta anggota refresh halaman dan tampilkan QR baru.');
+    return;
+  }
+
+  // Cari data anggota
+  const anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota) { kioskShowError('NIA Tidak Terdaftar', `NIA ${nia} tidak ditemukan dalam data anggota.`); return; }
+
+  // Hitung thumbnail selfie
+  let selfieMini = kioskSelfieDataURL;
+  if(selfieMini) {
+    try {
+      const cvs = document.createElement('canvas'); cvs.width=80; cvs.height=80;
+      const ctx = cvs.getContext('2d'); const img = new Image(); img.src = selfieMini;
+      await new Promise(r => { img.onload = () => { ctx.drawImage(img,0,0,80,80); r(); }; img.onerror = r; });
+      selfieMini = cvs.toDataURL('image/jpeg', 0.6);
+    } catch(e) {}
+  }
+
+  // Kirim ke GAS
+  try {
+    const res = await api({
+      action: 'validateBarcode',
+      token: getTimedToken(), // Token waktu untuk GAS backend
+      NIA: nia,
+      tipe: tipe,
+      lat: kioskGPS.lat, lng: kioskGPS.lng, acc: kioskGPS.acc,
+      kiosk: '1'
+    });
+
+    if(res.ok) {
+      const waktu = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+
+      // Simpan selfie ke gallery dashboard
+      selfieGallery.push({
+        NIA: nia, nama: anggota.nama, waktu, tipe,
+        tanggal: new Date().toLocaleDateString('id-ID'),
+        selfieMini, selfieDataURL: kioskSelfieDataURL,
+        sesiNama: 'Kiosk Bursa', savedAt: Date.now()
+      });
+      if(selfieGallery.length > 60) selfieGallery.shift();
+      saveSelfieGallery();
+      try {
+        const sharedKey = 'selfieGallery_shared_' + getTodayWIB();
+        let sharedArr = [];
+        try { sharedArr = JSON.parse(localStorage.getItem(sharedKey)||'[]'); } catch(e){}
+        const idx = sharedArr.findIndex(x=>x.NIA===nia&&x.tipe===tipe);
+        const entry = {NIA:nia,nama:anggota.nama,waktu,tipe,selfieMini,savedAt:Date.now()};
+        if(idx>=0) sharedArr[idx]=entry; else sharedArr.push(entry);
+        localStorage.setItem(sharedKey, JSON.stringify(sharedArr));
+      } catch(e){}
+
+      // Update riwayat kiosk
+      kioskSessionSelfies.push({NIA:nia,nama:anggota.nama,waktu,tipe,selfieMini});
+      updateKioskLastAbsen(anggota, tipe, waktu, res.status||'HADIR');
+
+      // Reload jadwal
+      loadKioskJadwal();
+
+      // Tampilkan success overlay
+      kioskShowSuccess(anggota, tipe, waktu, res.status||'HADIR');
+    } else {
+      kioskShowError('Absen Gagal', res.msg || 'Terjadi kesalahan. Coba lagi.');
+    }
+  } catch(e) {
+    kioskShowError('Koneksi Gagal', 'Tidak dapat terhubung ke server. Periksa koneksi internet.');
+  }
+}
+
+// Generate token waktu untuk GAS (sama seperti QR live, untuk validasi di backend)
+function getTimedToken() {
+  const now = new Date();
+  const wib = new Date(now.getTime() + 7*3600*1000);
+  const dateStr = `${wib.getUTCFullYear()}${String(wib.getUTCMonth()+1).padStart(2,'0')}${String(wib.getUTCDate()).padStart(2,'0')}`;
+  const slot30 = Math.floor(wib.getUTCSeconds()/30) + wib.getUTCMinutes()*2 + wib.getUTCHours()*120;
+  return md5(dateStr + '_' + slot30 + '_KIPMUP2017SECRET').substring(0,12).toUpperCase();
+}
+
+function updateKioskLastAbsen(anggota, tipe, waktu, status) {
+  const el = document.getElementById('kiosk-last-absen');
+  if(!el) return;
+  const badge = tipe==='DATANG' ? '<span style="color:var(--accent);">🟢 DATANG</span>' : '<span style="color:#c084fc;">🟣 PULANG</span>';
+  el.innerHTML = `
+    <div style="font-size:11px; color:var(--text3); font-weight:600; letter-spacing:1px; margin-bottom:8px;">ABSEN TERAKHIR</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      ${kioskSessionSelfies.length > 0 ? `<img src="${kioskSessionSelfies[kioskSessionSelfies.length-1].selfieMini||''}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);">` : ''}
+      <div>
+        <div style="font-size:13px; font-weight:600;">${anggota.nama.split(' ').slice(0,2).join(' ')}</div>
+        <div style="font-size:11px; color:var(--text2);">${badge} · ${waktu}</div>
+      </div>
+    </div>`;
+}
+
+function kioskShowSuccess(anggota, tipe, waktu, status) {
+  const overlay = document.getElementById('kiosk-success-overlay');
+  if(!overlay) return;
+  document.getElementById('kiosk-success-selfie').src = kioskSelfieDataURL || '';
+  document.getElementById('kiosk-success-tipe').textContent = tipe;
+  document.getElementById('kiosk-success-tipe').style.color = tipe==='DATANG' ? 'var(--accent)' : '#c084fc';
+  document.getElementById('kiosk-success-icon').textContent = tipe==='DATANG' ? '✅' : '👋';
+  document.getElementById('kiosk-success-nama').textContent = anggota.nama;
+  document.getElementById('kiosk-success-nia').textContent = anggota.NIA + ' · ' + anggota.divisi;
+  document.getElementById('kiosk-success-waktu').textContent = '🕐 ' + waktu;
+  document.getElementById('kiosk-success-status').textContent = status.includes('luar') ? '⚡ Hadir di luar jadwal' : '✅ Sesuai jadwal';
+  overlay.style.display = 'flex';
+
+  // Countdown reset 5 detik
+  let cd = 5;
+  document.getElementById('kiosk-reset-countdown').textContent = cd;
+  const iv = setInterval(() => {
+    cd--;
+    const el = document.getElementById('kiosk-reset-countdown');
+    if(el) el.textContent = cd;
+    if(cd <= 0) { clearInterval(iv); kioskDismissSuccess(); }
+  }, 1000);
+}
+
+function kioskDismissSuccess() {
+  const overlay = document.getElementById('kiosk-success-overlay');
+  if(overlay) overlay.style.display = 'none';
+  kioskResetState();
+}
+
+function kioskShowError(title, msg) {
+  const overlay = document.getElementById('kiosk-error-overlay');
+  if(!overlay) return;
+  document.getElementById('kiosk-error-title').textContent = title;
+  document.getElementById('kiosk-error-msg').textContent = msg;
+  overlay.style.display = 'flex';
+}
+
+function kioskDismissError() {
+  const overlay = document.getElementById('kiosk-error-overlay');
+  if(overlay) overlay.style.display = 'none';
+  kioskIsProcessing = false;
+  // Restart scanner
+  if(document.getElementById('kiosk-scan-section')?.style.display !== 'none') {
+    setTimeout(() => kioskToggleScan(), 500);
+  }
+}
+
+function kioskResetState() {
+  kioskSelfieDataURL = null;
+  kioskIsProcessing = false;
+  stopKioskCam();
+  if(kioskScannerActive && kioskHtml5Scanner) {
+    kioskHtml5Scanner.stop().catch(()=>{});
+    kioskScannerActive = false;
+  }
+
+  // Reset UI ke step 1
+  const preview = document.getElementById('kiosk-selfie-preview');
+  if(preview) { preview.style.display='none'; preview.src=''; }
+  const placeholder = document.getElementById('kiosk-selfie-placeholder');
+  if(placeholder) placeholder.style.display = 'flex';
+  const v = document.getElementById('kiosk-selfie-video');
+  if(v) { v.style.display='none'; v.srcObject=null; }
+  const btnBuka = document.getElementById('kiosk-btn-buka');
+  if(btnBuka) btnBuka.style.display = 'inline-block';
+  const btnAmbil = document.getElementById('kiosk-btn-ambil');
+  if(btnAmbil) btnAmbil.style.display = 'none';
+  const btnUlang = document.getElementById('kiosk-btn-ulang');
+  if(btnUlang) btnUlang.style.display = 'none';
+  const btnLanjut = document.getElementById('kiosk-btn-lanjut-scan');
+  if(btnLanjut) btnLanjut.style.display = 'none';
+  const statusEl = document.getElementById('kiosk-selfie-status');
+  if(statusEl) { statusEl.textContent='Kamera belum aktif'; statusEl.style.color='var(--text3)'; }
+  const wrapper = document.getElementById('kiosk-cam-wrapper');
+  if(wrapper) wrapper.style.borderColor = 'var(--border2)';
+  const scanBtn = document.getElementById('kiosk-btn-scan');
+  if(scanBtn) scanBtn.textContent = '▶ Mulai Scan QR';
+
+  document.getElementById('kiosk-selfie-section').style.display = 'block';
+  document.getElementById('kiosk-scan-section').style.display = 'none';
+  updateKioskStepIndicator(1);
+
+  // Otomatis buka kamera untuk kecepatan
+  setTimeout(() => kioskBukaKamera(), 400);
+}
+
+// Tambahkan PIN kiosk di admin settings (simpan ke localStorage)
+function setKioskPin(pin) {
+  if(!pin || pin.length < 4) { showToast('PIN minimal 4 karakter','error'); return; }
+  localStorage.setItem(KIOSK_PIN_KEY, pin);
+  showToast('✅ PIN kiosk berhasil diperbarui','success');
+}
+
+window.kioskLogin = kioskLogin;
+window.kioskLock = kioskLock;
+window.kioskBukaKamera = kioskBukaKamera;
+window.kioskAmbilFoto = kioskAmbilFoto;
+window.kioskUlangFoto = kioskUlangFoto;
+window.kioskLanjutScan = kioskLanjutScan;
+window.kioskToggleScan = kioskToggleScan;
+window.kioskDismissSuccess = kioskDismissSuccess;
+window.kioskDismissError = kioskDismissError;
+window.setKioskPin = setKioskPin;
+function setKioskPinAdmin() {
+  const pin = (document.getElementById('kiosk-pin-input')?.value || '').trim();
+  setKioskPin(pin);
+  if(document.getElementById('kiosk-pin-input')) document.getElementById('kiosk-pin-input').value = '';
+}
+window.setKioskPinAdmin = setKioskPinAdmin;
+
+
 let pengaduanList = JSON.parse(sessionStorage.getItem('pengaduanList') || '[]');
 
 async function submitPengaduan() {
