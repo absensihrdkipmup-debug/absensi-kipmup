@@ -5350,33 +5350,15 @@ async function absenBursaSubmit() {
     });
 
     if (res.ok) {
-      // Tampilkan success state
       if (loadingEl) loadingEl.style.display = 'none';
-      document.getElementById('absen-bursa-form').style.display    = 'none';
-      document.getElementById('absen-bursa-token-ok').style.display = 'none';
-      const successDiv = document.getElementById('absen-bursa-success');
-      if (successDiv) successDiv.style.display = 'block';
-
-      const iconEl  = document.getElementById('absen-bursa-success-icon');
-      const tipeEl  = document.getElementById('absen-bursa-success-tipe');
-      const namaEl2 = document.getElementById('absen-bursa-success-nama');
-      const msgEl   = document.getElementById('absen-bursa-success-msg');
-      if (iconEl)  iconEl.textContent  = tipe === 'DATANG' ? '✅' : '👋';
-      if (tipeEl)  { tipeEl.textContent = tipe; tipeEl.style.color = tipe === 'DATANG' ? 'var(--accent)' : '#c084fc'; }
-      if (namaEl2) namaEl2.textContent = anggota.nama;
-      if (msgEl)   msgEl.textContent   = res.msg || 'Absen berhasil dicatat!';
-
-      // Toggle section DATANG vs PULANG
-      const secDatang = document.getElementById('absen-bursa-section-datang');
-      const secPulang = document.getElementById('absen-bursa-section-pulang');
-      if (secDatang) secDatang.style.display = tipe === 'DATANG' ? 'block' : 'none';
-      if (secPulang) secPulang.style.display = tipe === 'PULANG' ? 'block' : 'none';
-
-      // Load jadwal piket hari ini (hanya untuk DATANG)
-      if (tipe === 'DATANG') absenBursaLoadJadwal();
-
       // Stop GPS watch
       if (_absenBursaGPSWatch) { navigator.geolocation.clearWatch(_absenBursaGPSWatch); }
+
+      showToast('✅ ' + (res.msg || 'Absen berhasil!'), 'success');
+
+      // Setup halaman kalender lalu redirect (sama persis dengan alur kiosk/Face ID)
+      setupKalenderPage(tipe, anggota.nama);
+      setTimeout(() => { goTo('kalender'); }, 1200);
     } else {
       if (submitBtn)  submitBtn.style.display = 'block';
       if (loadingEl)  loadingEl.style.display = 'none';
