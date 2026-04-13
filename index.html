@@ -1220,8 +1220,7 @@ let allAnggota = [...realAnggota];
 
       <!-- Tombol aksi DATANG -->
       <div style="display:flex; flex-direction:column; gap:10px; padding-bottom:8px;">
-        <button style="width:100%; padding:13px; background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.4); color:#c084fc; font-family:var(--font); font-size:14px; font-weight:600; border-radius:12px; cursor:pointer;" onclick="goToAbsenPulang()">🟣 Absen Pulang Nanti</button>
-        <button style="width:100%; padding:13px; background:var(--bg2); border:1px solid var(--border2); color:var(--text2); font-family:var(--font); font-size:14px; border-radius:12px; cursor:pointer;" onclick="goTo('scan')">📷 Absen Anggota Lain</button>
+        <button style="width:100%; padding:13px; background:rgba(74,222,128,0.15); border:1px solid rgba(74,222,128,0.4); color:var(--accent); font-family:var(--font); font-size:14px; font-weight:600; border-radius:12px; cursor:pointer;" onclick="goTo('landing')">🏠 Kembali ke Beranda</button>
       </div>
     </div>
 
@@ -1248,9 +1247,9 @@ let allAnggota = [...realAnggota];
         </div>
       </div>
 
-      <!-- Tombol aksi PULANG — auto-redirect ke scan dalam 8 detik -->
+      <!-- Tombol aksi PULANG -->
       <div style="display:flex; flex-direction:column; gap:10px; padding-bottom:8px;">
-        <button id="kalender-btn-scan-lagi" style="width:100%; padding:13px; background:rgba(74,222,128,0.15); border:1px solid rgba(74,222,128,0.4); color:var(--accent); font-family:var(--font); font-size:14px; font-weight:600; border-radius:12px; cursor:pointer;" onclick="clearKalenderRedirect(); goTo('scan');">📷 Absen Anggota Lain</button>
+        <button id="kalender-btn-scan-lagi" style="width:100%; padding:13px; background:rgba(74,222,128,0.15); border:1px solid rgba(74,222,128,0.4); color:var(--accent); font-family:var(--font); font-size:14px; font-weight:600; border-radius:12px; cursor:pointer;" onclick="clearKalenderRedirect(); goTo('landing');">🏠 Kembali ke Beranda</button>
       </div>
     </div>
 
@@ -6796,7 +6795,7 @@ function setupKalenderPage(tipe, nama, isJadwalPiket) {
     const btnEl = document.getElementById('kalender-btn-scan-lagi');
     function updateCD() {
       if(cdEl) cdEl.textContent = `✅ Terima kasih! Halaman otomatis kembali dalam ${sisa} detik...`;
-      if(btnEl) btnEl.textContent = `📷 Absen Anggota Lain (${sisa}s)`;
+      if(btnEl) btnEl.textContent = `🏠 Kembali ke Beranda (${sisa}s)`;
     }
     updateCD();
     _kalenderCountdownTimer = setInterval(() => {
@@ -6804,7 +6803,7 @@ function setupKalenderPage(tipe, nama, isJadwalPiket) {
       updateCD();
       if(sisa <= 0) {
         clearKalenderRedirect();
-        goTo('scan');
+        goTo('landing');
       }
     }, 1000);
   }
