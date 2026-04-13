@@ -1010,9 +1010,16 @@ let allAnggota = [...realAnggota];
 
         <!-- QR Bursa Dinamis — encode URL langsung -->
         <div style="background:var(--bg2); border:1px solid var(--border2); border-radius:16px; padding:18px; display:inline-block; margin-bottom:12px; position:relative;">
-          <div id="kiosk-qr-bursa-canvas" style="background:white; padding:14px; border-radius:12px; display:inline-block; box-shadow:0 4px 24px rgba(0,0,0,0.4);"></div>
+          <div id="kiosk-qr-bursa-canvas" style="background:white; padding:14px; border-radius:12px; display:inline-block; box-shadow:0 4px 24px rgba(0,0,0,0.4); position:relative;">
+            <!-- Overlay QR sudah dipakai -->
+            <div id="kiosk-qr-used-overlay" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.82); border-radius:10px; align-items:center; justify-content:center; flex-direction:column; gap:8px; z-index:10;">
+              <div style="font-size:36px;">✅</div>
+              <div style="font-size:13px; font-weight:700; color:var(--accent); text-align:center; padding:0 12px;">QR sudah digunakan</div>
+              <div style="font-size:11px; color:var(--text2); text-align:center; padding:0 10px;">Kembali ke langkah 1 untuk sesi berikutnya</div>
+            </div>
+          </div>
           <!-- Countdown ring overlay -->
-          <div style="position:absolute; bottom:-12px; left:50%; transform:translateX(-50%); background:var(--bg3); border:1px solid var(--border2); border-radius:20px; padding:3px 12px; font-size:11px; white-space:nowrap;">
+          <div id="kiosk-qr-countdown-badge" style="position:absolute; bottom:-12px; left:50%; transform:translateX(-50%); background:var(--bg3); border:1px solid var(--border2); border-radius:20px; padding:3px 12px; font-size:11px; white-space:nowrap;">
             🔄 <span id="kiosk-qr-countdown" style="color:var(--accent3); font-weight:700; font-family:var(--mono);">30</span>s
           </div>
         </div>
@@ -5886,8 +5893,10 @@ function updateKioskStepIndicator(step) {
 let kioskQRInterval = null;
 let kioskQRCountdownInterval = null;
 let kioskQRLastToken = null;
+let kioskQRUsed = false; // flag: QR sudah dipakai, jangan generate baru
 
 function kioskRenderQRBursa() {
+  if(kioskQRUsed) return; // QR sudah dipakai, jangan regenerasi
   const token = getCurrentQRToken();
   if(token === kioskQRLastToken) return;
   kioskQRLastToken = token;
@@ -5911,6 +5920,7 @@ function kioskStartQRDisplay() {
   if(kioskQRInterval) clearInterval(kioskQRInterval);
   if(kioskQRCountdownInterval) clearInterval(kioskQRCountdownInterval);
   kioskQRLastToken = null;
+  kioskQRUsed = false; // reset flag saat mulai sesi baru
   kioskRenderQRBursa();
   kioskQRInterval = setInterval(() => kioskRenderQRBursa(), 1000);
   kioskQRCountdownInterval = setInterval(() => {
@@ -5923,6 +5933,7 @@ function kioskStopQRDisplay() {
   if(kioskQRInterval) { clearInterval(kioskQRInterval); kioskQRInterval = null; }
   if(kioskQRCountdownInterval) { clearInterval(kioskQRCountdownInterval); kioskQRCountdownInterval = null; }
   kioskQRLastToken = null;
+  // Note: kioskQRUsed TIDAK di-reset di sini — hanya di-reset saat kioskStartQRDisplay (sesi baru)
 }
 
 // Override kioskToggleScan — sekarang tidak dipakai, tapi simpan untuk compatibility
@@ -5963,6 +5974,13 @@ function updateKioskLastAbsen(anggota, tipe, waktu, status) {
 }
 
 function kioskShowSuccess(anggota, tipe, waktu, status) {
+  kioskQRUsed = true; // QR sudah dipakai — tidak bisa digunakan lagi
+  kioskStopQRDisplay(); // Hentikan timer QR
+  // Tampilkan overlay QR sudah dipakai
+  const usedOverlay = document.getElementById('kiosk-qr-used-overlay');
+  if(usedOverlay) usedOverlay.style.display = 'flex';
+  const countdownBadge = document.getElementById('kiosk-qr-countdown-badge');
+  if(countdownBadge) countdownBadge.style.display = 'none';
   const overlay = document.getElementById('kiosk-success-overlay');
   if(!overlay) return;
   document.getElementById('kiosk-success-selfie').src = kioskSelfieDataURL || '';
@@ -6043,9 +6061,12 @@ function kioskResetState() {
   document.getElementById('kiosk-selfie-section').style.display = 'block';
   document.getElementById('kiosk-scan-section').style.display = 'none';
   updateKioskStepIndicator(1);
-
-  // Otomatis buka kamera untuk kecepatan
-  setTimeout(() => kioskBukaKamera(), 400);
+  // Reset overlay QR sudah dipakai
+  const usedOverlay = document.getElementById('kiosk-qr-used-overlay');
+  if(usedOverlay) usedOverlay.style.display = 'none';
+  const countdownBadge = document.getElementById('kiosk-qr-countdown-badge');
+  if(countdownBadge) countdownBadge.style.display = 'block';
+  // Kamera TIDAK otomatis menyala — user harus klik "Buka Kamera" dulu
 }
 
 // Tambahkan PIN kiosk di admin settings (simpan ke localStorage)
