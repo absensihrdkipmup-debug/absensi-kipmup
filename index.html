@@ -2387,7 +2387,22 @@ function goTo(page){
   }
   if(page==='qr'){ startQRLiveDisplay(); }
   if(page==='kalender'){ 
-    setTimeout(() => { renderKalenderJadwal(); renderAgendaPublic(); }, 50);
+    // Render jadwal dan agenda, lalu pastikan section yang benar tetap terlihat
+    setTimeout(() => { 
+      renderKalenderJadwal(); 
+      renderAgendaPublic();
+      // Re-apply section visibility sesuai tipe absen terakhir
+      const secD = document.getElementById('kalender-section-datang');
+      const secP = document.getElementById('kalender-section-pulang');
+      if(secD && secP) {
+        // Jika section pulang sudah di-set visible, jangan override
+        if(secP.style.display === 'block') {
+          secD.style.display = 'none';
+        } else {
+          secD.style.display = 'block';
+        }
+      }
+    }, 50);
   }
   if(page==='pengaduan'){ setTimeout(() => renderPengaduanRiwayat(), 50); }
   if(page==='kiosk'){ /* initKiosk dipanggil dari kioskLogin */ }
@@ -5350,10 +5365,6 @@ async function absenBursaSubmit() {
       if (tipeEl)  { tipeEl.textContent = tipe; tipeEl.style.color = tipe === 'DATANG' ? 'var(--accent)' : '#c084fc'; }
       if (namaEl2) namaEl2.textContent = anggota.nama;
       if (msgEl)   msgEl.textContent   = res.msg || 'Absen berhasil dicatat!';
-
-      // Tampilkan tombol BEI hanya saat DATANG
-      const beiWrap = document.getElementById('absen-bursa-bei-wrap');
-      if (beiWrap) beiWrap.style.display = tipe === 'DATANG' ? 'block' : 'none';
 
       // Toggle section DATANG vs PULANG
       const secDatang = document.getElementById('absen-bursa-section-datang');
