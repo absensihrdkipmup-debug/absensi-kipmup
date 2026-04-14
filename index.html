@@ -762,6 +762,7 @@ let allAnggota = [...realAnggota];
     <div id="enroll-status-box" style="display:none; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:12px; padding:14px; text-align:center; margin-bottom:16px;">
       <div style="font-size:16px; font-weight:700; color:var(--accent);">✅ Face ID Terdaftar!</div>
       <div style="font-size:13px; color:var(--text2); margin-top:4px;" id="enroll-success-msg"></div>
+      <div style="font-size:11px; color:var(--text3); margin-top:8px;">Kembali otomatis dalam 1.5 detik...</div>
     </div>
 
     <div style="background:var(--bg3); border-radius:10px; padding:12px; font-size:11px; color:var(--text3);">
@@ -988,7 +989,7 @@ let allAnggota = [...realAnggota];
           </div>
           <div style="font-size:11px; color:var(--text3); margin-top:10px;">Face ID didaftarkan di komputer ini saat pertama kali digunakan</div>
           <div style="margin-top:8px;">
-            <button onclick="goTo('face-enroll')" style="background:rgba(192,132,252,0.12); border:1px solid rgba(192,132,252,0.35); color:#c084fc; font-family:var(--font); font-size:11px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer;">➕ Daftar Face ID Baru</button>
+            <button onclick="goToFaceEnroll('kiosk')" style="background:rgba(192,132,252,0.12); border:1px solid rgba(192,132,252,0.35); color:#c084fc; font-family:var(--font); font-size:11px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer;">➕ Daftar Face ID Baru</button>
           </div>
         </div>
       </div>
@@ -6607,11 +6608,19 @@ function getAllFaceIDs() {
 }
 
 // ── ENROLLMENT ──
-function goToFaceEnroll() {
+function goToFaceEnroll(returnPage) {
+  // Tentukan halaman tujuan kembali: kiosk atau scan (HP anggota)
+  const backTo = returnPage || 'scan';
   document.getElementById('face-enroll-back').onclick = () => {
     stopEnrollFace();
-    goTo('scan');
+    goTo(backTo);
+    // Kalau kembali ke kiosk, pastikan mode Face ID aktif
+    if(backTo === 'kiosk') {
+      setTimeout(() => kioskSetMetode('faceid'), 100);
+    }
   };
+  // Simpan returnPage untuk dipakai saat selesai simpan Face ID
+  window._faceEnrollReturnPage = backTo;
   enrollDescriptors = [];
   enrollSampleCount = 0;
   resetEnrollDots();
@@ -6749,6 +6758,24 @@ function simpanFaceID() {
   document.getElementById('enroll-btn-simpan').style.display = 'none';
   document.getElementById('enroll-btn-ulang').style.display = 'none';
   showToast('✅ Face ID berhasil disimpan!','success');
+
+  // Auto-kembali ke halaman asal setelah 1.5 detik
+  const backTo = window._faceEnrollReturnPage || 'scan';
+  setTimeout(() => {
+    stopEnrollFace();
+    goTo(backTo);
+    // Kalau kembali ke kiosk, aktifkan mode Face ID + isi NIA jika ada
+    if(backTo === 'kiosk') {
+      setTimeout(() => {
+        kioskSetMetode('faceid');
+        // Pre-fill NIA di kiosk Face ID input
+        const kioskNiaEl = document.getElementById('kiosk-faceid-nia');
+        if(kioskNiaEl && nia) kioskNiaEl.value = nia;
+        const statusEl = document.getElementById('kiosk-selfie-status');
+        if(statusEl) { statusEl.textContent = '✅ Face ID terdaftar! Klik Mulai Face Scan'; statusEl.style.color = 'var(--accent)'; }
+      }, 150);
+    }
+  }, 1500);
 }
 window.simpanFaceID = simpanFaceID;
 
@@ -6784,7 +6811,7 @@ async function mulaiScanFaceID() {
   // Cek apakah punya Face ID
   if(!hasFaceID(nia)) {
     showToast('⚠️ Kamu belum punya Face ID di perangkat ini. Daftar dulu!','error');
-    setTimeout(() => goToFaceEnroll(), 1500);
+    setTimeout(() => goToFaceEnroll('scan'), 1500);
     return;
   }
   
