@@ -843,37 +843,40 @@ let allAnggota = [...realAnggota];
 
     <!-- PANEL FACE ID -->
     <div id="panel-faceid-anggota" style="display:none;">
-      <!-- Daftar Piket di atas -->
-      <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:14px;">
-        <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📋 Piket Hari Ini</div>
-        <div id="jadwal-today-faceid"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
-      </div>
-
-      <div style="background:var(--bg2); border-radius:12px; padding:20px; text-align:center;">
+      <div style="background:var(--bg2); border-radius:12px; padding:20px; text-align:center; margin-bottom:14px;">
         <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Face ID</div>
-        <div style="font-size:15px; font-weight:600; margin-bottom:4px; color:#c084fc;">🤖 Pengenalan Wajah</div>
-        <div style="font-size:12px; color:var(--text2); margin-bottom:14px;" id="face-scan-status-msg">Klik Mulai untuk scan wajah</div>
-        <div class="face-box" style="width:260px; height:260px; margin:0 auto 14px;">
-          <video id="face-scan-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block;"></video>
-          <canvas id="face-scan-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; transform:scaleX(-1);"></canvas>
-          <div class="face-overlay">
-            <div id="face-scan-badge" style="background:rgba(0,0,0,0.7); border-radius:20px; padding:4px 12px; font-size:11px; color:white;">
-              <span class="face-status-ring scanning" id="face-ring"></span>
-              <span id="face-scan-label">Menginisialisasi...</span>
-            </div>
-          </div>
-        </div>
-        <!-- Jenis Absen untuk Face ID -->
-        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:12px;">
+        <div style="font-size:15px; font-weight:600; margin-bottom:12px; color:#c084fc;">🤖 Pengenalan Wajah</div>
+
+        <!-- 1. Jenis Absen -->
+        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:14px;">
           <button id="btn-tipe-datang-face" onclick="setScanType('DATANG')" style="flex:1; max-width:140px; padding:8px; background:rgba(74,222,128,0.15); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer;">🟢 Datang</button>
           <button id="btn-tipe-pulang-face" onclick="setScanType('PULANG')" style="flex:1; max-width:140px; padding:8px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:12px; cursor:pointer;">🟣 Pulang</button>
         </div>
-        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+
+        <!-- 2. Kamera Face ID — LINGKARAN -->
+        <div style="position:relative; width:260px; height:260px; border-radius:50%; overflow:hidden; border:3px solid #c084fc; background:var(--bg3); margin:0 auto 8px; display:flex; align-items:center; justify-content:center;">
+          <video id="face-scan-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block;"></video>
+          <canvas id="face-scan-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; transform:scaleX(-1);"></canvas>
+        </div>
+        <div id="face-scan-badge" style="background:rgba(0,0,0,0.55); border-radius:20px; padding:5px 14px; font-size:11px; color:white; display:inline-flex; align-items:center; margin-bottom:6px;">
+          <span class="face-status-ring scanning" id="face-ring"></span>
+          <span id="face-scan-label">Menginisialisasi...</span>
+        </div>
+        <div style="font-size:12px; color:var(--text2); margin-bottom:12px;" id="face-scan-status-msg">Klik Mulai untuk scan wajah</div>
+
+        <!-- Tombol Mulai/Stop -->
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
           <button id="btn-face-mulai" onclick="mulaiScanFaceID()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:9px 20px; border-radius:30px; cursor:pointer;">▶ Mulai Face Scan</button>
           <button id="btn-face-stop" onclick="stopScanFaceID()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:9px 16px; border-radius:30px; cursor:pointer;">⏹ Stop</button>
         </div>
-        <!-- Daftar Face ID -->
-        <div style="margin-top:14px; background:rgba(192,132,252,0.07); border:1px solid rgba(192,132,252,0.25); border-radius:12px; padding:14px;">
+
+        <!-- 3. Form NIA (shared dengan panel QR di atas) -->
+        <div style="text-align:left; margin-bottom:14px; background:var(--bg3); border-radius:8px; padding:10px 14px;">
+          <div style="font-size:11px; color:var(--text3);">NIA yang digunakan: lihat form di atas (Nomor Induk Anggota)</div>
+        </div>
+
+        <!-- 4. Daftar Face ID -->
+        <div style="background:rgba(192,132,252,0.07); border:1px solid rgba(192,132,252,0.25); border-radius:12px; padding:14px;">
           <div style="font-size:12px; font-weight:700; color:#c084fc; margin-bottom:10px;">📋 Pendaftaran Face ID</div>
           <div style="font-size:11.5px; color:var(--text2); margin-bottom:12px; line-height:1.6;">
             Pertama kali pakai Face ID? Daftarkan wajahmu dulu. Data tersimpan di perangkat ini.
@@ -882,6 +885,12 @@ let allAnggota = [...realAnggota];
             🤖 Daftar / Update Face ID
           </button>
         </div>
+      </div>
+
+      <!-- 5. Daftar Anggota Piket -->
+      <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:14px;">
+        <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📋 Piket Hari Ini</div>
+        <div id="jadwal-today-faceid"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
       </div>
     </div>
 
@@ -950,69 +959,87 @@ let allAnggota = [...realAnggota];
       </div>
 
       <!-- STEP 1: Kamera selfie + toggle metode -->
-      <div id="kiosk-selfie-section" style="text-align:center;">
+      <div id="kiosk-selfie-section" style="text-align:center; width:100%; max-width:360px;">
+
         <!-- Toggle Metode Absen di Kiosk -->
         <div style="display:flex; gap:8px; justify-content:center; margin-bottom:14px;">
           <button class="face-mode-btn active" id="kiosk-btn-metode-selfie" onclick="kioskSetMetode('selfie')" style="font-size:12px; padding:7px 16px;">📸 Foto + QR</button>
           <button class="face-mode-btn" id="kiosk-btn-metode-faceid" onclick="kioskSetMetode('faceid')" style="font-size:12px; padding:7px 16px;">🤖 Face ID</button>
         </div>
 
-        <!-- PANEL FOTO + QR -->
+        <!-- ═══════════ PANEL FOTO + QR ═══════════ -->
         <div id="kiosk-panel-selfie">
-          <div style="font-size:15px; font-weight:600; margin-bottom:8px; color:var(--text);">📸 Ambil Foto Selfie Dulu</div>
-          <div style="font-size:12px; color:var(--text2); margin-bottom:14px;">Hadapkan wajah ke kamera, lalu tekan tombol</div>
-        </div>
-        <div id="kiosk-cam-wrapper" style="position:relative; width:280px; height:280px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); margin:0 auto 14px; display:flex; align-items:center; justify-content:center; transition:border-radius 0.3s;">
-          <video id="kiosk-selfie-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
-          <img id="kiosk-selfie-preview" style="display:none; width:100%; height:100%; object-fit:cover;" alt="Selfie">
-          <div id="kiosk-selfie-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text3);">
-            <div style="font-size:48px;">👤</div>
-            <div style="font-size:12px;">Kamera belum aktif</div>
+          <!-- 1. Jenis Absen -->
+          <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;" id="kiosk-selfie-tipe-row">
+            <button onclick="kioskSelfieSetTipe('DATANG')" id="kiosk-selfie-btn-datang" style="flex:1; max-width:130px; padding:7px; background:rgba(74,222,128,0.18); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer;">🟢 Datang</button>
+            <button onclick="kioskSelfieSetTipe('PULANG')" id="kiosk-selfie-btn-pulang" style="flex:1; max-width:130px; padding:7px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:12px; cursor:pointer;">🟣 Pulang</button>
           </div>
-          <div id="kiosk-countdown-overlay" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; font-size:72px; font-weight:800; color:white;"></div>
+          <!-- 2. Form NIA -->
+          <div style="margin-bottom:10px;" id="kiosk-selfie-nia-row">
+            <input class="form-input" id="kiosk-selfie-nia" placeholder="NIA Anggota (opsional untuk Foto+QR)" style="text-align:center; font-size:13px;">
+          </div>
+          <!-- 3. Kamera (lingkaran) -->
+          <div id="kiosk-cam-wrapper" style="position:relative; width:260px; height:260px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); margin:0 auto 8px; display:flex; align-items:center; justify-content:center;">
+            <video id="kiosk-selfie-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
+            <img id="kiosk-selfie-preview" style="display:none; width:100%; height:100%; object-fit:cover;" alt="Selfie">
+            <div id="kiosk-selfie-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text3);">
+              <div style="font-size:48px;">👤</div>
+              <div style="font-size:12px;">Kamera belum aktif</div>
+            </div>
+            <div id="kiosk-countdown-overlay" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; font-size:72px; font-weight:800; color:white;"></div>
+          </div>
+          <canvas id="kiosk-selfie-canvas" style="display:none;"></canvas>
+          <div id="kiosk-selfie-status" style="font-size:12px; color:var(--text3); margin-bottom:10px;">Kamera belum aktif</div>
+          <!-- 4. Tombol Buka Kamera -->
+          <div id="kiosk-photo-buttons" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:10px;">
+            <button id="kiosk-btn-buka" onclick="kioskBukaKamera()" style="background:rgba(34,211,238,0.12); color:var(--accent2); border:1px solid rgba(34,211,238,0.3); font-family:var(--font); font-size:13px; font-weight:500; padding:10px 22px; border-radius:30px; cursor:pointer;">📷 Buka Kamera</button>
+            <button id="kiosk-btn-ambil" onclick="kioskAmbilFoto()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:700; padding:10px 22px; border-radius:30px; cursor:pointer;">📸 Ambil Foto</button>
+            <button id="kiosk-btn-ulang" onclick="kioskUlangFoto()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:10px 18px; border-radius:30px; cursor:pointer;">🔄 Ulang</button>
+          </div>
+          <button id="kiosk-btn-lanjut-scan" onclick="kioskLanjutScan()" style="display:none; margin-bottom:14px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; padding:12px 32px; border-radius:30px; cursor:pointer;">✅ Foto OK — Lanjut Scan QR →</button>
+          <!-- 5. Daftar anggota piket -->
+          <div id="kiosk-piket-selfie" style="background:var(--bg2); border-radius:12px; padding:14px; text-align:left;">
+            <div style="font-weight:600; font-size:12px; margin-bottom:10px; color:var(--text2);">📋 Piket Hari Ini</div>
+            <div id="kiosk-jadwal-selfie"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
+          </div>
         </div>
-        <canvas id="kiosk-selfie-canvas" style="display:none;"></canvas>
-        <div id="kiosk-selfie-status" style="font-size:12px; color:var(--text3); margin-bottom:14px;">Kamera belum aktif</div>
-        <!-- Tombol Foto+QR -->
-        <div id="kiosk-photo-buttons" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-          <button id="kiosk-btn-buka" onclick="kioskBukaKamera()" style="background:rgba(34,211,238,0.12); color:var(--accent2); border:1px solid rgba(34,211,238,0.3); font-family:var(--font); font-size:13px; font-weight:500; padding:10px 22px; border-radius:30px; cursor:pointer;">📷 Buka Kamera</button>
-          <button id="kiosk-btn-ambil" onclick="kioskAmbilFoto()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:13px; font-weight:700; padding:10px 22px; border-radius:30px; cursor:pointer;">📸 Ambil Foto</button>
-          <button id="kiosk-btn-ulang" onclick="kioskUlangFoto()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:10px 18px; border-radius:30px; cursor:pointer;">🔄 Ulang</button>
-        </div>
-        <button id="kiosk-btn-lanjut-scan" onclick="kioskLanjutScan()" style="display:none; margin-top:14px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; padding:12px 32px; border-radius:30px; cursor:pointer;">✅ Foto OK — Lanjut Scan QR →</button>
 
-        <!-- Daftar Piket (tampil di bawah tombol kamera, hanya saat panel Foto+QR aktif) -->
-        <div id="kiosk-piket-selfie" style="margin-top:16px; background:var(--bg2); border-radius:12px; padding:14px; text-align:left; max-width:320px; margin-left:auto; margin-right:auto;">
-          <div style="font-weight:600; font-size:12px; margin-bottom:10px; color:var(--text2);">📋 Piket Hari Ini</div>
-          <div id="kiosk-jadwal-selfie"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
-        </div>
-
-        <!-- PANEL FACE ID di Kiosk -->
-        <div id="kiosk-panel-faceid" style="display:none; text-align:left; max-width:320px; margin:0 auto;">
-          <!-- Daftar Piket di atas untuk Face ID -->
-          <div style="background:var(--bg2); border-radius:12px; padding:14px; margin-bottom:14px;">
+        <!-- ═══════════ PANEL FACE ID ═══════════ -->
+        <div id="kiosk-panel-faceid" style="display:none; text-align:left;">
+          <!-- 1. Jenis Absen -->
+          <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
+            <button onclick="kioskFaceSetTipe('DATANG')" id="kiosk-face-btn-datang" style="flex:1; max-width:130px; padding:7px; background:rgba(74,222,128,0.18); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer;">🟢 Datang</button>
+            <button onclick="kioskFaceSetTipe('PULANG')" id="kiosk-face-btn-pulang" style="flex:1; max-width:130px; padding:7px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:12px; cursor:pointer;">🟣 Pulang</button>
+          </div>
+          <!-- 2. Kamera Face ID — LINGKARAN -->
+          <div id="kiosk-face-cam-wrapper" style="position:relative; width:240px; height:240px; border-radius:50%; overflow:hidden; border:3px solid #c084fc; background:var(--bg3); margin:0 auto 8px; display:flex; align-items:center; justify-content:center;">
+            <video id="kiosk-face-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
+            <div id="kiosk-face-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--text3);">
+              <div style="font-size:40px;">👤</div>
+              <div style="font-size:11px;">Kamera belum aktif</div>
+            </div>
+          </div>
+          <div id="kiosk-face-status" style="font-size:12px; color:var(--text3); margin-bottom:10px; text-align:center;">Isi NIA → klik Mulai Scan</div>
+          <!-- 3. Tombol Mulai/Stop -->
+          <div style="display:flex; gap:8px; justify-content:center; margin-bottom:12px;">
+            <button id="kiosk-face-btn-mulai" onclick="kioskMulaiFaceID()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:9px 20px; border-radius:30px; cursor:pointer;">▶ Mulai Face Scan</button>
+            <button id="kiosk-face-btn-stop" onclick="kioskStopFaceID()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:9px 16px; border-radius:30px; cursor:pointer;">⏹ Stop</button>
+          </div>
+          <!-- 4. Form NIA -->
+          <div style="margin-bottom:12px;">
+            <label style="font-size:11px; color:var(--text2); display:block; margin-bottom:5px; font-weight:600;">NIA Anggota</label>
+            <input class="form-input" id="kiosk-faceid-nia" placeholder="Contoh: 092025001" style="text-align:center; font-size:13px;">
+          </div>
+          <!-- 5. Daftar Face ID Baru -->
+          <div style="background:rgba(192,132,252,0.07); border:1px solid rgba(192,132,252,0.28); border-radius:12px; padding:14px; text-align:center; margin-bottom:12px;">
+            <div style="font-size:12px; font-weight:700; color:#c084fc; margin-bottom:6px;">➕ Daftar Face ID Baru</div>
+            <div style="font-size:11px; color:var(--text3); margin-bottom:10px;">Belum punya Face ID? Daftar di sini dulu</div>
+            <button onclick="goToFaceEnroll('kiosk')" style="width:100%; padding:9px; background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.45); color:#c084fc; font-family:var(--font); font-size:12px; font-weight:600; border-radius:10px; cursor:pointer;">🤖 Daftar / Update Face ID</button>
+          </div>
+          <!-- 6. Daftar anggota piket -->
+          <div style="background:var(--bg2); border-radius:12px; padding:14px;">
             <div style="font-weight:600; font-size:12px; margin-bottom:10px; color:var(--text2);">📋 Piket Hari Ini</div>
             <div id="kiosk-jadwal-faceid"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
-          </div>
-          <!-- Card Face ID Baru -->
-          <div style="background:rgba(192,132,252,0.07); border:1px solid rgba(192,132,252,0.3); border-radius:12px; padding:16px; margin-bottom:14px; text-align:center;">
-            <div style="font-size:13px; font-weight:700; color:#c084fc; margin-bottom:6px;">🤖 Pengenalan Wajah</div>
-            <div style="font-size:11px; color:var(--text2); margin-bottom:12px;">Minta anggota isi NIA dulu, lalu scan wajah</div>
-            <input class="form-input" id="kiosk-faceid-nia" placeholder="NIA Anggota" style="max-width:240px; text-align:center; margin:0 auto 10px; display:block;">
-            <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
-              <button onclick="kioskFaceSetTipe('DATANG')" id="kiosk-face-btn-datang" style="flex:1; padding:8px; background:rgba(74,222,128,0.15); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer;">🟢 Datang</button>
-              <button onclick="kioskFaceSetTipe('PULANG')" id="kiosk-face-btn-pulang" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:12px; cursor:pointer;">🟣 Pulang</button>
-            </div>
-            <div style="display:flex; gap:8px; justify-content:center;">
-              <button id="kiosk-face-btn-mulai" onclick="kioskMulaiFaceID()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:9px 20px; border-radius:30px; cursor:pointer;">▶ Mulai Face Scan</button>
-              <button id="kiosk-face-btn-stop" onclick="kioskStopFaceID()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:9px 16px; border-radius:30px; cursor:pointer;">⏹ Stop</button>
-            </div>
-          </div>
-          <!-- Daftar Face ID Baru -->
-          <div style="background:rgba(192,132,252,0.05); border:1px solid rgba(192,132,252,0.22); border-radius:12px; padding:14px; text-align:center;">
-            <div style="font-size:12px; font-weight:700; color:#c084fc; margin-bottom:8px;">➕ Daftar Face ID Baru</div>
-            <div style="font-size:11px; color:var(--text3); margin-bottom:10px;">Face ID didaftarkan di komputer ini saat pertama kali digunakan</div>
-            <button onclick="goToFaceEnroll('kiosk')" style="width:100%; padding:10px; background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.45); color:#c084fc; font-family:var(--font); font-size:12px; font-weight:600; border-radius:10px; cursor:pointer;">🤖 Daftar / Update Face ID</button>
           </div>
         </div>
       </div>
@@ -5830,10 +5857,15 @@ async function loadKioskJadwal() {
       const a = allAnggota.find(x => x.NIA === nia);
       if(!a) return '';
       let s = pulangNIA.has(nia) ? 'PULANG' : datangNIA.has(nia) ? 'DATANG' : 'BELUM';
-      const dot = s==='PULANG' ? '🟣' : s==='DATANG' ? '🟢' : '⚪';
+      const badgeStyle = s==='PULANG'
+        ? 'background:rgba(192,132,252,0.2);color:#c084fc;'
+        : s==='DATANG'
+        ? 'background:rgba(74,222,128,0.18);color:#4ade80;'
+        : 'background:rgba(248,113,113,0.18);color:#f87171;';
+      const dot = s==='PULANG' ? '🟣' : s==='DATANG' ? '🟢' : '';
       return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px;">
         <div><div style="font-weight:500;">${a.nama}</div><div style="font-size:10px; color:var(--text3);">${a.NIA} · ${a.divisi||''}</div></div>
-        <span style="font-size:11px;">${dot} ${s}</span>
+        <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; ${badgeStyle}">${dot}${dot?' ':''}${s}</span>
       </div>`;
     }).join('');
     if(el) el.innerHTML = html;
@@ -6242,38 +6274,21 @@ function kioskSetMetode(metode) {
   const bF = document.getElementById('kiosk-btn-metode-faceid');
   const pS = document.getElementById('kiosk-panel-selfie');
   const pF = document.getElementById('kiosk-panel-faceid');
-  const camW = document.getElementById('kiosk-cam-wrapper');
-  const selfieStatus = document.getElementById('kiosk-selfie-status');
-  const photoButtons = document.getElementById('kiosk-photo-buttons');
-  const lanjutBtn = document.getElementById('kiosk-btn-lanjut-scan');
-
   const stepIndicator = document.getElementById('kiosk-step-indicator');
-  const piketSelfie = document.getElementById('kiosk-piket-selfie');
 
   if(metode === 'selfie') {
     if(bS) bS.classList.add('active');
     if(bF) bF.classList.remove('active');
     if(pS) pS.style.display = 'block';
     if(pF) pF.style.display = 'none';
-    if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '50%'; camW.style.borderColor = 'var(--border2)'; }
-    if(selfieStatus) selfieStatus.style.display = 'block';
-    if(photoButtons) photoButtons.style.display = 'flex';
     if(stepIndicator) stepIndicator.style.display = 'flex';
-    if(piketSelfie) piketSelfie.style.display = 'block';
-    // Stop face ID jika sedang berjalan
     kioskStopFaceID();
   } else {
     if(bS) bS.classList.remove('active');
     if(bF) bF.classList.add('active');
     if(pS) pS.style.display = 'none';
     if(pF) pF.style.display = 'block';
-    // Face ID: sembunyikan kamera bulat & step indicator
-    if(camW) camW.style.display = 'none';
-    if(selfieStatus) selfieStatus.style.display = 'none';
-    if(photoButtons) photoButtons.style.display = 'none';
-    if(lanjutBtn) lanjutBtn.style.display = 'none';
     if(stepIndicator) stepIndicator.style.display = 'none';
-    if(piketSelfie) piketSelfie.style.display = 'none';
     stopKioskCam();
   }
 }
@@ -6296,6 +6311,24 @@ function kioskFaceSetTipe(tipe) {
 }
 window.kioskFaceSetTipe = kioskFaceSetTipe;
 
+function kioskSelfieSetTipe(tipe) {
+  // Simpan ke currentScanType untuk digunakan saat proses absen
+  currentScanType = tipe;
+  const bD = document.getElementById('kiosk-selfie-btn-datang');
+  const bP = document.getElementById('kiosk-selfie-btn-pulang');
+  if(bD) {
+    bD.style.background = tipe==='DATANG' ? 'rgba(74,222,128,0.2)' : 'var(--bg3)';
+    bD.style.borderColor = tipe==='DATANG' ? 'var(--accent)' : 'var(--border2)';
+    bD.style.color = tipe==='DATANG' ? 'var(--accent)' : 'var(--text2)';
+  }
+  if(bP) {
+    bP.style.background = tipe==='PULANG' ? 'rgba(192,132,252,0.15)' : 'var(--bg3)';
+    bP.style.borderColor = tipe==='PULANG' ? '#c084fc' : 'var(--border2)';
+    bP.style.color = tipe==='PULANG' ? '#c084fc' : 'var(--text2)';
+  }
+}
+window.kioskSelfieSetTipe = kioskSelfieSetTipe;
+
 // Face ID di kiosk — pakai face-api.js yang sudah ada
 let kioskFaceInterval = null;
 let kioskFaceStream = null;
@@ -6316,14 +6349,13 @@ async function kioskMulaiFaceID() {
   if(mulaiBtn) mulaiBtn.style.display = 'none';
   if(stopBtn) stopBtn.style.display = 'inline-block';
 
-  const statusEl = document.getElementById('kiosk-selfie-status');
-  if(statusEl) { statusEl.textContent = '⌛ Memuat model AI...'; statusEl.style.display = 'block'; statusEl.style.color = 'var(--accent3)'; }
+  const statusEl = document.getElementById('kiosk-face-status');
+  const camW = document.getElementById('kiosk-face-cam-wrapper');
+  const placeholder = document.getElementById('kiosk-face-placeholder');
+  if(statusEl) { statusEl.textContent = '⌛ Memuat model AI...'; statusEl.style.color = 'var(--accent3)'; }
+  if(camW) camW.style.borderColor = '#c084fc';
 
-  // Pastikan cam wrapper SQUARE (bukan circle) untuk Face ID — wajah tidak terpotong
-  const camW = document.getElementById('kiosk-cam-wrapper');
-  if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '16px'; camW.style.borderColor = '#c084fc'; }
-
-  const video = document.getElementById('kiosk-selfie-video');
+  const video = document.getElementById('kiosk-face-video');
 
   const ok = await loadFaceApiModels();
   if(!ok) {
@@ -6338,7 +6370,6 @@ async function kioskMulaiFaceID() {
       video: { facingMode:'user', width:{ideal:480}, height:{ideal:480} }, audio: false
     });
     if(video) {
-      // Pastikan video fill penuh di wrapper square, tidak terpotong circle
       video.srcObject = kioskFaceStream;
       video.style.display = 'block';
       video.style.width = '100%';
@@ -6346,6 +6377,7 @@ async function kioskMulaiFaceID() {
       video.style.objectFit = 'cover';
       await video.play();
     }
+    if(placeholder) placeholder.style.display = 'none';
 
     kioskFaceActive = true;
     const descriptors = loadFaceDescriptor(nia);
@@ -6374,7 +6406,6 @@ async function kioskMulaiFaceID() {
           if(camW) camW.style.borderColor = 'var(--accent)';
           if(matchCount >= 3) {
             clearInterval(kioskFaceInterval);
-            // Capture frame terakhir sebagai "selfie" untuk success overlay
             try {
               const canvas = document.createElement('canvas');
               canvas.width = video.videoWidth || 320;
@@ -6409,10 +6440,11 @@ function kioskStopFaceID() {
   kioskFaceActive = false;
   if(kioskFaceInterval) { clearInterval(kioskFaceInterval); kioskFaceInterval = null; }
   if(kioskFaceStream) { kioskFaceStream.getTracks().forEach(t=>t.stop()); kioskFaceStream = null; }
-  const video = document.getElementById('kiosk-selfie-video');
+  const video = document.getElementById('kiosk-face-video');
   if(video) { video.srcObject = null; video.style.display = 'none'; }
-  // Reset border color kamera
-  const camW = document.getElementById('kiosk-cam-wrapper');
+  const placeholder = document.getElementById('kiosk-face-placeholder');
+  if(placeholder) placeholder.style.display = 'flex';
+  const camW = document.getElementById('kiosk-face-cam-wrapper');
   if(camW) camW.style.borderColor = '#c084fc';
   const mulaiBtn = document.getElementById('kiosk-face-btn-mulai');
   const stopBtn = document.getElementById('kiosk-face-btn-stop');
