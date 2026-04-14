@@ -2443,6 +2443,7 @@ function goTo(page){
   if(page==='scan'){ 
     loadJadwalScan(); 
     startGPSWatch();
+    syncAnggotaDariGAS(); // Sync data anggota terbaru dari GAS
     const tgl = document.getElementById('scan-tanggal');
     if(tgl) tgl.innerText = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     // Jika NIA sudah terisi sebelumnya, generate ulang QR
@@ -2470,7 +2471,7 @@ function goTo(page){
     }, 50);
   }
   if(page==='pengaduan'){ setTimeout(() => renderPengaduanRiwayat(), 50); }
-  if(page==='kiosk'){ /* initKiosk dipanggil dari kioskLogin */ }
+  if(page==='kiosk'){ /* initKiosk dipanggil dari kioskLogin */ syncAnggotaDariGAS(); }
   if(page==='kiosk-login'){ setTimeout(() => { const i = document.getElementById('kiosk-pin'); if(i) i.focus(); }, 200); }
   if(page!=='scan' && page!=='face-enroll') { stopSelfieCam(); anggotaStopScanBursa(); }
   if(page!=='kiosk') stopKioskCam();
@@ -2804,6 +2805,23 @@ async function loadAnggotaForPickerSilent() {
     }
   } catch(e) { /* pakai data lokal */ }
 }
+
+// Sync allAnggota dari GAS — dipanggil saat halaman scan/kiosk dibuka
+// agar anggota yang baru didaftarkan via admin langsung bisa absen
+async function syncAnggotaDariGAS(onDone) {
+  try {
+    const res = await api({action:'getAnggota'});
+    if(res && res.ok && res.data && res.data.length > 0) {
+      allAnggota = [...res.data];
+      if(typeof onDone === 'function') onDone(true);
+    } else {
+      if(typeof onDone === 'function') onDone(false);
+    }
+  } catch(e) {
+    if(typeof onDone === 'function') onDone(false);
+  }
+}
+window.syncAnggotaDariGAS = syncAnggotaDariGAS;
 function startClock(){ setInterval(()=>{ document.getElementById('topbar-clock').innerText = new Date().toLocaleTimeString('id-ID'); },1000); }
 function switchTab(tab){ 
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); 
@@ -3822,7 +3840,7 @@ function goToIzinAnggota() {
   goTo('izin-anggota');
 }
 
-function submitIzinAnggota() {
+async function submitIzinAnggota() {
   const nia = document.getElementById('izin-anggota-nia').value.trim();
   const tanggal = document.getElementById('izin-anggota-tanggal').value;
   const keterangan = document.getElementById('izin-anggota-keterangan').value.trim();
@@ -3831,8 +3849,13 @@ function submitIzinAnggota() {
   if(!tanggal){ showToast('Pilih tanggal','error'); return; }
   if(!keterangan){ showToast('Isi keterangan/alasan izin','error'); return; }
 
-  const anggota = allAnggota.find(a => a.NIA === nia);
-  if(!anggota){ showToast('NIA tidak terdaftar','error'); return; }
+  let anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota){
+    showToast('⏳ Mengecek NIA ke server...','info');
+    await syncAnggotaDariGAS();
+    anggota = allAnggota.find(a => a.NIA === nia);
+    if(!anggota){ showToast('NIA tidak terdaftar','error'); return; }
+  }
 
   const izin = {
     id: 'IZN_' + Date.now(),
@@ -4082,9 +4105,14 @@ async function prosesAbsenKegiatan(nia, qrText) {
   
   if(!sesi){ showToast('❌ Tidak dapat memproses absen','error'); return; }
 
-  // Cek anggota terdaftar
-  const anggota = allAnggota.find(a => a.NIA === nia);
-  if(!anggota){ showToast('NIA tidak terdaftar','error'); return; }
+  // Cek anggota terdaftar (sync dari GAS jika tidak ditemukan lokal)
+  let anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota){
+    showToast('⏳ Mengecek NIA ke server...','info');
+    await syncAnggotaDariGAS();
+    anggota = allAnggota.find(a => a.NIA === nia);
+    if(!anggota){ showToast('NIA tidak terdaftar','error'); return; }
+  }
 
   // Cek sudah absen — untuk proxy sesi (device anggota), cek via localStorage
   const absenKey = 'absenKegiatan_' + (parsed ? parsed.sesiId : sesi.id);
@@ -5291,6 +5319,8 @@ window.goTo=goTo;
   if (!tokenDariQR) return; // Bukan dari QR bursa, lewati
 
   // Ada token — tampilkan halaman absen bursa
+  // Sync data anggota terbaru dari GAS agar anggota baru bisa absen
+  setTimeout(() => syncAnggotaDariGAS(), 0);
   setTimeout(() => {
     try { goTo('absen-bursa'); } catch(e) {}
 
@@ -5390,8 +5420,8 @@ async function absenBursaSubmit() {
 
   if (!nia) { showToast('Masukkan NIA dulu', 'error'); return; }
 
+  // Cari di data lokal dulu; jika tidak ada, tetap lanjut karena GAS yang validasi
   const anggota = allAnggota.find(a => a.NIA === nia);
-  if (!anggota) { showToast('NIA tidak terdaftar. Periksa kembali.', 'error'); return; }
 
   const submitBtn  = document.getElementById('absen-bursa-submit');
   const loadingEl  = document.getElementById('absen-bursa-loading');
@@ -5552,11 +5582,17 @@ function getTokenHarianAnggota(nia, tipe) {
   return md5(raw).substring(0, 12).toUpperCase();
 }
 
-function generateQRAnggota() {
+async function generateQRAnggota() {
   const nia = (document.getElementById('input-NIA')?.value || '').trim();
   if(!nia) { showToast('Masukkan NIA dulu','error'); return; }
-  const anggota = allAnggota.find(a => a.NIA === nia);
-  if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+  let anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota) {
+    // Coba sync ulang dari GAS dulu, lalu retry
+    showToast('⏳ Mengecek NIA ke server...','info');
+    await syncAnggotaDariGAS();
+    anggota = allAnggota.find(a => a.NIA === nia);
+    if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+  }
 
   // Cek GPS
   if(!currentGPS.lat || !currentGPS.lng) {
@@ -6337,8 +6373,13 @@ let kioskFaceActive = false;
 async function kioskMulaiFaceID() {
   const nia = (document.getElementById('kiosk-faceid-nia')?.value || '').trim();
   if(!nia) { showToast('Isi NIA dulu','error'); return; }
-  const anggota = allAnggota.find(a => a.NIA === nia);
-  if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+  let anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota) {
+    showToast('⏳ Mengecek NIA ke server...','info');
+    await syncAnggotaDariGAS();
+    anggota = allAnggota.find(a => a.NIA === nia);
+    if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+  }
   if(!hasFaceID(nia)) {
     showToast('⚠️ Face ID belum terdaftar untuk NIA ini. Daftar dulu!','error');
     return;
@@ -6727,8 +6768,13 @@ function resetEnrollDots() {
 async function mulaiEnrollFace() {
   const nia = document.getElementById('enroll-nia').value.trim();
   if(!nia) { showToast('Isi NIA dulu','error'); return; }
-  const anggota = allAnggota.find(a => a.NIA === nia);
-  if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+  let anggota = allAnggota.find(a => a.NIA === nia);
+  if(!anggota) {
+    showToast('⏳ Mengecek NIA ke server...','info');
+    await syncAnggotaDariGAS();
+    anggota = allAnggota.find(a => a.NIA === nia);
+    if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
+  }
   
   document.getElementById('enroll-nama-display').textContent = '✅ ' + anggota.nama + ' · ' + anggota.divisi;
   document.getElementById('enroll-nama-display').style.display = 'block';
