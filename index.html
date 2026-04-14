@@ -833,10 +833,22 @@ let allAnggota = [...realAnggota];
         <div id="qr-bursa-status"></div>
         <button id="btn-bursa-scan" style="display:none;"></button>
       </div>
+
+      <!-- Piket Hari Ini (tampil di bawah info QR) -->
+      <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:4px;">
+        <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📋 Piket Hari Ini</div>
+        <div id="jadwal-today"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
+      </div>
     </div>
 
     <!-- PANEL FACE ID -->
     <div id="panel-faceid-anggota" style="display:none;">
+      <!-- Daftar Piket di atas -->
+      <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:14px;">
+        <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📋 Piket Hari Ini</div>
+        <div id="jadwal-today-faceid"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
+      </div>
+
       <div style="background:var(--bg2); border-radius:12px; padding:20px; text-align:center;">
         <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">Face ID</div>
         <div style="font-size:15px; font-weight:600; margin-bottom:4px; color:#c084fc;">🤖 Pengenalan Wajah</div>
@@ -885,11 +897,6 @@ let allAnggota = [...realAnggota];
       </div>
     </div>
 
-    <!-- Piket Hari Ini -->
-    <div style="background:var(--bg2); border-radius:12px; padding:16px; margin-top:14px; margin-bottom:20px;">
-      <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📋 Piket Hari Ini</div>
-      <div id="jadwal-today"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
-    </div>
   </div>
 </div>
 
@@ -974,22 +981,38 @@ let allAnggota = [...realAnggota];
         </div>
         <button id="kiosk-btn-lanjut-scan" onclick="kioskLanjutScan()" style="display:none; margin-top:14px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; padding:12px 32px; border-radius:30px; cursor:pointer;">✅ Foto OK — Lanjut Scan QR →</button>
 
+        <!-- Daftar Piket (tampil di bawah tombol kamera, hanya saat panel Foto+QR aktif) -->
+        <div id="kiosk-piket-selfie" style="margin-top:16px; background:var(--bg2); border-radius:12px; padding:14px; text-align:left; max-width:320px; margin-left:auto; margin-right:auto;">
+          <div style="font-weight:600; font-size:12px; margin-bottom:10px; color:var(--text2);">📋 Piket Hari Ini</div>
+          <div id="kiosk-jadwal-selfie"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
+        </div>
+
         <!-- PANEL FACE ID di Kiosk -->
-        <div id="kiosk-panel-faceid" style="display:none;">
-          <div style="font-size:14px; font-weight:600; margin-bottom:8px; color:#c084fc;">🤖 Pengenalan Wajah</div>
-          <div style="font-size:12px; color:var(--text2); margin-bottom:10px;">Minta anggota isi NIA dulu, lalu scan wajah</div>
-          <input class="form-input" id="kiosk-faceid-nia" placeholder="NIA Anggota" style="max-width:260px; text-align:center; margin:0 auto 10px; display:block;">
-          <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
-            <button onclick="kioskFaceSetTipe('DATANG')" id="kiosk-face-btn-datang" style="padding:8px 16px; background:rgba(74,222,128,0.15); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer;">🟢 Datang</button>
-            <button onclick="kioskFaceSetTipe('PULANG')" id="kiosk-face-btn-pulang" style="padding:8px 16px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:12px; cursor:pointer;">🟣 Pulang</button>
+        <div id="kiosk-panel-faceid" style="display:none; text-align:left; max-width:320px; margin:0 auto;">
+          <!-- Daftar Piket di atas untuk Face ID -->
+          <div style="background:var(--bg2); border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div style="font-weight:600; font-size:12px; margin-bottom:10px; color:var(--text2);">📋 Piket Hari Ini</div>
+            <div id="kiosk-jadwal-faceid"><div style="color:var(--accent); font-size:12px;">Memuat jadwal...</div></div>
           </div>
-          <div style="display:flex; gap:8px; justify-content:center;">
-            <button id="kiosk-face-btn-mulai" onclick="kioskMulaiFaceID()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:9px 20px; border-radius:30px; cursor:pointer;">▶ Mulai Face Scan</button>
-            <button id="kiosk-face-btn-stop" onclick="kioskStopFaceID()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:9px 16px; border-radius:30px; cursor:pointer;">⏹ Stop</button>
+          <!-- Card Face ID Baru -->
+          <div style="background:rgba(192,132,252,0.07); border:1px solid rgba(192,132,252,0.3); border-radius:12px; padding:16px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:13px; font-weight:700; color:#c084fc; margin-bottom:6px;">🤖 Pengenalan Wajah</div>
+            <div style="font-size:11px; color:var(--text2); margin-bottom:12px;">Minta anggota isi NIA dulu, lalu scan wajah</div>
+            <input class="form-input" id="kiosk-faceid-nia" placeholder="NIA Anggota" style="max-width:240px; text-align:center; margin:0 auto 10px; display:block;">
+            <div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
+              <button onclick="kioskFaceSetTipe('DATANG')" id="kiosk-face-btn-datang" style="flex:1; padding:8px; background:rgba(74,222,128,0.15); border:1px solid var(--accent); color:var(--accent); border-radius:8px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer;">🟢 Datang</button>
+              <button onclick="kioskFaceSetTipe('PULANG')" id="kiosk-face-btn-pulang" style="flex:1; padding:8px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:8px; font-family:var(--font); font-size:12px; cursor:pointer;">🟣 Pulang</button>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center;">
+              <button id="kiosk-face-btn-mulai" onclick="kioskMulaiFaceID()" style="background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.4); font-family:var(--font); font-size:13px; font-weight:600; padding:9px 20px; border-radius:30px; cursor:pointer;">▶ Mulai Face Scan</button>
+              <button id="kiosk-face-btn-stop" onclick="kioskStopFaceID()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:13px; padding:9px 16px; border-radius:30px; cursor:pointer;">⏹ Stop</button>
+            </div>
           </div>
-          <div style="font-size:11px; color:var(--text3); margin-top:10px;">Face ID didaftarkan di komputer ini saat pertama kali digunakan</div>
-          <div style="margin-top:8px;">
-            <button onclick="goToFaceEnroll('kiosk')" style="background:rgba(192,132,252,0.12); border:1px solid rgba(192,132,252,0.35); color:#c084fc; font-family:var(--font); font-size:11px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer;">➕ Daftar Face ID Baru</button>
+          <!-- Daftar Face ID Baru -->
+          <div style="background:rgba(192,132,252,0.05); border:1px solid rgba(192,132,252,0.22); border-radius:12px; padding:14px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; color:#c084fc; margin-bottom:8px;">➕ Daftar Face ID Baru</div>
+            <div style="font-size:11px; color:var(--text3); margin-bottom:10px;">Face ID didaftarkan di komputer ini saat pertama kali digunakan</div>
+            <button onclick="goToFaceEnroll('kiosk')" style="width:100%; padding:10px; background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.45); color:#c084fc; font-family:var(--font); font-size:12px; font-weight:600; border-radius:10px; cursor:pointer;">🤖 Daftar / Update Face ID</button>
           </div>
         </div>
       </div>
@@ -2442,8 +2465,10 @@ function setScanType(t){
 }
 
 async function loadJadwalScan(){ 
-  const el = document.getElementById('jadwal-today'); 
+  const el = document.getElementById('jadwal-today');
+  const elFace = document.getElementById('jadwal-today-faceid');
   el.innerHTML = '<div class="loading" style="color:var(--accent);">Memuat jadwal & sinkronisasi status...</div>';
+  if(elFace) elFace.innerHTML = '<div class="loading" style="color:var(--accent);">Memuat jadwal...</div>';
   
   const dow = new Date().getDay(); 
   const list = jadwalMingguan[dow] || [];
@@ -2502,7 +2527,9 @@ async function loadJadwalScan(){
       ? `class="badge ${badgeClass(status)} badge-clickable" onclick="bukaModalIzinPiket('${nia}')" title="Klik untuk set status ketidakhadiran"`
       : `class="badge ${badgeClass(status)}"`;
 
-    el.innerHTML = displayData.map(j => `<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:8px 0; border-bottom: 1px solid var(--border);"><div><b>${j.nama}</b><div style="font-size:11px; color:var(--text2);">${j.NIA} · ${j.divisi}</div></div><span ${adminAttr(j.NIA, j.status)} style="align-self:center;">${badgeLabel(j.status)}</span></div>`).join('');
+    const jadwalHTML = displayData.map(j => `<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:8px 0; border-bottom: 1px solid var(--border);"><div><b>${j.nama}</b><div style="font-size:11px; color:var(--text2);">${j.NIA} · ${j.divisi}</div></div><span ${adminAttr(j.NIA, j.status)} style="align-self:center;">${badgeLabel(j.status)}</span></div>`).join('');
+    el.innerHTML = jadwalHTML;
+    if(elFace) elFace.innerHTML = jadwalHTML;
   };
 
   // Render dulu tanpa status
@@ -5784,23 +5811,34 @@ function kioskAmbilGPS() {
 
 async function loadKioskJadwal() {
   const el = document.getElementById('kiosk-jadwal-today');
-  if(!el) return;
+  const elSelfie = document.getElementById('kiosk-jadwal-selfie');
+  const elFaceID = document.getElementById('kiosk-jadwal-faceid');
   const dow = new Date().getDay();
   const list = jadwalMingguan[dow] || [];
-  if(!list.length) { el.innerHTML = '<div style="font-size:12px; color:var(--text3);">Tidak ada jadwal hari ini</div>'; return; }
+
+  const emptyMsg = '<div style="font-size:12px; color:var(--text3);">Tidak ada jadwal hari ini</div>';
+  if(!list.length) {
+    if(el) el.innerHTML = emptyMsg;
+    if(elSelfie) elSelfie.innerHTML = emptyMsg;
+    if(elFaceID) elFaceID.innerHTML = emptyMsg;
+    return;
+  }
 
   // Tampilkan lokal dulu
   const renderK = (datangNIA = new Set(), pulangNIA = new Set()) => {
-    el.innerHTML = list.map(nia => {
+    const html = list.map(nia => {
       const a = allAnggota.find(x => x.NIA === nia);
       if(!a) return '';
       let s = pulangNIA.has(nia) ? 'PULANG' : datangNIA.has(nia) ? 'DATANG' : 'BELUM';
       const dot = s==='PULANG' ? '🟣' : s==='DATANG' ? '🟢' : '⚪';
       return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px;">
-        <div><div style="font-weight:500;">${a.nama.split(' ')[0]}</div><div style="font-size:10px; color:var(--text3);">${a.NIA}</div></div>
+        <div><div style="font-weight:500;">${a.nama}</div><div style="font-size:10px; color:var(--text3);">${a.NIA} · ${a.divisi||''}</div></div>
         <span style="font-size:11px;">${dot} ${s}</span>
       </div>`;
     }).join('');
+    if(el) el.innerHTML = html;
+    if(elSelfie) elSelfie.innerHTML = html;
+    if(elFaceID) elFaceID.innerHTML = html;
   };
   renderK();
 
@@ -6209,6 +6247,9 @@ function kioskSetMetode(metode) {
   const photoButtons = document.getElementById('kiosk-photo-buttons');
   const lanjutBtn = document.getElementById('kiosk-btn-lanjut-scan');
 
+  const stepIndicator = document.getElementById('kiosk-step-indicator');
+  const piketSelfie = document.getElementById('kiosk-piket-selfie');
+
   if(metode === 'selfie') {
     if(bS) bS.classList.add('active');
     if(bF) bF.classList.remove('active');
@@ -6217,6 +6258,8 @@ function kioskSetMetode(metode) {
     if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '50%'; camW.style.borderColor = 'var(--border2)'; }
     if(selfieStatus) selfieStatus.style.display = 'block';
     if(photoButtons) photoButtons.style.display = 'flex';
+    if(stepIndicator) stepIndicator.style.display = 'flex';
+    if(piketSelfie) piketSelfie.style.display = 'block';
     // Stop face ID jika sedang berjalan
     kioskStopFaceID();
   } else {
@@ -6224,11 +6267,13 @@ function kioskSetMetode(metode) {
     if(bF) bF.classList.add('active');
     if(pS) pS.style.display = 'none';
     if(pF) pF.style.display = 'block';
-    // Square untuk Face ID — wajah terlihat penuh tanpa terpotong
-    if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '16px'; camW.style.borderColor = '#c084fc'; }
-    if(selfieStatus) { selfieStatus.style.display = 'block'; selfieStatus.textContent = 'Isi NIA → pilih Datang/Pulang → Mulai Face Scan'; selfieStatus.style.color = 'var(--text2)'; }
+    // Face ID: sembunyikan kamera bulat & step indicator
+    if(camW) camW.style.display = 'none';
+    if(selfieStatus) selfieStatus.style.display = 'none';
     if(photoButtons) photoButtons.style.display = 'none';
     if(lanjutBtn) lanjutBtn.style.display = 'none';
+    if(stepIndicator) stepIndicator.style.display = 'none';
+    if(piketSelfie) piketSelfie.style.display = 'none';
     stopKioskCam();
   }
 }
