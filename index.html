@@ -954,7 +954,7 @@ let allAnggota = [...realAnggota];
           <div style="font-size:15px; font-weight:600; margin-bottom:8px; color:var(--text);">📸 Ambil Foto Selfie Dulu</div>
           <div style="font-size:12px; color:var(--text2); margin-bottom:14px;">Hadapkan wajah ke kamera, lalu tekan tombol</div>
         </div>
-        <div id="kiosk-cam-wrapper" style="position:relative; width:280px; height:280px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); margin:0 auto 14px; display:flex; align-items:center; justify-content:center;">
+        <div id="kiosk-cam-wrapper" style="position:relative; width:280px; height:280px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); margin:0 auto 14px; display:flex; align-items:center; justify-content:center; transition:border-radius 0.3s;">
           <video id="kiosk-selfie-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
           <img id="kiosk-selfie-preview" style="display:none; width:100%; height:100%; object-fit:cover;" alt="Selfie">
           <div id="kiosk-selfie-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text3);">
@@ -6166,8 +6166,9 @@ function kioskResetState() {
   if(btnLanjut) btnLanjut.style.display = 'none';
   const statusEl = document.getElementById('kiosk-selfie-status');
   if(statusEl) { statusEl.textContent='Kamera belum aktif'; statusEl.style.color='var(--text3)'; }
+  // Reset cam wrapper ke circle (default selfie mode) dan border normal
   const wrapper = document.getElementById('kiosk-cam-wrapper');
-  if(wrapper) wrapper.style.borderColor = 'var(--border2)';
+  if(wrapper) { wrapper.style.borderColor = 'var(--border2)'; wrapper.style.borderRadius = '50%'; }
   const scanBtn = document.getElementById('kiosk-btn-scan');
   if(scanBtn) scanBtn.textContent = '▶ Mulai Scan QR';
 
@@ -6212,7 +6213,7 @@ function kioskSetMetode(metode) {
     if(bF) bF.classList.remove('active');
     if(pS) pS.style.display = 'block';
     if(pF) pF.style.display = 'none';
-    if(camW) camW.style.display = 'flex';
+    if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '50%'; camW.style.borderColor = 'var(--border2)'; }
     if(selfieStatus) selfieStatus.style.display = 'block';
     if(photoButtons) photoButtons.style.display = 'flex';
     // Stop face ID jika sedang berjalan
@@ -6222,8 +6223,9 @@ function kioskSetMetode(metode) {
     if(bF) bF.classList.add('active');
     if(pS) pS.style.display = 'none';
     if(pF) pF.style.display = 'block';
-    if(camW) camW.style.display = 'none';
-    if(selfieStatus) selfieStatus.style.display = 'none';
+    // Square untuk Face ID — wajah terlihat penuh tanpa terpotong
+    if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '16px'; camW.style.borderColor = '#c084fc'; }
+    if(selfieStatus) { selfieStatus.style.display = 'block'; selfieStatus.textContent = 'Isi NIA → pilih Datang/Pulang → Mulai Face Scan'; selfieStatus.style.color = 'var(--text2)'; }
     if(photoButtons) photoButtons.style.display = 'none';
     if(lanjutBtn) lanjutBtn.style.display = 'none';
     stopKioskCam();
@@ -6269,23 +6271,35 @@ async function kioskMulaiFaceID() {
   if(stopBtn) stopBtn.style.display = 'inline-block';
 
   const statusEl = document.getElementById('kiosk-selfie-status');
-  if(statusEl) { statusEl.textContent = 'Memuat model AI...'; statusEl.style.display = 'block'; }
+  if(statusEl) { statusEl.textContent = '⌛ Memuat model AI...'; statusEl.style.display = 'block'; statusEl.style.color = 'var(--accent3)'; }
 
-  // Pakai kamera kiosk yang sudah ada (kiosk-selfie-video) tapi dalam mode face
-  const video = document.getElementById('kiosk-selfie-video');
+  // Pastikan cam wrapper SQUARE (bukan circle) untuk Face ID — wajah tidak terpotong
   const camW = document.getElementById('kiosk-cam-wrapper');
-  if(camW) camW.style.display = 'flex';
+  if(camW) { camW.style.display = 'flex'; camW.style.borderRadius = '16px'; camW.style.borderColor = '#c084fc'; }
+
+  const video = document.getElementById('kiosk-selfie-video');
 
   const ok = await loadFaceApiModels();
   if(!ok) {
     if(mulaiBtn) mulaiBtn.style.display = 'inline-block';
     if(stopBtn) stopBtn.style.display = 'none';
+    if(statusEl) { statusEl.textContent = '❌ Gagal muat model AI'; statusEl.style.color = 'var(--red)'; }
     return;
   }
 
   try {
-    kioskFaceStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:320,height:320}});
-    if(video) { video.srcObject = kioskFaceStream; video.style.display = 'block'; await video.play(); }
+    kioskFaceStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:'user', width:{ideal:480}, height:{ideal:480} }, audio: false
+    });
+    if(video) {
+      // Pastikan video fill penuh di wrapper square, tidak terpotong circle
+      video.srcObject = kioskFaceStream;
+      video.style.display = 'block';
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.objectFit = 'cover';
+      await video.play();
+    }
 
     kioskFaceActive = true;
     const descriptors = loadFaceDescriptor(nia);
@@ -6295,34 +6309,52 @@ async function kioskMulaiFaceID() {
     const matcher = new faceapi.FaceMatcher(labeled, 0.45);
     let matchCount = 0;
 
+    if(statusEl) { statusEl.textContent = '👁 Arahkan wajah ke kamera'; statusEl.style.color = 'var(--accent2)'; }
+
     kioskFaceInterval = setInterval(async () => {
       if(!kioskFaceActive || !video) return;
       try {
         const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.5}))
           .withFaceLandmarks(true).withFaceDescriptor();
-        if(!det) { if(statusEl) statusEl.textContent = 'Wajah tidak terdeteksi...'; return; }
+        if(!det) {
+          if(statusEl) { statusEl.textContent = '😶 Wajah tidak terdeteksi...'; statusEl.style.color = 'var(--accent3)'; }
+          return;
+        }
         const match = matcher.findBestMatch(det.descriptor);
         if(match.label === nia && match.distance <= 0.45) {
           matchCount++;
-          if(statusEl) statusEl.textContent = `✅ Cocok ${Math.round((1-match.distance)*100)}% (${matchCount}/3)`;
+          const pct = Math.round((1-match.distance)*100);
+          if(statusEl) { statusEl.textContent = `✅ Cocok ${pct}% (${matchCount}/3)`; statusEl.style.color = 'var(--accent)'; }
+          if(camW) camW.style.borderColor = 'var(--accent)';
           if(matchCount >= 3) {
             clearInterval(kioskFaceInterval);
+            // Capture frame terakhir sebagai "selfie" untuk success overlay
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth || 320;
+              canvas.height = video.videoHeight || 320;
+              const ctx = canvas.getContext('2d');
+              ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              kioskSelfieDataURL = canvas.toDataURL('image/jpeg', 0.7);
+            } catch(e) { kioskSelfieDataURL = null; }
             kioskStopFaceID();
-            // Proses absen Face ID kiosk
-            await kioskProsesFaceIDAbsen(nia, anggota.nama, kioskFaceTipe);
+            if(statusEl) { statusEl.textContent = '✅ Teridentifikasi! Memproses...'; statusEl.style.color = 'var(--accent)'; }
+            await kioskProsesFaceIDAbsen(nia, anggota.nama, kioskFaceTipe, anggota);
           }
         } else {
           matchCount = 0;
-          if(statusEl) statusEl.textContent = 'Wajah tidak cocok — coba lagi';
+          if(camW) camW.style.borderColor = 'var(--red)';
+          if(statusEl) { statusEl.textContent = '❌ Wajah tidak cocok — coba lagi'; statusEl.style.color = 'var(--red)'; }
         }
       } catch(e) {}
     }, 800);
 
-    if(statusEl) statusEl.textContent = 'Arahkan wajah ke kamera';
   } catch(e) {
     showToast('Gagal akses kamera: ' + e.message,'error');
     if(mulaiBtn) mulaiBtn.style.display = 'inline-block';
     if(stopBtn) stopBtn.style.display = 'none';
+    if(statusEl) { statusEl.textContent = '⚠️ Gagal akses kamera'; statusEl.style.color = 'var(--red)'; }
   }
 }
 window.kioskMulaiFaceID = kioskMulaiFaceID;
@@ -6333,6 +6365,9 @@ function kioskStopFaceID() {
   if(kioskFaceStream) { kioskFaceStream.getTracks().forEach(t=>t.stop()); kioskFaceStream = null; }
   const video = document.getElementById('kiosk-selfie-video');
   if(video) { video.srcObject = null; video.style.display = 'none'; }
+  // Reset border color kamera
+  const camW = document.getElementById('kiosk-cam-wrapper');
+  if(camW) camW.style.borderColor = '#c084fc';
   const mulaiBtn = document.getElementById('kiosk-face-btn-mulai');
   const stopBtn = document.getElementById('kiosk-face-btn-stop');
   if(mulaiBtn) mulaiBtn.style.display = 'inline-block';
@@ -6340,7 +6375,9 @@ function kioskStopFaceID() {
 }
 window.kioskStopFaceID = kioskStopFaceID;
 
-async function kioskProsesFaceIDAbsen(nia, nama, tipe) {
+async function kioskProsesFaceIDAbsen(nia, nama, tipe, anggotaObj) {
+  // Ambil data anggota lengkap
+  const anggota = anggotaObj || allAnggota.find(a => a.NIA === nia) || { nama, NIA: nia, divisi: '-' };
   try {
     const res = await api({
       action: 'validateBarcode',
@@ -6351,10 +6388,23 @@ async function kioskProsesFaceIDAbsen(nia, nama, tipe) {
     });
     if(res.ok) {
       const waktu = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-      kioskSessionSelfies.push({NIA:nia, nama, waktu, tipe, selfieMini:null});
-      kioskShowSuccess({nama, NIA:nia, divisi:'-'}, tipe, waktu, res.status||'HADIR');
+      // Simpan ke session selfies (dengan foto dari frame kamera jika ada)
+      const selfieMini = kioskSelfieDataURL || null;
+      kioskSessionSelfies.push({NIA:nia, nama:anggota.nama, waktu, tipe, selfieMini});
+      // Tampilkan success overlay (sama dengan flow QR) — lalu otomatis kembali ke step 1
+      kioskShowSuccess(anggota, tipe, waktu, res.status||'HADIR');
+      // Reset input NIA Face ID agar siap untuk anggota berikutnya
+      setTimeout(() => {
+        const niaInput = document.getElementById('kiosk-faceid-nia');
+        if(niaInput) niaInput.value = '';
+        const statusEl = document.getElementById('kiosk-selfie-status');
+        if(statusEl) { statusEl.textContent = 'Isi NIA → pilih Datang/Pulang → Mulai Face Scan'; statusEl.style.color = 'var(--text2)'; }
+      }, 100);
     } else {
       kioskShowError('Absen Gagal', res.msg||'Terjadi kesalahan.');
+      // Reset status agar bisa coba lagi
+      const statusEl = document.getElementById('kiosk-selfie-status');
+      if(statusEl) { statusEl.textContent = '❌ Absen gagal — coba lagi'; statusEl.style.color = 'var(--red)'; }
     }
   } catch(e) {
     kioskShowError('Koneksi Gagal', 'Tidak dapat terhubung ke server.');
