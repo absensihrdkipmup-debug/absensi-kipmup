@@ -2148,29 +2148,45 @@ function savePengumuman(){
 
 // =========================================================================
 
-// Gunakan parameter 't' di ujung URL agar browser HP tidak pakai cache lama
+// gasCall: kirim ke GAS via GET (untuk data kecil) atau POST form-urlencoded (untuk data besar)
 async function gasCall(params) {
   try {
-    // Tambah semua params ke URL agar GAS bisa baca via GET maupun POST
-    const urlParams = new URLSearchParams({...params, t: new Date().getTime()});
-    
-    // Coba POST dulu
-    try {
-      const res = await fetch(GAS_URL + '?' + urlParams.toString(), {
-        method:'POST', 
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: urlParams.toString()
-      });
-      const text = await res.text();
-      try { return JSON.parse(text); } catch(e) { /* fall through to GET */ }
-    } catch(postErr) { /* fall through to GET */ }
-    
-    // Fallback ke GET (lebih reliable di beberapa browser/network)
-    const resGet = await fetch(GAS_URL + '?' + urlParams.toString(), {method:'GET'});
-    const textGet = await resGet.text();
-    try { return JSON.parse(textGet); } catch(e) { return {ok:false, msg:'Response GAS tidak valid: ' + textGet.substring(0,100)}; }
+    const urlParams = new URLSearchParams();
+    urlParams.set('t', new Date().getTime());
+    for (const [k, v] of Object.entries(params)) {
+      urlParams.set(k, (v !== null && typeof v === 'object') ? JSON.stringify(v) : String(v));
+    }
+
+    const urlString = urlParams.toString();
+
+    // Jika total URL pendek, pakai GET biasa
+    if (urlString.length < 1500) {
+      const resGet = await fetch(GAS_URL + '?' + urlString, {method: 'GET'});
+      const textGet = await resGet.text();
+      try { return JSON.parse(textGet); } catch(e) {
+        return {ok: false, msg: 'Response GAS tidak valid: ' + textGet.substring(0, 200)};
+      }
+    }
+
+    // Data besar (misal jadwal mingguan): kirim action via GET, data via POST body
+    // GAS membaca e.parameter (dari URL) + e.postData.contents (JSON body)
+    const actionParam = new URLSearchParams({action: params.action, t: urlParams.get('t')});
+    const res = await fetch(GAS_URL + '?' + actionParam.toString(), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch(e) {
+      // GAS kadang redirect dan kehilangan POST body — fallback GET dengan data terpotong
+      const resGet2 = await fetch(GAS_URL + '?' + urlString.substring(0, 1500), {method: 'GET'});
+      const textGet2 = await resGet2.text();
+      try { return JSON.parse(textGet2); } catch(e2) {
+        return {ok: false, msg: 'Data terlalu besar untuk dikirim. Coba kurangi jumlah anggota per hari.'};
+      }
+    }
   } catch(e) {
-    return {ok:false, msg:'Koneksi ke server gagal: ' + e.message};
+    return {ok: false, msg: 'Koneksi ke server gagal: ' + e.message};
   }
 }
 
@@ -3003,59 +3019,7 @@ function renderJadwalPreview(){
   document.getElementById('jadwal-preview-minggu').innerHTML = html; 
 }
 
-async function saveJadwalHari() {
-  const hari = parseInt(document.getElementById('jadwal-hari-select').value);
-  if (selectedAnggota.size === 0) { showToast('Centang minimal 1 anggota!', 'error'); return; }
- 
-  // Simpan ke localStorage seperti biasa
-  jadwalMingguan[hari] = Array.from(selectedAnggota);
-  localStorage.setItem('jadwalMingguan', JSON.stringify(jadwalMingguan));
-  showToast('✅ Jadwal tersimpan lokal. Sinkronisasi ke Sheets...', 'info');
-  renderJadwalPreview();
- 
-  // Hitung tanggal-tanggal untuk hari ini dan 4 minggu ke depan
-  // sehingga Sheet Jadwal Piket terisi untuk waktu yang akan datang
-  const hariNama = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-  const entries = [];
- 
-  // Hitung tanggal Senin minggu ini
-  const today = new Date();
-  const todayDow = today.getDay() === 0 ? 7 : today.getDay(); // 1=Sen..7=Min
-  const senin = new Date(today);
-  senin.setDate(today.getDate() - (todayDow - 1));
- 
-  // Generate 5 minggu ke depan (termasuk minggu ini)
-  for (let week = 0; week < 5; week++) {
-    for (let h = 1; h <= 5; h++) {
-      const list = jadwalMingguan[h] || [];
-      if (!list.length) continue;
- 
-      const tglDate = new Date(senin);
-      tglDate.setDate(senin.getDate() + (week * 7) + (h - 1));
-      const y = tglDate.getFullYear();
-      const m = String(tglDate.getMonth() + 1).padStart(2, '0');
-      const d = String(tglDate.getDate()).padStart(2, '0');
-      const tglStr = `${y}-${m}-${d}`;
- 
-      list.forEach(nia => {
-        const a = allAnggota.find(x => x.NIA === nia);
-        if (a) entries.push({ tanggal: tglStr, NIA: a.NIA, nama: a.nama, divisi: a.divisi || '-' });
-      });
-    }
-  }
- 
-  // Kirim ke GAS
-  try {
-    const res = await api({ action: 'setJadwalMingguan', jadwal: JSON.stringify(entries) });
-    if (res && res.ok) {
-      showToast('✅ Jadwal berhasil disinkronkan ke Google Sheets!', 'success');
-    } else {
-      showToast('⚠️ Tersimpan lokal. GAS: ' + (res?.msg || 'Tidak ada respons'), 'error');
-    }
-  } catch (e) {
-    showToast('⚠️ Tersimpan lokal. GAS offline: ' + e.message, 'error');
-  }
-}
+// saveJadwalHari() — lihat definisi lengkap di bawah (baris ~4600)
 
 function downloadJadwalPDF(){ 
   let html=`<html><head><meta charset="UTF-8"><title>Jadwal Piket KIPM-UP</title><style>body{font-family:sans-serif;padding:20px;}h1{color:#2d6a4f;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}th{background:#f1f8e9;}</style></head><body><h1>📋 Jadwal Piket KIPM-UP</h1><p>Cetak: ${new Date().toLocaleDateString('id-ID')}</p>`; 
@@ -4607,42 +4571,37 @@ async function saveJadwalHari() {
   showToast('✅ Jadwal tersimpan lokal. Sinkronisasi ke Sheets...', 'info');
   renderJadwalPreview();
 
-  // Hitung tanggal-tanggal untuk hari ini dan 4 minggu ke depan
-  // sehingga Sheet Jadwal Piket terisi untuk waktu yang akan datang
+  // Bangun entries hanya untuk hari yang dipilih selama 8 minggu ke depan
+  // (data kecil = aman dikirim via GET ke GAS)
   const hariNama = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
   const entries = [];
 
   // Hitung tanggal Senin minggu ini
   const today = new Date();
-  const todayDow = today.getDay() === 0 ? 7 : today.getDay(); // 1=Sen..7=Min
+  const todayDow = today.getDay() === 0 ? 7 : today.getDay();
   const senin = new Date(today);
   senin.setDate(today.getDate() - (todayDow - 1));
 
-  // Generate 5 minggu ke depan (termasuk minggu ini)
-  for (let week = 0; week < 5; week++) {
-    for (let h = 1; h <= 5; h++) {
-      const list = jadwalMingguan[h] || [];
-      if (!list.length) continue;
-
-      const tglDate = new Date(senin);
-      tglDate.setDate(senin.getDate() + (week * 7) + (h - 1));
-      const y = tglDate.getFullYear();
-      const m = String(tglDate.getMonth() + 1).padStart(2, '0');
-      const d = String(tglDate.getDate()).padStart(2, '0');
-      const tglStr = `${y}-${m}-${d}`;
-
-      list.forEach(nia => {
-        const a = allAnggota.find(x => x.NIA === nia);
-        if (a) entries.push({ tanggal: tglStr, NIA: a.NIA, nama: a.nama, divisi: a.divisi || '-' });
-      });
-    }
+  // Generate 8 minggu ke depan hanya untuk hari yang dipilih (bukan semua hari)
+  const listHari = jadwalMingguan[hari] || [];
+  for (let week = 0; week < 8; week++) {
+    const tglDate = new Date(senin);
+    tglDate.setDate(senin.getDate() + (week * 7) + (hari - 1));
+    const y = tglDate.getFullYear();
+    const m = String(tglDate.getMonth() + 1).padStart(2, '0');
+    const d = String(tglDate.getDate()).padStart(2, '0');
+    const tglStr = `${y}-${m}-${d}`;
+    listHari.forEach(nia => {
+      const a = allAnggota.find(x => x.NIA === nia);
+      if (a) entries.push({ tanggal: tglStr, NIA: a.NIA, nama: a.nama, divisi: a.divisi || '-' });
+    });
   }
 
   // Kirim ke GAS
   try {
     const res = await api({ action: 'setJadwalMingguan', jadwal: JSON.stringify(entries) });
     if (res && res.ok) {
-      showToast('✅ Jadwal berhasil disinkronkan ke Google Sheets!', 'success');
+      showToast('✅ Jadwal ' + (hariNama[hari]||'') + ' berhasil disinkronkan ke Google Sheets!', 'success');
     } else {
       showToast('⚠️ Tersimpan lokal. GAS: ' + (res?.msg || 'Tidak ada respons'), 'error');
     }
