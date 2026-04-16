@@ -92,7 +92,7 @@ body {
   animation: logo-float 4s ease-in-out infinite;
   cursor:default;
 }
-#logo-img { display:block; width:100px; height:100px; object-fit:contain; filter: drop-shadow(0 0 14px rgba(212,175,55,0.55)); }
+#logo-img { display:block !important; width:100px; height:100px; object-fit:contain; filter: drop-shadow(0 0 14px rgba(212,175,55,0.55)); border-radius:8px; }
 .logo-canvas-wrap:hover {
   filter: drop-shadow(0 0 30px rgba(212,175,55,0.95));
   transform: scale(1.1) rotate(-3deg) !important;
@@ -101,7 +101,6 @@ body {
 .logo-canvas-wrap:hover #logo-img {
   filter: drop-shadow(0 0 30px rgba(212,175,55,0.95));
 }
-#logo-img { display:block; width:100px; height:100px; object-fit:contain; border-radius:8px; }
 @keyframes logo-float {
   0%,100% { transform:translateY(0); }
   50%      { transform:translateY(-8px); }
@@ -1731,21 +1730,25 @@ let allAnggota = [...realAnggota];
 
         <!-- SUB: REKAP KEGIATAN -->
         <div id="subpanel-rekap-kegiatan" style="display:none;">
-          <div class="table-card" style="padding:16px; margin-bottom:16px;">
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <select class="form-input" id="filter-jenis-kegiatan" style="width:auto;">
-                <option value="">Semua Jenis</option>
-                <option value="rapat">Rapat</option>
-                <option value="kelas-enr">Kelas EnR</option>
-                <option value="kelas-tnd">Kelas TnD</option>
-                <option value="lainnya">Lainnya</option>
-              </select>
-              <input type="date" class="form-input filter-input" id="filter-kegiatan-from">
-              <input type="date" class="form-input filter-input" id="filter-kegiatan-to">
-              <button class="btn-sm primary" onclick="loadRekapKegiatan()">Filter</button>
-            </div>
+          <!-- Sub-tab jenis kegiatan -->
+          <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+            <button class="tab-sub-btn active" id="rekap-jenis-tab-semua" onclick="switchRekapJenis('')">📊 Semua</button>
+            <button class="tab-sub-btn" id="rekap-jenis-tab-rapat" onclick="switchRekapJenis('rapat')">🏛️ Rapat</button>
+            <button class="tab-sub-btn" id="rekap-jenis-tab-kelas-tnd" onclick="switchRekapJenis('kelas-tnd')">🎓 Kelas TnD</button>
+            <button class="tab-sub-btn" id="rekap-jenis-tab-kelas-enr" onclick="switchRekapJenis('kelas-enr')">📈 Kelas EnR</button>
           </div>
-          <div id="rekap-kegiatan-list"><div style="color:var(--text3); text-align:center; padding:32px;">Pilih filter dan klik Filter</div></div>
+          <div class="table-card" style="padding:16px; margin-bottom:16px;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:space-between;">
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <input type="date" class="form-input filter-input" id="filter-kegiatan-from">
+                <input type="date" class="form-input filter-input" id="filter-kegiatan-to">
+                <button class="btn-sm primary" onclick="loadRekapKegiatan()">🔍 Filter</button>
+              </div>
+              <button class="btn-sm danger" onclick="resetRekapKegiatanAktif()" title="Hapus semua sesi kegiatan jenis ini dari penyimpanan lokal" style="white-space:nowrap;">🗑️ Reset Rekap Ini</button>
+            </div>
+            <div id="rekap-kegiatan-jenis-label" style="font-size:11px; color:var(--text3); margin-top:8px;"></div>
+          </div>
+          <div id="rekap-kegiatan-list"><div style="color:var(--text3); text-align:center; padding:32px;">Klik Filter untuk tampilkan rekap</div></div>
         </div>
       </div>
 
@@ -1855,7 +1858,7 @@ let allAnggota = [...realAnggota];
 <button class="btn-sm" onclick="showHapusRekapModal()" title="⚠️ Hapus data absensi dari Google Sheets" style="margin-left:4px; background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.4); color:var(--red);">🗑️ Hapus Rekap</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Status</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Divisi</th><th>Durasi</th><th>GPS</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
       
       <!-- ANGGOTA TAB -->
-      <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
+      <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Face ID</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
 
       <!-- RANKING TAB -->
       <div id="tab-ranking" class="tab-panel">
@@ -2148,7 +2151,7 @@ function savePengumuman(){
 
 // =========================================================================
 
-// gasCall: kirim ke GAS via GET (untuk data kecil) atau POST form-urlencoded (untuk data besar)
+// gasCall: kirim ke GAS via GET (data kecil) atau POST JSON (data besar seperti jadwal)
 async function gasCall(params) {
   try {
     const urlParams = new URLSearchParams();
@@ -2159,7 +2162,7 @@ async function gasCall(params) {
 
     const urlString = urlParams.toString();
 
-    // Jika total URL pendek, pakai GET biasa
+    // Data kecil: pakai GET biasa
     if (urlString.length < 1500) {
       const resGet = await fetch(GAS_URL + '?' + urlString, {method: 'GET'});
       const textGet = await resGet.text();
@@ -2168,8 +2171,8 @@ async function gasCall(params) {
       }
     }
 
-    // Data besar (misal jadwal mingguan): kirim action via GET, data via POST body
-    // GAS membaca e.parameter (dari URL) + e.postData.contents (JSON body)
+    // Data besar (mis: jadwal mingguan): kirim action di URL, payload di POST JSON body
+    // GAS sudah handle e.postData.contents di handleRequest()
     const actionParam = new URLSearchParams({action: params.action, t: urlParams.get('t')});
     const res = await fetch(GAS_URL + '?' + actionParam.toString(), {
       method: 'POST',
@@ -2178,12 +2181,7 @@ async function gasCall(params) {
     });
     const text = await res.text();
     try { return JSON.parse(text); } catch(e) {
-      // GAS kadang redirect dan kehilangan POST body — fallback GET dengan data terpotong
-      const resGet2 = await fetch(GAS_URL + '?' + urlString.substring(0, 1500), {method: 'GET'});
-      const textGet2 = await resGet2.text();
-      try { return JSON.parse(textGet2); } catch(e2) {
-        return {ok: false, msg: 'Data terlalu besar untuk dikirim. Coba kurangi jumlah anggota per hari.'};
-      }
+      return {ok: false, msg: 'Gagal kirim data besar ke GAS. Coba lagi.'};
     }
   } catch(e) {
     return {ok: false, msg: 'Koneksi ke server gagal: ' + e.message};
@@ -2223,6 +2221,7 @@ let isProcessingQR = false;
 let lastAbsenNIA = '';   // Simpan NIA terakhir yang berhasil absen
 let lastAbsenTipe = ''; // Simpan tipe absen terakhir (DATANG/PULANG)
 let currentGPS = {lat: '', lng: '', acc: ''}; // GPS saat ini
+let jadwalPollInterval = null; // Auto-refresh status piket realtime (15 detik)
 
 // Ambil GPS saat halaman scan dibuka — wajib untuk semua perangkat
 function startGPSWatch() {
@@ -2457,7 +2456,7 @@ function goTo(page){
   
   if(page==='admin') initAdmin();
   if(page==='scan'){ 
-    loadJadwalScan(); // sudah include syncJadwalMingguanDariGAS di dalamnya
+    loadJadwalScan(); 
     startGPSWatch();
     syncAnggotaDariGAS(); // Sync data anggota terbaru dari GAS
     const tgl = document.getElementById('scan-tanggal');
@@ -2465,6 +2464,12 @@ function goTo(page){
     // Jika NIA sudah terisi sebelumnya, generate ulang QR
     const niaEl = document.getElementById('input-NIA');
     if(niaEl && niaEl.value.trim()) setTimeout(() => generateQRAnggota(), 100);
+    // Auto-refresh status piket setiap 15 detik (realtime)
+    if(jadwalPollInterval) clearInterval(jadwalPollInterval);
+    jadwalPollInterval = setInterval(() => loadJadwalScan(), 15000);
+  } else {
+    // Hentikan polling saat keluar dari halaman scan
+    if(jadwalPollInterval){ clearInterval(jadwalPollInterval); jadwalPollInterval = null; }
   }
   if(page !== 'kalender') { clearKalenderRedirect(); } // bersihkan countdown kalender saat pindah halaman
   if(page==='qr'){ startQRLiveDisplay(); }
@@ -2513,27 +2518,23 @@ async function loadJadwalScan(){
   const elFace = document.getElementById('jadwal-today-faceid');
   el.innerHTML = '<div class="loading" style="color:var(--accent);">Memuat jadwal & sinkronisasi status...</div>';
   if(elFace) elFace.innerHTML = '<div class="loading" style="color:var(--accent);">Memuat jadwal...</div>';
-
-  // ── BARU: Coba sync jadwal mingguan dari GAS dulu supaya semua device sinkron ──
-  await syncJadwalMingguanDariGAS();
   
   const dow = new Date().getDay(); 
   const list = jadwalMingguan[dow] || [];
 
   if(!list.length) {
     el.innerHTML = '<div class="empty-state" style="padding:10px;">Hari ini tidak ada jadwal piket. (Libur / Weekend)</div>';
-    if(elFace) elFace.innerHTML = '<div class="empty-state" style="padding:10px;">Hari ini tidak ada jadwal piket.</div>';
     return;
   }
 
-  // Helper render jadwal dari list NIA lokal + status absensi
+  // Render jadwal lokal dulu (cepat), lalu update status dari server
   const renderJadwal = (datangNIA = new Set(), pulangNIA = new Set()) => {
     // Ambil izin piket hari ini dari izinList lokal
     const todayStr = getTodayWIB();
     const izinHariIni = {};
     izinList.forEach(i => {
       if(i.tanggal === todayStr && (i.jenisKegiatan === 'piket' || i.jenisKegiatan === 'semua')) {
-        izinHariIni[i.NIA] = i.jenisIzin;
+        izinHariIni[i.NIA] = i.jenisIzin; // 'sakit' | 'izin' | 'tukar-jadwal'
       }
     });
 
@@ -2543,7 +2544,7 @@ async function loadJadwalScan(){
       let status = 'BELUM';
       if(pulangNIA.has(nia)) status = 'PULANG';
       else if(datangNIA.has(nia)) status = 'DATANG';
-      else if(izinHariIni[nia]) status = izinHariIni[nia].toUpperCase();
+      else if(izinHariIni[nia]) status = izinHariIni[nia].toUpperCase(); // SAKIT | IZIN | TUKAR-JADWAL
       return {NIA: a.NIA, nama: a.nama, divisi: a.divisi, status};
     }).filter(Boolean);
 
@@ -2569,6 +2570,7 @@ async function loadJadwalScan(){
       return 'BELUM';
     };
 
+    // Cek apakah admin sedang login
     const isAdmin = !!localStorage.getItem('adminSession');
     const adminAttr = (nia, status) => isAdmin && (status==='BELUM'||status==='SAKIT'||status==='IZIN'||status==='TUKAR-JADWAL')
       ? `class="badge ${badgeClass(status)} badge-clickable" onclick="bukaModalIzinPiket('${nia}')" title="Klik untuk set status ketidakhadiran"`
@@ -2579,65 +2581,15 @@ async function loadJadwalScan(){
     if(elFace) elFace.innerHTML = jadwalHTML;
   };
 
-  // ── BARU: Utamakan data dari GAS (getJadwalHariIni sudah include status DATANG/PULANG) ──
-  try {
-    const gasRes = await api({ action: 'getJadwalHariIni' });
-    if(gasRes && gasRes.ok && Array.isArray(gasRes.data) && gasRes.data.length) {
-      // GAS kasih data lengkap dengan status — langsung render dari sana
-      const todayStr = getTodayWIB();
-      const izinHariIni = {};
-      izinList.forEach(i => {
-        if(i.tanggal === todayStr && (i.jenisKegiatan === 'piket' || i.jenisKegiatan === 'semua')) {
-          izinHariIni[i.NIA] = i.jenisIzin;
-        }
-      });
-
-      const badgeClass = s => {
-        if(s==='DATANG') return 'badge-hadir';
-        if(s==='PULANG') return 'badge-pulang';
-        if(s==='SAKIT') return 'badge-sakit';
-        if(s==='IZIN') return 'badge-izin-piket';
-        if(s==='TUKAR-JADWAL') return 'badge-tukar-jadwal';
-        return 'badge-belum';
-      };
-      const badgeLabel = s => {
-        if(s==='DATANG') return '✅ DATANG';
-        if(s==='PULANG') return '🟣 PULANG';
-        if(s==='SAKIT') return '🤒 SAKIT';
-        if(s==='IZIN') return '📋 IZIN';
-        if(s==='TUKAR-JADWAL') return '🔄 TUKAR JADWAL';
-        return 'BELUM';
-      };
-      const isAdmin = !!localStorage.getItem('adminSession');
-
-      const gasHTML = gasRes.data.map(j => {
-        // Override status dengan izin lokal jika status masih BELUM
-        let status = j.status || 'BELUM';
-        if(status === 'BELUM' && izinHariIni[j.NIA]) status = izinHariIni[j.NIA].toUpperCase();
-        const adminAttr = isAdmin && (status==='BELUM'||status==='SAKIT'||status==='IZIN'||status==='TUKAR-JADWAL')
-          ? `class="badge ${badgeClass(status)} badge-clickable" onclick="bukaModalIzinPiket('${j.NIA}')" title="Klik untuk set status ketidakhadiran"`
-          : `class="badge ${badgeClass(status)}"`;
-        return `<div class="jadwal-item" style="display:flex;justify-content:space-between;padding:8px 0; border-bottom: 1px solid var(--border);">
-          <div><b>${j.nama}</b><div style="font-size:11px; color:var(--text2);">${j.NIA} · ${j.divisi}</div></div>
-          <span ${adminAttr} style="align-self:center;">${badgeLabel(status)}</span>
-        </div>`;
-      }).join('');
-      el.innerHTML = gasHTML;
-      if(elFace) elFace.innerHTML = gasHTML;
-      return; // selesai, pakai data GAS
-    }
-  } catch(e) {
-    console.warn('getJadwalHariIni gagal, fallback ke lokal:', e.message);
-  }
-
-  // ── FALLBACK: render dari jadwalMingguan lokal (offline / GAS kosong) ──
+  // Render dulu tanpa status
   renderJadwal();
 
-  // Coba ambil status absensi dari server untuk update badge
+  // Coba ambil status dari server (pakai WIB bukan UTC!)
   try {
     const today = getTodayWIB();
     const res = await api({action:'getRekapAbsensi', from:today, to:today});
     if(res && res.ok && Array.isArray(res.data)) {
+      // Track DATANG dan PULANG per NIA
       const datangNIA = new Set(res.data.filter(r=>r.tipe==='DATANG').map(r=>r.NIA));
       const pulangNIA = new Set(res.data.filter(r=>r.tipe==='PULANG').map(r=>r.NIA));
       renderJadwal(datangNIA, pulangNIA);
@@ -2891,59 +2843,6 @@ async function syncAnggotaDariGAS(onDone) {
   }
 }
 window.syncAnggotaDariGAS = syncAnggotaDariGAS;
-
-// ── Sync jadwalMingguan dari Google Sheets ──
-// Dipanggil saat halaman scan/kiosk/landing dibuka.
-// Mengambil data Sheet "Jadwal Piket" lalu rebuild jadwalMingguan
-// per hari-of-week supaya semua device selalu sinkron.
-async function syncJadwalMingguanDariGAS(onDone) {
-  try {
-    const res = await api({ action: 'getJadwalPiket' });
-    if (!res || !res.ok || !Array.isArray(res.data) || !res.data.length) return;
-
-    // Kelompokkan berdasarkan tanggal → hari-of-week
-    // Ambil tanggal yang masuk dalam rentang minggu ini s.d. 4 minggu ke depan
-    // agar tidak tertimpa data lama. Cukup ambil 7 hari ke depan sebagai "pola mingguan".
-    const today = new Date();
-    const todayDow = today.getDay() === 0 ? 7 : today.getDay(); // 1=Sen..7=Min
-    const senin = new Date(today);
-    senin.setDate(today.getDate() - (todayDow - 1)); // Senin minggu ini
-
-    // Buat map: dow (1-5) → Set NIA
-    const dowMap = { 1: new Set(), 2: new Set(), 3: new Set(), 4: new Set(), 5: new Set() };
-
-    res.data.forEach(entry => {
-      if (!entry.tanggal || !entry.NIA) return;
-      const tglDate = new Date(entry.tanggal + 'T00:00:00');
-      const dow = tglDate.getDay(); // 0=Min, 1=Sen, dst
-      if (dow >= 1 && dow <= 5) {
-        // Ambil hanya tanggal yang >= Senin minggu ini (supaya pakai pola terbaru)
-        if (tglDate >= senin) {
-          dowMap[dow].add(entry.NIA);
-        }
-      }
-    });
-
-    // Hanya update hari yang punya data dari GAS
-    let ada = false;
-    for (let d = 1; d <= 5; d++) {
-      if (dowMap[d].size > 0) {
-        jadwalMingguan[d] = Array.from(dowMap[d]);
-        ada = true;
-      }
-    }
-
-    if (ada) {
-      localStorage.setItem('jadwalMingguan', JSON.stringify(jadwalMingguan));
-      console.log('✅ jadwalMingguan berhasil disync dari GAS');
-    }
-  } catch(e) {
-    console.warn('syncJadwalMingguanDariGAS gagal (offline?):', e.message);
-  }
-  if (onDone) onDone();
-}
-window.syncJadwalMingguanDariGAS = syncJadwalMingguanDariGAS;
-
 function startClock(){ setInterval(()=>{ document.getElementById('topbar-clock').innerText = new Date().toLocaleTimeString('id-ID'); },1000); }
 function switchTab(tab){ 
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); 
@@ -3019,7 +2918,7 @@ function renderJadwalPreview(){
   document.getElementById('jadwal-preview-minggu').innerHTML = html; 
 }
 
-// saveJadwalHari() — lihat definisi lengkap di bawah (baris ~4600)
+// saveJadwalHari() — definisi lengkap ada di bawah (setelah baris ranking)
 
 function downloadJadwalPDF(){ 
   let html=`<html><head><meta charset="UTF-8"><title>Jadwal Piket KIPM-UP</title><style>body{font-family:sans-serif;padding:20px;}h1{color:#2d6a4f;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}th{background:#f1f8e9;}</style></head><body><h1>📋 Jadwal Piket KIPM-UP</h1><p>Cetak: ${new Date().toLocaleDateString('id-ID')}</p>`; 
@@ -3268,18 +3167,29 @@ async function loadAnggotaTable(){
   }
   
   if(targetData.length > 0) {
-    tbody.innerHTML = targetData.map(a=>`<tr>
-      <td style="font-family:var(--mono); font-size:12px;">${a.NIA}</td>
-      <td>${a.nama}</td>
-      <td><span style="font-size:12px; color:var(--text2);">${a.divisi}</span></td>
-      <td style="font-size:12px; color:var(--text2);">${a.telp||'-'}</td>
-      <td style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="btn-sm primary" onclick="showEditAnggota('${a.NIA}','${(a.nama||'').replace(/'/g,"\\'")}','${(a.divisi||'').replace(/'/g,"\\'")}','${a.telp||''}')">✏️ Edit</button>
-        <button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}')">🗑️ Hapus</button>
-      </td>
-    </tr>`).join(''); 
+    tbody.innerHTML = targetData.map(a=>{
+      const hasFaceID = !!localStorage.getItem('faceDesc_' + a.NIA);
+      const faceStatus = hasFaceID 
+        ? `<span style="font-size:11px; background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.35); padding:2px 8px; border-radius:20px; white-space:nowrap;">🤖 Terdaftar</span>`
+        : `<span style="font-size:11px; color:var(--text3);">—</span>`;
+      const resetFaceBtn = hasFaceID
+        ? `<button class="btn-sm danger" onclick="adminResetFaceID('${a.NIA}','${(a.nama||'').replace(/'/g,"\\'")}')" title="Hapus data Face ID anggota ini dari perangkat ini" style="font-size:11px;">🗑️ Reset Face ID</button>`
+        : '';
+      return `<tr>
+        <td style="font-family:var(--mono); font-size:12px;">${a.NIA}</td>
+        <td>${a.nama}</td>
+        <td><span style="font-size:12px; color:var(--text2);">${a.divisi}</span></td>
+        <td style="font-size:12px; color:var(--text2);">${a.telp||'-'}</td>
+        <td style="text-align:center;">${faceStatus}</td>
+        <td style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-sm primary" onclick="showEditAnggota('${a.NIA}','${(a.nama||'').replace(/'/g,"\\'")}','${(a.divisi||'').replace(/'/g,"\\'")}','${a.telp||''}')">✏️ Edit</button>
+          <button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}')">🗑️ Hapus</button>
+          ${resetFaceBtn}
+        </td>
+      </tr>`;
+    }).join(''); 
   } else {
-    tbody.innerHTML='<tr><td colspan="5" class="empty-state">Belum ada data anggota</td></tr>'; 
+    tbody.innerHTML='<tr><td colspan="6" class="empty-state">Belum ada data anggota</td></tr>'; 
   }
 }
 function showAddAnggota(){ document.getElementById('modal-add-anggota').classList.add('show'); }
@@ -3779,7 +3689,15 @@ function switchSubKegiatan(sub) {
     if(btn) btn.classList.toggle('active', s===sub);
   });
   if(sub==='aktif') renderSesiAktif();
-  if(sub==='rekap-kegiatan') loadRekapKegiatan();
+  if(sub==='rekap-kegiatan') {
+    // Reset ke "Semua" saat pertama kali masuk tab rekap kegiatan
+    window._rekapJenisAktif = '';
+    ['semua','rapat','kelas-tnd','kelas-enr'].forEach(j => {
+      const btn = document.getElementById('rekap-jenis-tab-' + j);
+      if(btn) btn.classList.toggle('active', j === 'semua');
+    });
+    loadRekapKegiatan();
+  }
 }
 
 function switchSubIzin(sub) {
@@ -3852,11 +3770,19 @@ window.setIzinPiket = setIzinPiket;
 
 // ── Rekap Kegiatan ──
 function loadRekapKegiatan() {
-  const jenis = document.getElementById('filter-jenis-kegiatan')?.value || '';
+  // Ambil jenis dari state aktif (bukan select yang sudah dihapus)
+  const jenis = window._rekapJenisAktif || '';
   const from = document.getElementById('filter-kegiatan-from')?.value || '';
   const to = document.getElementById('filter-kegiatan-to')?.value || '';
   const el = document.getElementById('rekap-kegiatan-list');
   if(!el) return;
+
+  // Update label info filter aktif
+  const labelEl = document.getElementById('rekap-kegiatan-jenis-label');
+  if(labelEl) {
+    const namaJenis = jenis === 'rapat' ? 'Rapat' : jenis === 'kelas-tnd' ? 'Kelas TnD' : jenis === 'kelas-enr' ? 'Kelas EnR' : 'Semua Jenis';
+    labelEl.textContent = `Menampilkan: ${namaJenis}${from||to ? ' · Periode: '+(from||'...')+' s/d '+(to||'...') : ''}`;
+  }
 
   let filtered = sesiList.filter(s => {
     if(jenis && s.jenis !== jenis) return false;
@@ -3866,7 +3792,7 @@ function loadRekapKegiatan() {
     return true;
   });
 
-  if(!filtered.length){ el.innerHTML = '<div style="color:var(--text3); text-align:center; padding:32px;">Tidak ada data</div>'; return; }
+  if(!filtered.length){ el.innerHTML = '<div style="color:var(--text3); text-align:center; padding:32px;">Tidak ada data untuk filter ini</div>'; return; }
 
   el.innerHTML = filtered.map(sesi => {
     const hadirSet = new Set(sesi.absensi.map(a=>a.NIA));
@@ -3905,6 +3831,47 @@ function loadRekapKegiatan() {
     </div>`;
   }).join('');
 }
+
+// ── Switch sub-tab jenis rekap kegiatan ──
+window._rekapJenisAktif = '';
+function switchRekapJenis(jenis) {
+  window._rekapJenisAktif = jenis;
+  // Update active state tombol tab
+  ['semua','rapat','kelas-tnd','kelas-enr'].forEach(j => {
+    const btn = document.getElementById('rekap-jenis-tab-' + j);
+    if(btn) btn.classList.toggle('active', (jenis === '' && j === 'semua') || jenis === j);
+  });
+  loadRekapKegiatan();
+}
+
+// ── Reset rekap kegiatan berdasarkan jenis aktif ──
+function resetRekapKegiatanAktif() {
+  const jenis = window._rekapJenisAktif || '';
+  const namaJenis = jenis === 'rapat' ? 'Rapat' : jenis === 'kelas-tnd' ? 'Kelas TnD' : jenis === 'kelas-enr' ? 'Kelas EnR' : 'Semua Jenis';
+  const konfirmasi = confirm(`⚠️ Reset rekap "${namaJenis}"?\n\nSemua data sesi kegiatan ${namaJenis === 'Semua Jenis' ? 'semua jenis' : namaJenis} akan dihapus dari penyimpanan lokal browser ini.\n\nData di Google Sheets TIDAK terpengaruh.\n\nLanjutkan?`);
+  if(!konfirmasi) return;
+  if(jenis === '') {
+    // Reset semua
+    sesiList = [];
+  } else {
+    sesiList = sesiList.filter(s => s.jenis !== jenis);
+  }
+  saveSesi();
+  showToast(`✅ Rekap ${namaJenis} berhasil direset`, 'success');
+  loadRekapKegiatan();
+}
+
+// ── Admin Reset Face ID per anggota (admin-only) ──
+function adminResetFaceID(nia, nama) {
+  const konfirmasi = confirm(`Reset Face ID untuk ${nama} (${nia})?\n\nData wajah di perangkat ini akan dihapus.\nAnggota perlu daftar ulang Face ID di perangkat masing-masing.\n\nLanjutkan?`);
+  if(!konfirmasi) return;
+  localStorage.removeItem('faceDesc_' + nia);
+  showToast(`✅ Face ID ${nama} berhasil direset`, 'success');
+  loadAnggotaTable(); // Refresh tabel
+}
+window.adminResetFaceID = adminResetFaceID;
+window.switchRekapJenis = switchRekapJenis;
+window.resetRekapKegiatanAktif = resetRekapKegiatanAktif;
 
 // ── Izin System ──
 let izinAnggotaTerpilih = null;
@@ -4565,24 +4532,22 @@ async function saveJadwalHari() {
   const hari = parseInt(document.getElementById('jadwal-hari-select').value);
   if (selectedAnggota.size === 0) { showToast('Centang minimal 1 anggota!', 'error'); return; }
 
-  // Simpan ke localStorage seperti biasa
+  // Simpan ke localStorage
   jadwalMingguan[hari] = Array.from(selectedAnggota);
   localStorage.setItem('jadwalMingguan', JSON.stringify(jadwalMingguan));
   showToast('✅ Jadwal tersimpan lokal. Sinkronisasi ke Sheets...', 'info');
   renderJadwalPreview();
 
   // Bangun entries hanya untuk hari yang dipilih selama 8 minggu ke depan
-  // (data kecil = aman dikirim via GET ke GAS)
+  // (data kecil = aman dikirim ke GAS tanpa masalah panjang URL)
   const hariNama = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
   const entries = [];
 
-  // Hitung tanggal Senin minggu ini
   const today = new Date();
   const todayDow = today.getDay() === 0 ? 7 : today.getDay();
   const senin = new Date(today);
   senin.setDate(today.getDate() - (todayDow - 1));
 
-  // Generate 8 minggu ke depan hanya untuk hari yang dipilih (bukan semua hari)
   const listHari = jadwalMingguan[hari] || [];
   for (let week = 0; week < 8; week++) {
     const tglDate = new Date(senin);
@@ -4601,7 +4566,7 @@ async function saveJadwalHari() {
   try {
     const res = await api({ action: 'setJadwalMingguan', jadwal: JSON.stringify(entries) });
     if (res && res.ok) {
-      showToast('✅ Jadwal ' + (hariNama[hari]||'') + ' berhasil disinkronkan ke Google Sheets!', 'success');
+      showToast('✅ Jadwal ' + (hariNama[hari] || '') + ' berhasil disimpan ke Google Sheets!', 'success');
     } else {
       showToast('⚠️ Tersimpan lokal. GAS: ' + (res?.msg || 'Tidak ada respons'), 'error');
     }
@@ -5662,8 +5627,6 @@ async function absenBursaLoadJadwal() {
   const el = document.getElementById('absen-bursa-jadwal-list');
   if (!el) return;
   try {
-    // Sync jadwal dari GAS supaya data terbaru
-    await syncJadwalMingguanDariGAS();
     const dow = new Date().getDay();
     const list = (typeof jadwalMingguan !== 'undefined' && jadwalMingguan[dow]) || [];
     if (!list.length) { el.textContent = 'Tidak ada jadwal piket hari ini.'; return; }
