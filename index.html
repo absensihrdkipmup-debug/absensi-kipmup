@@ -12656,10 +12656,12 @@ function kipmRender() {
       const statusBadge = m.status==='Aktif'
         ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(74,222,128,0.15);color:var(--accent);">Aktif</span>'
         : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(90,100,120,0.2);color:var(--text3);">Pasif</span>';
+      const safeGk = gk.replace(/'/g,"\\'");
+      const safeId = (m.id||'').replace(/'/g,"\\'");
       const editBtns = isFounder
         ? '<span style="font-size:10px;color:var(--text3);padding:2px 8px;">🔒 Founder</span>'
-        : '<button onclick="kipmOpenEdit(''+gk+'',''+m.id+'')" style="font-size:11px;padding:4px 10px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);color:var(--accent);border-radius:6px;cursor:pointer;font-family:var(--font);margin-right:4px;">✏️ Edit</button>'
-          + '<button onclick="kipmDeleteMember(''+gk+'',''+m.id+'')" style="font-size:11px;padding:4px 8px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.22);color:var(--red);border-radius:6px;cursor:pointer;font-family:var(--font);">🗑️</button>';
+        : '<button onclick="kipmOpenEdit(\''+safeGk+'\',\''+safeId+'\')" style="font-size:11px;padding:4px 10px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);color:var(--accent);border-radius:6px;cursor:pointer;font-family:var(--font);margin-right:4px;">✏️ Edit</button>'
+          + '<button onclick="kipmDeleteMember(\''+safeGk+'\',\''+safeId+'\')" style="font-size:11px;padding:4px 8px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.22);color:var(--red);border-radius:6px;cursor:pointer;font-family:var(--font);">🗑️</button>';
       return '<tr>'
         + '<td style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:9px 12px;">'+(m.nia||'-')+'</td>'
         + '<td style="font-size:13px;font-weight:600;padding:9px 12px;">'+m.nama+'</td>'
@@ -12685,7 +12687,7 @@ function kipmRender() {
           + '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:'+clr+'22;color:'+clr+';">'+members.length+' Anggota</span>'
           + '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">'+hadirCount+' Aktif</span>'
           + '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(90,100,120,0.15);color:var(--text3);">'+pasifCount+' Pasif</span>'
-          + '<button onclick="kipmShowAddAnggotaInGen(''+gk+'')" style="font-size:11px;padding:4px 12px;background:'+clr+'22;border:1px solid '+clr+'55;color:'+clr+';border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:600;">+ Anggota</button>'
+          + '<button onclick="kipmShowAddAnggotaInGen(\''+safeGk+'\')" style="font-size:11px;padding:4px 12px;background:'+clr+'22;border:1px solid '+clr+'55;color:'+clr+';border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:600;">+ Anggota</button>'
         + '</div>'
       + '</div>'
       + '<div style="overflow-x:auto;">'
