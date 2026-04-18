@@ -1608,7 +1608,8 @@ let allAnggota = [...realAnggota];
       <button class="nav-item" onclick="switchTab('riwayat-piket')" data-tab="riwayat-piket">📅 Riwayat Absensi Piket</button>
       <button class="nav-item" onclick="switchTab('kegiatan')" data-tab="kegiatan">🎯 Absensi Kegiatan</button>
       <button class="nav-item" onclick="switchTab('izin')" data-tab="izin">📝 Izin & Ketidakhadiran</button>
-      <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota (Edit)</button>
+      <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota BPH Aktif</button>
+      <button class="nav-item" onclick="switchTab('data-kipm')" data-tab="data-kipm">📚 Data Anggota KIPM</button>
       <button class="nav-item" onclick="switchTab('konten')" data-tab="konten">🖊️ Edit Konten Halaman</button>
       <button class="nav-item" onclick="switchTab('ranking')" data-tab="ranking">🏆 Papan Peringkat</button>
     </nav>
@@ -1922,6 +1923,1938 @@ let allAnggota = [...realAnggota];
       <!-- ANGGOTA TAB -->
       <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Telp</th><th>Face ID</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
 
+      <!-- DATA ANGGOTA KIPM TAB -->
+      <div id="tab-data-kipm" class="tab-panel">
+        <!-- Search & summary bar -->
+        <div class="table-card" style="padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="font-weight:700;font-size:15px;">📚 Data Anggota KIPM-UP</div>
+            <span style="font-size:12px;padding:3px 10px;border-radius:20px;background:rgba(74,222,128,0.12);color:var(--accent);">278 Total Anggota</span>
+            <span style="font-size:12px;padding:3px 10px;border-radius:20px;background:rgba(34,211,238,0.12);color:var(--accent2);">145 Aktif</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="form-input" id="kipm-cari" placeholder="Cari nama / NIA / jabatan..." style="width:220px;" oninput="filterKipmTable()">
+            <select class="form-input" id="kipm-filter-gen" style="width:auto;" onchange="filterKipmTable()">
+              <option value="">Semua Generasi</option>
+              <option value="gen-1">GEN 1</option>
+              <option value="gen-2">GEN 2</option>
+              <option value="gen-3">GEN 3</option>
+              <option value="gen-4">GEN 4</option>
+              <option value="gen-5">GEN 5</option>
+              <option value="gen-6">GEN 6</option>
+              <option value="gen-7">GEN 7</option>
+              <option value="gen-8">GEN 8</option>
+              <option value="gen-9">GEN 9</option>
+            </select>
+          </div>
+        </div>
+        <div id="kipm-table-container">
+          
+    <!-- GEN 1 -->
+    <div style="background:var(--bg2);border:1px solid #a78bfa44;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(167,139,250,0.15);padding:12px 16px;border-bottom:1px solid #a78bfa33;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#a78bfa;"></div>
+          <div style="font-size:15px;font-weight:700;color:#a78bfa;">GEN 1</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#a78bfa22;color:#a78bfa;">20 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">1 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">19 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">01</td>
+      <td style="font-size:13px;font-weight:500;">Alfan Tirta Admajaya Putra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#f0c04022;color:#f0c040;white-space:nowrap;">Founder :/</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Surya Safriantoni</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">R. Dinda Masithah Primadevi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">04</td>
+      <td style="font-size:13px;font-weight:500;">Billy Taufan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1115210072</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08986090358</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">05</td>
+      <td style="font-size:13px;font-weight:500;">Carry M. Jaffray Laudeng</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1115210078</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081213320640</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Danang Alifianto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1115210084</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087877747574</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Andrew Sainlendra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082210100795</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Isni Kurniati</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Hesa Handayani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">12017003</td>
+      <td style="font-size:13px;font-weight:500;">Dean Rafly Alfiza</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1115210087</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082111022127</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Maharani Inesa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Asyang Marendra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Aulia Rachmawati</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Ardhito Hadyan Ramadhan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081211644197</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Amanda</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Elvira</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Bobby Nur Yusuf</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Ria</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Oki Annas Fajarudin</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Lukman Nulhakim</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 2 -->
+    <div style="background:var(--bg2);border:1px solid #60a5fa44;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(96,165,250,0.15);padding:12px 16px;border-bottom:1px solid #60a5fa33;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#60a5fa;"></div>
+          <div style="font-size:15px;font-weight:700;color:#60a5fa;">GEN 2</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#60a5fa22;color:#60a5fa;">28 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">0 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">28 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018001</td>
+      <td style="font-size:13px;font-weight:500;">Farah Izzah Fadillah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018003</td>
+      <td style="font-size:13px;font-weight:500;">Ridwan Indra Jatikusumo</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1118210038</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081282537350</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018004</td>
+      <td style="font-size:13px;font-weight:500;">Dila Romadanti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089689604137</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018005</td>
+      <td style="font-size:13px;font-weight:500;">Rivaldo Raditya Jody</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082155553630</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018007</td>
+      <td style="font-size:13px;font-weight:500;">Fernandi Ermanto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1218210013</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081214971878</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018008</td>
+      <td style="font-size:13px;font-weight:500;">Salsabila Putri Anggraini</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1118210147</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895331253732</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018010</td>
+      <td style="font-size:13px;font-weight:500;">Fitry Angger Pangestu</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1218210053</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081289821497</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018013</td>
+      <td style="font-size:13px;font-weight:500;">Tamara Putri Anindya</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018014</td>
+      <td style="font-size:13px;font-weight:500;">Theresya Indah Rahmat</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018017</td>
+      <td style="font-size:13px;font-weight:500;">Syahril Fidila Didan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082111981548</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018018</td>
+      <td style="font-size:13px;font-weight:500;">Sulthan Adam Muhammad</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089689604137</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018019</td>
+      <td style="font-size:13px;font-weight:500;">Tegar Pangestu</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1118210011</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082213514572</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018020</td>
+      <td style="font-size:13px;font-weight:500;">Yudha Lutfie Ananta</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1118210213</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082110747072</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018022</td>
+      <td style="font-size:13px;font-weight:500;">Yeremia Erico</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1118210102</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082113580291</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018025</td>
+      <td style="font-size:13px;font-weight:500;">Fernandes Rivelino Efrien</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1118210019</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089636353058</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018028</td>
+      <td style="font-size:13px;font-weight:500;">Tiyan Juliana Putra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">083895468941</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">022018030</td>
+      <td style="font-size:13px;font-weight:500;">Faiz Abiyaksa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087883731537</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Ghiani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Farhan Aldi Siregar</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081990679299</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Avid</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">waode</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Lukman Nul Hakim</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Oki Anas Fajarudin</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Bang EL</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">Alviantiko</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">cewe tanpa nama</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">cewe tanpa nama</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">-</td>
+      <td style="font-size:13px;font-weight:500;">I Made</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 3 -->
+    <div style="background:var(--bg2);border:1px solid #34d39944;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(52,211,153,0.15);padding:12px 16px;border-bottom:1px solid #34d39933;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#34d399;"></div>
+          <div style="font-size:15px;font-weight:700;color:#34d399;">GEN 3</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#34d39922;color:#34d399;">40 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">0 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">40 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019001</td>
+      <td style="font-size:13px;font-weight:500;">Shania Puspa Aryani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082122824118</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019002</td>
+      <td style="font-size:13px;font-weight:500;">Alexandro Ravael Maskim</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">088210447273</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019003</td>
+      <td style="font-size:13px;font-weight:500;">Lisa Amirah Mutmainnah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085770830993</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019004</td>
+      <td style="font-size:13px;font-weight:500;">Claudio Jeremy</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085718940195</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019005</td>
+      <td style="font-size:13px;font-weight:500;">Nella Irviani Lorenza</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085771228466</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019006</td>
+      <td style="font-size:13px;font-weight:500;">Firza Erwandi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081318612265</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019007</td>
+      <td style="font-size:13px;font-weight:500;">Ismaya Widya Kusumah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087711399692</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019008</td>
+      <td style="font-size:13px;font-weight:500;">Nurul Indah Kurniasari</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08119622204</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019009</td>
+      <td style="font-size:13px;font-weight:500;">Melda Selviani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">083811653420</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019010</td>
+      <td style="font-size:13px;font-weight:500;">Aulia Putri Farwina</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0811821245</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019012</td>
+      <td style="font-size:13px;font-weight:500;">Devy Nabilah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085899117589</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019013</td>
+      <td style="font-size:13px;font-weight:500;">Ambar Kusumaningtiyas</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082128564995</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019014</td>
+      <td style="font-size:13px;font-weight:500;">Amira Humairah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082297268632</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019015</td>
+      <td style="font-size:13px;font-weight:500;">Stella Nathasya Erwianti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085694648900</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019016</td>
+      <td style="font-size:13px;font-weight:500;">Lobi Suwendi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081378042285</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019017</td>
+      <td style="font-size:13px;font-weight:500;">Aditya Pratama</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081383959455</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019018</td>
+      <td style="font-size:13px;font-weight:500;">Gilang Pandu Dewanto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085718027200</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019019</td>
+      <td style="font-size:13px;font-weight:500;">Nadya Mutmainnah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081216287601</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019020</td>
+      <td style="font-size:13px;font-weight:500;">Siti Fatimah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089621930271</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019022</td>
+      <td style="font-size:13px;font-weight:500;">Qafyl Ramadhano Mufti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089693232113</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019023</td>
+      <td style="font-size:13px;font-weight:500;">Satrio Aji Wicaksono</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087878421877</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019024</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Rafi Priyambudi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082113599819</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019025</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Rafli Ridhalah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081938486058</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019026</td>
+      <td style="font-size:13px;font-weight:500;">Izraatul Khairat</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895333027837</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019027</td>
+      <td style="font-size:13px;font-weight:500;">Falah Arnoris Adha</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08978831684</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019028</td>
+      <td style="font-size:13px;font-weight:500;">Ayu Tri Anggraini</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082180366946</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019030</td>
+      <td style="font-size:13px;font-weight:500;">Leovieni Arzella</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081280876039</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019031</td>
+      <td style="font-size:13px;font-weight:500;">Joice Rose Cisela Abi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082144039014</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019032</td>
+      <td style="font-size:13px;font-weight:500;">Elsy Rosliana</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081295642327</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019033</td>
+      <td style="font-size:13px;font-weight:500;">Mari Etta Katarina</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081379957027</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019034</td>
+      <td style="font-size:13px;font-weight:500;">Indah Tri Aprilia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0822817164018</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019035</td>
+      <td style="font-size:13px;font-weight:500;">Karlina Pebriyanti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085781452062</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019036</td>
+      <td style="font-size:13px;font-weight:500;">Hana Zhafirah Anwar</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">083824512788</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019037</td>
+      <td style="font-size:13px;font-weight:500;">Refita Handini Imtiyas</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082111234265</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019038</td>
+      <td style="font-size:13px;font-weight:500;">Nabilla Apriliani Putri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081210078581</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019039</td>
+      <td style="font-size:13px;font-weight:500;">Sheilla Silvia Russiana</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081383333801</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019040</td>
+      <td style="font-size:13px;font-weight:500;">Ferdy Fachrul Widanta</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087770428524</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019041</td>
+      <td style="font-size:13px;font-weight:500;">Dinda Hapsari</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081211118036</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019042</td>
+      <td style="font-size:13px;font-weight:500;">Alvita Ratnaduhita</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085722368964</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">032019044</td>
+      <td style="font-size:13px;font-weight:500;">Vina Ilmiasari Hidayah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082213300516</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 4 -->
+    <div style="background:var(--bg2);border:1px solid #f59e0b44;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(245,158,11,0.15);padding:12px 16px;border-bottom:1px solid #f59e0b33;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;"></div>
+          <div style="font-size:15px;font-weight:700;color:#f59e0b;">GEN 4</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#f59e0b22;color:#f59e0b;">41 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">41 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">0 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020001</td>
+      <td style="font-size:13px;font-weight:500;">Akmal Fachrul</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210183</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081384098911</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020002</td>
+      <td style="font-size:13px;font-weight:500;">Bintang Tri Voli</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210109</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081386225365</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020003</td>
+      <td style="font-size:13px;font-weight:500;">Arkha Ardian</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210217</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085156516265</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020004</td>
+      <td style="font-size:13px;font-weight:500;">Abdurrahman Nur Rafi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210174</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087840251044</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020005</td>
+      <td style="font-size:13px;font-weight:500;">Bunga Tasya Adelia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210096</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081314020255</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020006</td>
+      <td style="font-size:13px;font-weight:500;">Meldy Nurselfiyani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210228</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081317135845</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020007</td>
+      <td style="font-size:13px;font-weight:500;">Nabila Gebby Cahyani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1220210099</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081317778552</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020008</td>
+      <td style="font-size:13px;font-weight:500;">Ranusetra Wicaksana Riza</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210018</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085871274798</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020009</td>
+      <td style="font-size:13px;font-weight:500;">Rizki Talitha Azzahra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210184</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895336842949</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020010</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Raihan Malik</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210056</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895383124717</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020011</td>
+      <td style="font-size:13px;font-weight:500;">Firah Yoshella Baqarizky</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210146</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081212886756</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020012</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Naufal Fauzi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">4520210005</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081289305352</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020013</td>
+      <td style="font-size:13px;font-weight:500;">Salsabila Desfitri Azzahra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210204</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081324372292</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020014</td>
+      <td style="font-size:13px;font-weight:500;">Wardah Habibah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210119</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085161187808</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020015</td>
+      <td style="font-size:13px;font-weight:500;">Ellysa Nur Aulia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210112</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089638043048</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020016</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Dwiyasykur</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210122</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">088290364716</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020017</td>
+      <td style="font-size:13px;font-weight:500;">Nabilla Mutiara Yurika</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210151</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085158906085</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020018</td>
+      <td style="font-size:13px;font-weight:500;">Salsabila Azizah Zulfa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210129</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087776296075</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020019</td>
+      <td style="font-size:13px;font-weight:500;">Qori Mauluudin</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1220210096</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08111213911</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020020</td>
+      <td style="font-size:13px;font-weight:500;">Besty Tri Minawati</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210087</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081806693829</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020021</td>
+      <td style="font-size:13px;font-weight:500;">Melly Rohmawati</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210176</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895600742008</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020023</td>
+      <td style="font-size:13px;font-weight:500;">Regita Rustiani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210233</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089637612454</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020024</td>
+      <td style="font-size:13px;font-weight:500;">Rhena Yuni Junita</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210073</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081808281069</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020025</td>
+      <td style="font-size:13px;font-weight:500;">Nia Kurnia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210133</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082246199341</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020026</td>
+      <td style="font-size:13px;font-weight:500;">Luthfiyah Salma Putri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020027</td>
+      <td style="font-size:13px;font-weight:500;">Olia Maharani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210083</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085899131284</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020028</td>
+      <td style="font-size:13px;font-weight:500;">Nurul Hidayah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210123</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085157573761</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020029</td>
+      <td style="font-size:13px;font-weight:500;">Farah Yoshella Baqarizky</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210096</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081315176117</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020030</td>
+      <td style="font-size:13px;font-weight:500;">Aryani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210025</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895346577376</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020031</td>
+      <td style="font-size:13px;font-weight:500;">Frizka Aleisya Zakaria</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210101</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081282246038</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020032</td>
+      <td style="font-size:13px;font-weight:500;">Putri Zerlina Yolanda</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">-</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020033</td>
+      <td style="font-size:13px;font-weight:500;">Cintya Fitry Anzani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210172</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08119692929</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020034</td>
+      <td style="font-size:13px;font-weight:500;">Abdul Rozak Assodiki</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219130001</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082297485197</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020035</td>
+      <td style="font-size:13px;font-weight:500;">Belinda Patricia Suhendro</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210009</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089638431643</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020036</td>
+      <td style="font-size:13px;font-weight:500;">Ina Roina</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210008</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081294288085</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020037</td>
+      <td style="font-size:13px;font-weight:500;">Melati Okta Dwi Nurcahyanti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1320130005</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085774900576 / 087885422864</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020038</td>
+      <td style="font-size:13px;font-weight:500;">Putri Utami</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210001</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085715322378</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020039</td>
+      <td style="font-size:13px;font-weight:500;">Rakyat Syifa Al Anam</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210144</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089665550897</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020040</td>
+      <td style="font-size:13px;font-weight:500;">Wahyu Erlangga Prayitno</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210202</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081993294059</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020041</td>
+      <td style="font-size:13px;font-weight:500;">Nadia Azzah Shalihah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210126</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081383764381</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">042020042</td>
+      <td style="font-size:13px;font-weight:500;">Gerika Uli Sinaga</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210112</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085254564676</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 5 -->
+    <div style="background:var(--bg2);border:1px solid #f8717144;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(248,113,113,0.15);padding:12px 16px;border-bottom:1px solid #f8717133;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#f87171;"></div>
+          <div style="font-size:15px;font-weight:700;color:#f87171;">GEN 5</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#f8717122;color:#f87171;">39 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">0 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">39 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021001</td>
+      <td style="font-size:13px;font-weight:500;">Afiyah Nisrina</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210159</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081802796761</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021002</td>
+      <td style="font-size:13px;font-weight:500;">Alyanada</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1119210091</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085156020520</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021003</td>
+      <td style="font-size:13px;font-weight:500;">Abednego Mikha Hann Sirait</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1219210103</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081321040467</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021004</td>
+      <td style="font-size:13px;font-weight:500;">Gustav Zefanya Pangaribuan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1220210038</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081393384086</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021005</td>
+      <td style="font-size:13px;font-weight:500;">Rafli Putra Dhikrillah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210258</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087879006338</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021006</td>
+      <td style="font-size:13px;font-weight:500;">Sekar Soraya Maheswari</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210161</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">083890009871</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021007</td>
+      <td style="font-size:13px;font-weight:500;">Dinda Agustina</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210227</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">083872559418</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021008</td>
+      <td style="font-size:13px;font-weight:500;">Novianti Suhermanto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210249</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089513249754</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021009</td>
+      <td style="font-size:13px;font-weight:500;">Alfian Dwiputra Herninda</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210191</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082299396909</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021010</td>
+      <td style="font-size:13px;font-weight:500;">Rizqi Septiani Eka Putri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210158</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081510291096</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021011</td>
+      <td style="font-size:13px;font-weight:500;">Mawaddah Kenoya</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210233</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082111147300</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021012</td>
+      <td style="font-size:13px;font-weight:500;">Dharmanesa Krisna</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210192</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081316281100</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021013</td>
+      <td style="font-size:13px;font-weight:500;">Rysha Oktaviannisa Az-Zuhri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210219</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08118182472</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021014</td>
+      <td style="font-size:13px;font-weight:500;">Muna Mardhiyah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210170</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085159346377</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021015</td>
+      <td style="font-size:13px;font-weight:500;">Amalia Destriyanti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210226</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087784604580</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021016</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Rian</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210282</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081228104700</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021017</td>
+      <td style="font-size:13px;font-weight:500;">Ivan Ario Seno</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210095</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087741552210</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021018</td>
+      <td style="font-size:13px;font-weight:500;">Mellyana Putri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210021</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081317506820</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021019</td>
+      <td style="font-size:13px;font-weight:500;">Dwi Farida Khoiriyah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210005</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085771849525</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021020</td>
+      <td style="font-size:13px;font-weight:500;">Anita Aprilia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210060</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081220881807</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021021</td>
+      <td style="font-size:13px;font-weight:500;">Dea Nadiya</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210066</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085695944860</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021022</td>
+      <td style="font-size:13px;font-weight:500;">Nur Qomariah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221130002</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08881803090</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021023</td>
+      <td style="font-size:13px;font-weight:500;">Hanna Aulia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210064</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089504860045</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021024</td>
+      <td style="font-size:13px;font-weight:500;">Revi Siti Nurazizah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210146</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081225527498</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021025</td>
+      <td style="font-size:13px;font-weight:500;">Dinda Cahyati Kaltsum</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210030</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895324929404</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021026</td>
+      <td style="font-size:13px;font-weight:500;">Hanna Elisabeth</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210069</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">083879431023</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021027</td>
+      <td style="font-size:13px;font-weight:500;">Mauladi Nur Hakim</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210093</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081317328398</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021029</td>
+      <td style="font-size:13px;font-weight:500;">Khoerunisa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210075</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085921571629</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021030</td>
+      <td style="font-size:13px;font-weight:500;">Lulu Septiana</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210003</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087825086095</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021031</td>
+      <td style="font-size:13px;font-weight:500;">Afra Ayu Kamilah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210080</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081282088482</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021032</td>
+      <td style="font-size:13px;font-weight:500;">Fatichah Fitriana</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210163</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085771744488</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021033</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Zaki</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210018</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082210288536</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021034</td>
+      <td style="font-size:13px;font-weight:500;">Muamar Adjie Suyudi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210119</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">088296753833</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021035</td>
+      <td style="font-size:13px;font-weight:500;">Faishal Fadhillah Saputra</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210087</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087872903942</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021036</td>
+      <td style="font-size:13px;font-weight:500;">Nanda Sri Wahyuni</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210067</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895403269982</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021037</td>
+      <td style="font-size:13px;font-weight:500;">Sri Agustina Wulandari</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210088</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085710300711</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021038</td>
+      <td style="font-size:13px;font-weight:500;">Rendinanda Prakoso Supriyadi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210099</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085770610403</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021039</td>
+      <td style="font-size:13px;font-weight:500;">Farhan Maulana Malik</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210175</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081290706845</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">052021040</td>
+      <td style="font-size:13px;font-weight:500;">Amanda Salsabillah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210033</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089630221697</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 6 -->
+    <div style="background:var(--bg2);border:1px solid #22d3ee44;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(34,211,238,0.15);padding:12px 16px;border-bottom:1px solid #22d3ee33;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#22d3ee;"></div>
+          <div style="font-size:15px;font-weight:700;color:#22d3ee;">GEN 6</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#22d3ee22;color:#22d3ee;">29 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">22 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">7 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022001</td>
+      <td style="font-size:13px;font-weight:500;">Asmaa Nur Izzati</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210193</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081310423924</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022002</td>
+      <td style="font-size:13px;font-weight:500;">Aisha Inggitha Putri Haryoso</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210257</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085883620205</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022003</td>
+      <td style="font-size:13px;font-weight:500;">Andika dimas pangestu</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210046</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081997313882</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022004</td>
+      <td style="font-size:13px;font-weight:500;">Anik Noviyanty Lestari</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210024</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081315702572</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022005</td>
+      <td style="font-size:13px;font-weight:500;">Ariev Samudera Gumay</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210051</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081210326745</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022006</td>
+      <td style="font-size:13px;font-weight:500;">Arneza Diva Zuniar</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210194</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085719830614</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022007</td>
+      <td style="font-size:13px;font-weight:500;">Aulia fitriyani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210063</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085710490859</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022008</td>
+      <td style="font-size:13px;font-weight:500;">Dandi Nurrachim</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210161</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08567638434</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022009</td>
+      <td style="font-size:13px;font-weight:500;">Dias Nurjian Anggraini</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210028</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085813665055</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022010</td>
+      <td style="font-size:13px;font-weight:500;">Dipo Ilham Firdaus</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210220</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081292569212</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022011</td>
+      <td style="font-size:13px;font-weight:500;">Evrila Nur Azizah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210199</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087773585510</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022012</td>
+      <td style="font-size:13px;font-weight:500;">Fahri Ramadhan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1221210048</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">088225605513</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022013</td>
+      <td style="font-size:13px;font-weight:500;">Felicia Kurniawan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210053</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081284972770</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022014</td>
+      <td style="font-size:13px;font-weight:500;">Firda Ainu Sifa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210226</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085719033063</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022015</td>
+      <td style="font-size:13px;font-weight:500;">Friska Adelina Sembiring</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210078</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081387216125</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022016</td>
+      <td style="font-size:13px;font-weight:500;">Irdan Hadikusuma</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210165</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081293398974</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022017</td>
+      <td style="font-size:13px;font-weight:500;">Junita Angelita Harefa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210228</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082113360162</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022018</td>
+      <td style="font-size:13px;font-weight:500;">Lavenna Caroline Leander</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210052</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081316137075</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022019</td>
+      <td style="font-size:13px;font-weight:500;">Maria Fransisca Winowattan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210015</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081212789210</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022020</td>
+      <td style="font-size:13px;font-weight:500;">Miranda Alifarahmah Juwanto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210059</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081285005195</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022021</td>
+      <td style="font-size:13px;font-weight:500;">Nadra Asmira Sella</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">122210054</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085340167300</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022022</td>
+      <td style="font-size:13px;font-weight:500;">Novia Rahma Safitri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210209</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085891102464</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022023</td>
+      <td style="font-size:13px;font-weight:500;">Oktaviando Parasian Samosir</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210123</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08118880278</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022024</td>
+      <td style="font-size:13px;font-weight:500;">Rizky Dwi Mulyo</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1120210125</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089635904326</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022025</td>
+      <td style="font-size:13px;font-weight:500;">Ryan Akbar</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1121210209</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#5a647822;color:#5a6478;white-space:nowrap;">Anggota Pasif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895348449034</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022026</td>
+      <td style="font-size:13px;font-weight:500;">Salma Atikah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210056</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087772863281</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022027</td>
+      <td style="font-size:13px;font-weight:500;">Septiana Nurul Kharimah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210190</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087887822726</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022028</td>
+      <td style="font-size:13px;font-weight:500;">Syalaisya Amani Fatihah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210055</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">088213354851</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">062022029</td>
+      <td style="font-size:13px;font-weight:500;">Viona Putri Ramadhani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210010</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085772124277</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 7 -->
+    <div style="background:var(--bg2);border:1px solid #fb923c44;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(251,146,60,0.15);padding:12px 16px;border-bottom:1px solid #fb923c33;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#fb923c;"></div>
+          <div style="font-size:15px;font-weight:700;color:#fb923c;">GEN 7</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#fb923c22;color:#fb923c;">13 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">13 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">0 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023001</td>
+      <td style="font-size:13px;font-weight:500;">Arif Rohman</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210183</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085691164313</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023003</td>
+      <td style="font-size:13px;font-weight:500;">Alvaleno Rossy Cahyadivara</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210020</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08151800597</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023004</td>
+      <td style="font-size:13px;font-weight:500;">Alvira</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1122210261</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082339553934</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023005</td>
+      <td style="font-size:13px;font-weight:500;">Anis Huwaidah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210202</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082112841147</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023006</td>
+      <td style="font-size:13px;font-weight:500;">Arya Darma Bakti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210033</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085814097635</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023007</td>
+      <td style="font-size:13px;font-weight:500;">Daniel Febrino Situmorang</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210050</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087819225572</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023008</td>
+      <td style="font-size:13px;font-weight:500;">Hana Ghaida Nabilah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210075</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089617906610</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023010</td>
+      <td style="font-size:13px;font-weight:500;">Kholifah Surachman</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1223130014</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081280853535</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023011</td>
+      <td style="font-size:13px;font-weight:500;">Maulana Nurwahid</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210097</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081389622964</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023013</td>
+      <td style="font-size:13px;font-weight:500;">Retno Anggraeni</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210195</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#fb923c22;color:#fb923c;white-space:nowrap;">Ketua DP</span></td>
+      <td style="font-size:12px;color:var(--text2);">081383218527</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023014</td>
+      <td style="font-size:13px;font-weight:500;">Safiyyah Tasnim Conway</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1223130013</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">-</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023015</td>
+      <td style="font-size:13px;font-weight:500;">Vanessa Caroline Ronauli Putri Manihuruk</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1222210065</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085892648806</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">072023016</td>
+      <td style="font-size:13px;font-weight:500;">Yvonne Maurafayza Kurniawan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210177</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087813052589</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 8 -->
+    <div style="background:var(--bg2);border:1px solid #c084fc44;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(192,132,252,0.15);padding:12px 16px;border-bottom:1px solid #c084fc33;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#c084fc;"></div>
+          <div style="font-size:15px;font-weight:700;color:#c084fc;">GEN 8</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#c084fc22;color:#c084fc;">28 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">28 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">0 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024001</td>
+      <td style="font-size:13px;font-weight:500;">Sintia Rahmadani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210165</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085892376264</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024002</td>
+      <td style="font-size:13px;font-weight:500;">Adrian Fadilla Lesmana</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210206</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089676244077</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024003</td>
+      <td style="font-size:13px;font-weight:500;">Adytama Nurrohmat A. S.</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210007</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082278964415</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024004</td>
+      <td style="font-size:13px;font-weight:500;">Artika Safitri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210032</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081281720721</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024005</td>
+      <td style="font-size:13px;font-weight:500;">Citra Pelisa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210048</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">082184693724</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024006</td>
+      <td style="font-size:13px;font-weight:500;">Damara Azzalia Narda</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210049</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085714343986</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024007</td>
+      <td style="font-size:13px;font-weight:500;">Dewi Agustina</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210054</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089602352378</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024008</td>
+      <td style="font-size:13px;font-weight:500;">Fytha Poetri Agayha</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210068</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081906022005</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024009</td>
+      <td style="font-size:13px;font-weight:500;">Iftikhar Fayzul Haq</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210076</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081383561617</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024010</td>
+      <td style="font-size:13px;font-weight:500;">Jasmine Maharani Azhara</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210080</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">087860324111</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024011</td>
+      <td style="font-size:13px;font-weight:500;">Kaila Nesha Listianto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210081</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895424469272</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024012</td>
+      <td style="font-size:13px;font-weight:500;">Kinanti Ayuningtyas Puri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210082</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#8a96a822;color:#8a96a8;white-space:nowrap;">Invesment Manager I</span></td>
+      <td style="font-size:12px;color:var(--text2);">085692447441</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024013</td>
+      <td style="font-size:13px;font-weight:500;">Lu’lu’ Maknunah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210093</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089502311831</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024014</td>
+      <td style="font-size:13px;font-weight:500;">M. Fabian Al Aziz</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210222</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#fb923c22;color:#fb923c;white-space:nowrap;">DP</span></td>
+      <td style="font-size:12px;color:var(--text2);">085156428245</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024015</td>
+      <td style="font-size:13px;font-weight:500;">Muhamad Alfan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210096</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#f0c04022;color:#f0c040;white-space:nowrap;">Wakil Ketua Umum I</span></td>
+      <td style="font-size:12px;color:var(--text2);">085773694230</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024016</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Anwar</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210212</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#fb923c22;color:#fb923c;white-space:nowrap;">DP</span></td>
+      <td style="font-size:12px;color:var(--text2);">08386470342</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024017</td>
+      <td style="font-size:13px;font-weight:500;">Nisrina Zakiyah Rahmah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210121</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#34d39922;color:#34d399;white-space:nowrap;">Investment Manager III</span></td>
+      <td style="font-size:12px;color:var(--text2);">081292936383</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024018</td>
+      <td style="font-size:13px;font-weight:500;">Putri Aisyah Novianti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210132</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#fb923c22;color:#fb923c;white-space:nowrap;">DP</span></td>
+      <td style="font-size:12px;color:var(--text2);">089503215160</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024019</td>
+      <td style="font-size:13px;font-weight:500;">Raina Yasmine</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210140</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081770804403</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024021</td>
+      <td style="font-size:13px;font-weight:500;">Rifqi Maulana Yusuf</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210213</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085781515706</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024022</td>
+      <td style="font-size:13px;font-weight:500;">Rifqy Rachmat</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210231</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#f0c04022;color:#f0c040;white-space:nowrap;">Ketua Umum</span></td>
+      <td style="font-size:12px;color:var(--text2);">087886993450</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024023</td>
+      <td style="font-size:13px;font-weight:500;">Rivaldo Adipura</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210151</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085282099923</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024024</td>
+      <td style="font-size:13px;font-weight:500;">Sabila Nur Aisyah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210154</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#fb923c22;color:#fb923c;white-space:nowrap;">DP</span></td>
+      <td style="font-size:12px;color:var(--text2);">087874528999</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024025</td>
+      <td style="font-size:13px;font-weight:500;">Sabrina Nurulfarah Juwanto</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1224210080</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">081211551340</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024026</td>
+      <td style="font-size:13px;font-weight:500;">Siti Andini Masbubah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210167</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085624352526</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024027</td>
+      <td style="font-size:13px;font-weight:500;">Stephanie Charensia Yansen</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210168</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08557005438</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024028</td>
+      <td style="font-size:13px;font-weight:500;">Syiva Nabillah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1123210200</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">085715585022</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">082024029</td>
+      <td style="font-size:13px;font-weight:500;">Tofan Habibi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210220</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#c084fc22;color:#c084fc;white-space:nowrap;">Head of TnD</span></td>
+      <td style="font-size:12px;color:var(--text2);">083115083899</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- GEN 9 -->
+    <div style="background:var(--bg2);border:1px solid #4ade8044;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:rgba(74,222,128,0.15);padding:12px 16px;border-bottom:1px solid #4ade8033;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#4ade80;"></div>
+          <div style="font-size:15px;font-weight:700;color:#4ade80;">GEN 9</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#4ade8022;color:#4ade80;">40 Anggota</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(74,222,128,0.12);color:var(--accent);">40 Aktif</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(138,150,168,0.12);color:var(--text3);">0 Pasif</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:var(--bg3);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NIA</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">NPM</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text3);text-align:left;">No. Telp</th>
+          </tr></thead>
+          <tbody><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025001</td>
+      <td style="font-size:13px;font-weight:500;">Ismail Jamil</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210071</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#c084fc22;color:#c084fc;white-space:nowrap;">Head of EnR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081586826673</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025002</td>
+      <td style="font-size:13px;font-weight:500;">Afief Baharmus</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210005</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#34d39922;color:#34d399;white-space:nowrap;">Investment Manager II</span></td>
+      <td style="font-size:12px;color:var(--text2);">081285321417</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025003</td>
+      <td style="font-size:13px;font-weight:500;">Ahmad Farel Rabbani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210140</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">085886307614</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025004</td>
+      <td style="font-size:13px;font-weight:500;">Ahmad Haidar Pasha</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210006</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">TnD</span></td>
+      <td style="font-size:12px;color:var(--text2);">085959914099</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025005</td>
+      <td style="font-size:13px;font-weight:500;">Baim Daniel Musyafa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210029</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#22d3ee22;color:#22d3ee;white-space:nowrap;">Treasury II</span></td>
+      <td style="font-size:12px;color:var(--text2);">087782121989</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025006</td>
+      <td style="font-size:13px;font-weight:500;">Chandra Lie</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210037</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#c084fc22;color:#c084fc;white-space:nowrap;">Head of PR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081348390793</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025007</td>
+      <td style="font-size:13px;font-weight:500;">Darwita Sangadji</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210182</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">081388726799</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025008</td>
+      <td style="font-size:13px;font-weight:500;">Dwi Savitri Denia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1225210012</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">EnR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081314520884</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025009</td>
+      <td style="font-size:13px;font-weight:500;">Hasya balqis khairunnisa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210134</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">PR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081232688225</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025010</td>
+      <td style="font-size:13px;font-weight:500;">Khoirunnisa Assolihah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210185</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#f0c04022;color:#f0c040;white-space:nowrap;">Wakil Ketua Umum II</span></td>
+      <td style="font-size:12px;color:var(--text2);">085779050415</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025011</td>
+      <td style="font-size:13px;font-weight:500;">Majda Tsania</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1224210045</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#60a5fa22;color:#60a5fa;white-space:nowrap;">Secretary III</span></td>
+      <td style="font-size:12px;color:var(--text2);">087881633207</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025012</td>
+      <td style="font-size:13px;font-weight:500;">Mariyah Sujana</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1224210046</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#22d3ee22;color:#22d3ee;white-space:nowrap;">Treasury I</span></td>
+      <td style="font-size:12px;color:var(--text2);">0817111899</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025013</td>
+      <td style="font-size:13px;font-weight:500;">Maudyna Tasya Ardianti</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1224210047</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#60a5fa22;color:#60a5fa;white-space:nowrap;">Secretary II</span></td>
+      <td style="font-size:12px;color:var(--text2);">081218510500</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025014</td>
+      <td style="font-size:13px;font-weight:500;">Melany Septiana Putri</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1224210049</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#60a5fa22;color:#60a5fa;white-space:nowrap;">Secretary I</span></td>
+      <td style="font-size:12px;color:var(--text2);">081387694749</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025015</td>
+      <td style="font-size:13px;font-weight:500;">Milka Nur Azizah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1224210050</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#c084fc22;color:#c084fc;white-space:nowrap;">Head of DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">081514099345</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025016</td>
+      <td style="font-size:13px;font-weight:500;">Muhamad Raditia Ramadhan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210051</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">085692722484</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025017</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Abdul Muhyi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210143</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">EnR</span></td>
+      <td style="font-size:12px;color:var(--text2);">085776422165</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025018</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Panji Robani</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210203</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">089525554553</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025019</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Rasya Raafi Ramadhan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1325130005</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">082122956668</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025020</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad Rayhan Abrisa</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210204</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089669579081</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025021</td>
+      <td style="font-size:13px;font-weight:500;">Muhammad ROFFI Huda kusuma</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210219</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">081927651901</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025022</td>
+      <td style="font-size:13px;font-weight:500;">Mukti Hidayatulloh</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210109</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">TnD</span></td>
+      <td style="font-size:12px;color:var(--text2);">081285879617</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025023</td>
+      <td style="font-size:13px;font-weight:500;">Nada Jauza Syaqila</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210113</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">PR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081282830972</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025024</td>
+      <td style="font-size:13px;font-weight:500;">Naila Fauziah</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210187</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">PR</span></td>
+      <td style="font-size:12px;color:var(--text2);">088213170889</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025025</td>
+      <td style="font-size:13px;font-weight:500;">Naila Zulfa Rahma</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210118</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">PR</span></td>
+      <td style="font-size:12px;color:var(--text2);">082136451822</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025026</td>
+      <td style="font-size:13px;font-weight:500;">Nandini Melody Yordan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1225210071</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#c084fc22;color:#c084fc;white-space:nowrap;">Head of HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081211077409</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025027</td>
+      <td style="font-size:13px;font-weight:500;">Nasya Aliyah Inka</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1225130006</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">TnD</span></td>
+      <td style="font-size:12px;color:var(--text2);">0858 8807 2950</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025028</td>
+      <td style="font-size:13px;font-weight:500;">Natasya Nabila</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210062</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">081297977770</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025029</td>
+      <td style="font-size:13px;font-weight:500;">Rashad Ogata Putra Mirza</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210232</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">08386868599</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025030</td>
+      <td style="font-size:13px;font-weight:500;">Rasya Baihaqi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210140</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895328945483</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025031</td>
+      <td style="font-size:13px;font-weight:500;">Reivan chesta adabi</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210072</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#4ade8022;color:#4ade80;white-space:nowrap;">Anggota Aktif</span></td>
+      <td style="font-size:12px;color:var(--text2);">089694394060</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025032</td>
+      <td style="font-size:13px;font-weight:500;">Reno Rafly Anggara</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1225210048</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">EnR</span></td>
+      <td style="font-size:12px;color:var(--text2);">082120764752</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025033</td>
+      <td style="font-size:13px;font-weight:500;">Ririn Dwi Lestari</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210157</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">082315117903</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025034</td>
+      <td style="font-size:13px;font-weight:500;">Salsabila Dinda Ayudia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1324130012</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">PR</span></td>
+      <td style="font-size:12px;color:var(--text2);">085819865866</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025035</td>
+      <td style="font-size:13px;font-weight:500;">Sayyid Dzaky Ismail</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1124210148</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">081381984626</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025036</td>
+      <td style="font-size:13px;font-weight:500;">Selfia Herlanda</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1324130013</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895330130991</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025037</td>
+      <td style="font-size:13px;font-weight:500;">Siti Aprilia Temihila</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210169</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">HR</span></td>
+      <td style="font-size:12px;color:var(--text2);">085813099914</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025038</td>
+      <td style="font-size:13px;font-weight:500;">Syifa Khaulia</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210082</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">TnD</span></td>
+      <td style="font-size:12px;color:var(--text2);">0895-3192-0320</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025039</td>
+      <td style="font-size:13px;font-weight:500;">Syitna Fatimah Alu</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1225210118</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">DC</span></td>
+      <td style="font-size:12px;color:var(--text2);">081248513691</td>
+    </tr><tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3);">092025040</td>
+      <td style="font-size:13px;font-weight:500;">Zuldan Ahmad Fauzan</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text2);">1125210091</td>
+      <td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px;background:#a78bfa22;color:#a78bfa;white-space:nowrap;">EnR</span></td>
+      <td style="font-size:12px;color:var(--text2);">082110975842</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+        </div>
+      </div>
+
       <!-- RANKING TAB -->
       <div id="tab-ranking" class="tab-panel">
         <!-- Filter periode -->
@@ -1929,11 +3862,10 @@ let allAnggota = [...realAnggota];
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <div style="font-weight:600; font-size:14px;">🏆 Papan Peringkat KIPM-UP</div>
             <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
-              <select class="form-input" id="rank-periode" style="width:auto;" onchange="loadAllRankings()">
-                <option value="1">1 Bulan Ini</option>
-                <option value="3">3 Bulan Terakhir</option>
-                <option value="8">8 Bulan Terakhir</option>
-              </select>
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);">Dari</div>
+              <input type="date" class="form-input" id="rank-dari" style="width:auto;" onchange="loadAllRankings()">
+              <div style="font-size:12px;color:var(--text2);">s/d</div>
+              <input type="date" class="form-input" id="rank-sampai" style="width:auto;" onchange="loadAllRankings()">
               <button class="btn-sm primary" onclick="loadAllRankings()">🔄 Refresh</button>
             </div>
           </div>
@@ -2901,7 +4833,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
   document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); 
   
-  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
+  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
   document.getElementById('tab-title').innerText = titles[tab] || ''; 
   
   if(tab==='dashboard') loadDashboard(); 
@@ -2913,6 +4845,7 @@ function switchTab(tab){
   if(tab==='kegiatan'){ renderPesertaSesiPicker(); switchSubKegiatan('buat'); }
   if(tab==='izin'){ switchSubIzin('masuk'); document.getElementById('izin-tanggal').value = getTodayWIB(); }
   if(tab==='ranking'){ initRankingBulan(); loadAllRankings(); }
+  if(tab==='data-kipm'){ filterKipmTable(); }
 }
 
 // ADMIN: JADWAL LOGIC
@@ -4556,47 +6489,45 @@ function formatMenitToStr(total) {
 }
 
 // Hitung range tanggal berdasarkan jumlah bulan ke belakang
-function getRangeFromMonths(bulan) {
+function getRangeFromMonths(_unused) {
+  // Pakai nilai dari input tanggal di UI
+  const fromEl = document.getElementById('rank-dari');
+  const toEl   = document.getElementById('rank-sampai');
+  if(fromEl && fromEl.value && toEl && toEl.value) {
+    return { from: fromEl.value, to: toEl.value };
+  }
+  // Default: awal bulan ini s/d hari ini
   const now = new Date();
   const wib = new Date(now.getTime() + 7*3600*1000);
   const toStr = `${wib.getUTCFullYear()}-${String(wib.getUTCMonth()+1).padStart(2,'0')}-${String(wib.getUTCDate()).padStart(2,'0')}`;
-  const from = new Date(wib);
-  from.setUTCMonth(from.getUTCMonth() - (bulan-1));
-  from.setUTCDate(1);
-  const fromStr = `${from.getUTCFullYear()}-${String(from.getUTCMonth()+1).padStart(2,'0')}-01`;
-  return {from: fromStr, to: toStr};
+  const fromStr = `${wib.getUTCFullYear()}-${String(wib.getUTCMonth()+1).padStart(2,'0')}-01`;
+  return { from: fromStr, to: toStr };
 }
 
-// Isi dropdown bulan historis (8 bulan ke belakang)
+// Inisialisasi filter tanggal ranking (default: awal bulan ini s/d hari ini)
 function initRankingBulan() {
-  const sel = document.getElementById('hist-bulan');
-  if(!sel || sel.options.length > 0) return;
   const now = new Date();
   const wib = new Date(now.getTime() + 7*3600*1000);
+  const today = `${wib.getUTCFullYear()}-${String(wib.getUTCMonth()+1).padStart(2,'0')}-${String(wib.getUTCDate()).padStart(2,'0')}`;
+  const firstDay = `${wib.getUTCFullYear()}-${String(wib.getUTCMonth()+1).padStart(2,'0')}-01`;
+  const fromEl = document.getElementById('rank-dari');
+  const toEl   = document.getElementById('rank-sampai');
+  if(fromEl && !fromEl.value) fromEl.value = firstDay;
+  if(toEl   && !toEl.value)   toEl.value   = today;
+  // Juga init dropdown historis
+  const sel = document.getElementById('hist-bulan');
+  if(!sel || sel.options.length > 0) return;
   const bulanNama = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  // Generate dari 12 bulan ke depan sampai 18 bulan ke belakang
-  // Sehingga mencakup Apr 2027 ke belakang sampai sekitar Sep 2024
-  const totalFuture = 12; // 12 bulan ke depan (Apr 2026 → Apr 2027)
-  const totalPast = 18;   // 18 bulan ke belakang
-  const total = totalFuture + totalPast + 1;
-  let selected = false;
-  for(let i = -totalFuture; i <= totalPast; i++){
+  for(let i = 18; i >= -12; i--){
     const d = new Date(wib);
     d.setUTCMonth(d.getUTCMonth() - i);
     const y = d.getUTCFullYear(), m = d.getUTCMonth();
     const val = `${y}-${String(m+1).padStart(2,'0')}`;
     const opt = document.createElement('option');
-    opt.value = val;
-    opt.textContent = `${bulanNama[m]} ${y}`;
-    // Default selected = bulan ini (i=0)
-    if(i === 0) { opt.selected = true; selected = true; }
+    opt.value = val; opt.textContent = `${bulanNama[m]} ${y}`;
+    if(i === 0) opt.selected = true;
     sel.appendChild(opt);
   }
-  // Urutkan opsi dari terbaru ke terlama (reverse)
-  const opts = Array.from(sel.options);
-  sel.innerHTML = '';
-  opts.reverse().forEach(o => sel.appendChild(o));
-  // Reselect bulan ini
   const nowVal = `${wib.getUTCFullYear()}-${String(wib.getUTCMonth()+1).padStart(2,'0')}`;
   sel.value = nowVal;
 }
@@ -4693,8 +6624,7 @@ async function saveJadwalHari() {
 // Ganti fungsi loadAllRankings() yang ada.
 
 async function loadAllRankings() {
-  const bulan = parseInt(document.getElementById('rank-periode')?.value || '1');
-  const { from, to } = getRangeFromMonths(bulan);
+  const { from, to } = getRangeFromMonths(1);
 
   ['rank-piket', 'rank-nonpiket', 'rank-kegiatan', 'rank-bintang'].forEach(id => {
     const el = document.getElementById(id);
@@ -4749,8 +6679,7 @@ async function processRankingPiket(data) {
   const today = getTodayWIB();
 
   // 1. Ambil periode yang sedang dipilih dari filter ranking
-  const bulan = parseInt(document.getElementById('rank-periode')?.value || '1');
-  const { from, to } = getRangeFromMonths(bulan);
+  const { from, to } = getRangeFromMonths(1);
 
   // 2. Bangun pasangan DATANG/PULANG per NIA+tanggal dari raw data GAS
   const pairs = {};
@@ -5447,6 +7376,27 @@ function exportRiwayatCSV() {
 }
 window.exportRiwayatCSV = exportRiwayatCSV;
 window.loadRiwayatPiket = loadRiwayatPiket;
+
+function filterKipmTable() {
+  const q = (document.getElementById('kipm-cari')?.value || '').toLowerCase();
+  const genFilter = document.getElementById('kipm-filter-gen')?.value || '';
+  // Show/hide sections by gen
+  const sections = document.querySelectorAll('#kipm-table-container > div');
+  sections.forEach((sec, i) => {
+    const genKey = 'gen-' + (i+1);
+    const genMatch = !genFilter || genFilter === genKey;
+    if(!genMatch) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    // Filter rows
+    const rows = sec.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+  });
+}
+window.filterKipmTable = filterKipmTable;
+
 window.initRiwayatPiket = initRiwayatPiket;
 
 async function loadHistorisRank() {
