@@ -2980,7 +2980,7 @@ function switchTab(tab){
   if(tab==='kegiatan'){ renderPesertaSesiPicker(); switchSubKegiatan('buat'); }
   if(tab==='izin'){ switchSubIzin('masuk'); document.getElementById('izin-tanggal').value = getTodayWIB(); }
   if(tab==='ranking'){ initRankingBulan(); loadAllRankings(); }
-  if(tab==='data-kipm'){ kipmInit(); }
+  if(tab==='data-kipm'){ setTimeout(kipmInit, 0); }
 }
 
 // ADMIN: JADWAL LOGIC
@@ -8092,6 +8092,9 @@ function kipmInit() {
   if (selGen) selGen.value = '';
   const selStat = document.getElementById('kipm-filter-status');
   if (selStat) selStat.value = '';
+  // Hapus teks "Memuat data anggota..." segera
+  const c = document.getElementById('kipm-table-container');
+  if (c) c.innerHTML = '<div style="color:var(--text3);text-align:center;padding:40px;">⏳ Menyiapkan data...</div>';
   kipmUpdateGenFilter();
   kipmRender(); // langsung render — tab sudah active saat ini dipanggil
   // Background: ambil data terbaru dari GAS, update jika ada
@@ -8176,6 +8179,9 @@ function kipmRender() {
     console.warn('kipmRender: kipm-table-container tidak ditemukan');
     return;
   }
+
+  // Paksa container visible agar innerHTML ter-render
+  container.style.display = '';
 
   const all = kipmAllMembers();
   const totalAktif = all.filter(m=>m.status==='Aktif').length;
