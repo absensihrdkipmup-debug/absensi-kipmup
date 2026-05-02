@@ -70,16 +70,21 @@ body {
 
 /* LANDING */
 #page-landing {
-  align-items: flex-start;
-  justify-content: flex-end;
+  align-items: flex-end;
+  justify-content: flex-start;
   background: var(--bg);
   position: relative;
   background-image: url('https://raw.githubusercontent.com/kipmup-hrd/absensi-kipmup/main/KIPM%20PRESENZA.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding-right: 8%;
-  padding-top: 60px;
+  padding-left: 0;
+  padding-top: 0;
+}
+#page-landing .landing-card {
+  position: absolute;
+  top: 60px;
+  right: 8%;
 }
 #page-landing::before {
   content: '';
@@ -106,6 +111,11 @@ body {
     padding-right: 0;
     align-items: center;
     padding: 20px;
+  }
+  #page-landing .landing-card {
+    position: static;
+    top: auto;
+    right: auto;
   }
   .landing-card {
     max-width: 100%;
