@@ -1950,6 +1950,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
               <input type="date" class="filter-input" id="izin-filter-from">
               <input type="date" class="filter-input" id="izin-filter-to">
               <button class="btn-sm primary" onclick="loadDaftarIzin()">Filter</button>
+              <button class="btn-sm" onclick="syncIzinDariGAS().then(()=>loadDaftarIzin())" style="background:rgba(34,211,238,0.08);border-color:rgba(34,211,238,0.25);color:var(--accent2);font-size:11px;" title="Tarik data izin terbaru dari Google Sheets">☁️ Sync GAS</button>
             </div>
             <div class="table-scroll">
               <table><thead><tr><th>Tanggal</th><th>NIA</th><th>Nama</th><th>Kegiatan</th><th>Jenis</th><th>Keterangan</th><th>Oleh</th></tr></thead><tbody id="tbl-izin"></tbody></table>
@@ -2958,6 +2959,8 @@ function toggleScan(){
               });
               if(selfieGallery.length > 50) selfieGallery.shift();
               saveSelfieGallery();
+              // Kirim foto ke GAS (background, tidak blokir UI)
+              kirimFotoKeGAS(nia, anggota ? anggota.nama : nia, waktu, selfieDataURL, 'piket-' + scanTipe);
             }
             // ===============================================
 
@@ -3643,6 +3646,26 @@ let activeSesiId = null; // sesi yang sedang dibuka oleh anggota
 // ── Helper ──
 function saveSesi() { sessionStorage.setItem('sesiList', JSON.stringify(sesiList)); }
 function saveIzin() { localStorage.setItem('izinList', JSON.stringify(izinList)); }
+
+// Sync riwayat izin dari GAS — dipanggil saat tab Daftar Izin dibuka
+async function syncIzinDariGAS() {
+  try {
+    const res = await api({ action: 'getIzin' });
+    if(res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
+      // Merge: hindari duplikat berdasarkan kombinasi NIA + tanggal + jenisKegiatan
+      const lokalKeys = new Set(izinList.map(i => (i.NIA||'') + '|' + (i.tanggal||'') + '|' + (i.jenisKegiatan||'') + '|' + (i.jenisIzin||'')));
+      const baru = res.data.filter(i => !lokalKeys.has((i.NIA||'') + '|' + (i.tanggal||'') + '|' + (i.jenisKegiatan||'') + '|' + (i.jenisIzin||'')));
+      if(baru.length > 0) {
+        izinList = [...izinList, ...baru];
+        saveIzin();
+        console.log('✅ ' + baru.length + ' izin baru dipulihkan dari GAS');
+      }
+    }
+  } catch(e) {
+    console.warn('⚠️ syncIzinDariGAS gagal:', e.message);
+  }
+}
+window.syncIzinDariGAS = syncIzinDariGAS;
 function saveSelfieGallery() {
   // Buang entri dari hari WIB yang berbeda (bukan 24 jam rolling)
   selfieGallery = selfieGallery.filter(s => isSameDayWIB(s.savedAt || 0));
@@ -3660,6 +3683,33 @@ function saveSelfieGallery() {
       }
     }
   } catch(e) {}
+}
+
+// ── Kirim Foto Selfie ke GAS (background, silent) ──
+async function kirimFotoKeGAS(NIA, nama, waktu, selfieBase64, tipe) {
+  if (!selfieBase64) return;
+  try {
+    let foto = selfieBase64;
+    // Resize jika terlalu besar (max ~100KB base64 ≈ 130000 karakter)
+    if (foto.length > 130000) {
+      const canvas = document.createElement('canvas');
+      const img = new Image();
+      await new Promise(r => { img.onload = r; img.onerror = r; img.src = foto; });
+      canvas.width = 120; canvas.height = 120;
+      canvas.getContext('2d').drawImage(img, 0, 0, 120, 120);
+      foto = canvas.toDataURL('image/jpeg', 0.35);
+    }
+    const tanggal = new Date().toLocaleDateString('id-ID');
+    await api({
+      action: 'saveSelfie',
+      NIA, nama, waktu, tipe,
+      selfieBase64: foto,
+      tanggal
+    });
+    console.log('✅ Foto selfie NIA ' + NIA + ' dikirim ke GAS');
+  } catch(e) {
+    console.warn('⚠️ Kirim foto ke GAS gagal (offline?):', e.message);
+  }
 }
 
 function generateSesiQRToken(sesiId, secret, endTime, namaSesi, ruangan) {
@@ -4037,7 +4087,10 @@ function switchSubIzin(sub) {
     const btn = document.getElementById('sub-izin-'+s);
     if(btn) btn.classList.toggle('active', s===sub);
   });
-  if(sub==='daftar') loadDaftarIzin();
+  if(sub==='daftar') {
+    // Sync dari GAS dulu, lalu render
+    syncIzinDariGAS().finally(() => loadDaftarIzin());
+  }
 }
 
 // ── Izin Piket Langsung dari Daftar Piket Hari Ini ──
@@ -4624,6 +4677,8 @@ async function prosesAbsenKegiatan(nia, qrText) {
   selfieGallery.push({NIA: nia, nama: anggota.nama, waktu, tanggal: new Date().toLocaleDateString('id-ID'), selfieMini, sesiNama: sesi.nama, savedAt: Date.now()});
   if(selfieGallery.length > 50) selfieGallery.shift(); // limit
   saveSelfieGallery();
+  // Kirim foto ke GAS (background, tidak blokir UI)
+  kirimFotoKeGAS(nia, anggota.nama, waktu, kegiatanSelfieDataURL, 'kegiatan-' + (sesi.jenis || 'umum'));
 
   // === KIRIM LANGSUNG KE GAS agar admin bisa lihat real-time ===
   // Hitung apakah bintang didapat (absen ≤30 menit dari startTime sesi)
