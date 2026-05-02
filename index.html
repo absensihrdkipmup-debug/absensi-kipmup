@@ -2749,7 +2749,7 @@ function goTo(page){
   }
   if(page==='pengaduan'){ setTimeout(() => renderPengaduanRiwayat(), 50); }
   if(page==='kiosk'){ /* initKiosk dipanggil dari kioskLogin */ syncAnggotaDariGAS(); }
-  if(page==='kiosk-login'){ setTimeout(() => { const i = document.getElementById('kiosk-pin'); if(i) i.focus(); }, 200); }
+  if(page==='kiosk-login'){ syncKioskPinDariGAS(); setTimeout(() => { const i = document.getElementById('kiosk-pin'); if(i) i.focus(); }, 200); }
   if(page!=='scan' && page!=='face-enroll') { stopSelfieCam(); anggotaStopScanBursa(); }
   if(page!=='kiosk') stopKioskCam();
   if(page!=='kegiatan-scan') { 
@@ -6665,8 +6665,21 @@ let kioskIsProcessing = false;
 let kioskSessionSelfies = []; // selfie gallery sesi kiosk
 
 // Default PIN kiosk — admin bisa ganti via admin panel
+// PIN disinkron dari GAS agar sama di semua device
 function getKioskPin() {
   return localStorage.getItem(KIOSK_PIN_KEY) || 'kipm2024';
+}
+
+async function syncKioskPinDariGAS() {
+  try {
+    const res = await api({ action: 'getKioskPin' });
+    if(res && res.ok && res.pin) {
+      localStorage.setItem(KIOSK_PIN_KEY, res.pin);
+      console.log('\u2705 PIN kiosk disinkron dari GAS');
+    }
+  } catch(e) {
+    console.warn('\u26a0\ufe0f Sync PIN kiosk dari GAS gagal (offline?):', e.message);
+  }
 }
 
 function kioskLogin() {
@@ -7149,10 +7162,17 @@ function kioskResetState() {
   // Kamera TIDAK otomatis menyala — user harus klik "Buka Kamera" dulu
 }
 
-// Tambahkan PIN kiosk di admin settings (simpan ke localStorage)
+// Tambahkan PIN kiosk di admin settings (simpan ke localStorage + GAS)
 function setKioskPin(pin) {
   if(!pin || pin.length < 4) { showToast('PIN minimal 4 karakter','error'); return; }
   localStorage.setItem(KIOSK_PIN_KEY, pin);
+  // Kirim ke GAS agar sinkron di semua device
+  api({ action: 'saveKioskPin', pin })
+    .then(res => {
+      if(res && res.ok) console.log('✅ PIN kiosk tersimpan ke GAS');
+      else console.warn('⚠️ GAS saveKioskPin:', res?.msg);
+    })
+    .catch(e => console.warn('⚠️ GAS saveKioskPin gagal (offline?):', e.message));
   showToast('✅ PIN kiosk berhasil diperbarui','success');
 }
 
