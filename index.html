@@ -3089,6 +3089,20 @@ async function syncAnggotaDariGAS(onDone) {
     const res = await api({action:'getAnggota'});
     if(res && res.ok && res.data && res.data.length > 0) {
       allAnggota = [...res.data];
+      // Pull face descriptor dari GAS untuk NIA yang belum ada di localStorage (background, silent)
+      setTimeout(async () => {
+        for(const a of allAnggota) {
+          if(!localStorage.getItem('faceDesc_' + a.NIA)) {
+            try {
+              const fr = await api({ action: 'getFaceDescriptor', NIA: a.NIA });
+              if(fr && fr.ok && fr.faceJson) {
+                localStorage.setItem('faceDesc_' + a.NIA, fr.faceJson);
+                console.log('Face ID dipulihkan dari GAS: NIA ' + a.NIA);
+              }
+            } catch(e) { /* silent */ }
+          }
+        }
+      }, 500);
       if(typeof onDone === 'function') onDone(true);
     } else {
       if(typeof onDone === 'function') onDone(false);
@@ -7171,8 +7185,14 @@ async function kioskMulaiFaceID() {
     if(!anggota) { showToast('NIA tidak terdaftar','error'); return; }
   }
   if(!hasFaceID(nia)) {
-    showToast('⚠️ Face ID belum terdaftar untuk NIA ini. Daftar dulu!','error');
-    return;
+    // Coba pull dari GAS dulu sebelum menyerah (mungkin device baru/browser bersih)
+    showToast('⌛ Mengecek Face ID dari server...','info');
+    const pulled = await pullFaceDescriptorDariGAS(nia);
+    if(!pulled) {
+      showToast('⚠️ Face ID belum terdaftar untuk NIA ini. Daftar dulu!','error');
+      return;
+    }
+    showToast('✅ Face ID ditemukan di server, melanjutkan...','success');
   }
 
   const mulaiBtn = document.getElementById('kiosk-face-btn-mulai');
@@ -7484,10 +7504,24 @@ async function loadFaceApiModels() {
 }
 
 // ── STORAGE Face Descriptor ──
-function saveFaceDescriptor(nia, descriptors) {
+async function saveFaceDescriptor(nia, descriptors) {
   // descriptors: array of Float32Array → simpan sebagai array of number[]
   const data = descriptors.map(d => Array.from(d));
-  localStorage.setItem('faceDesc_' + nia, JSON.stringify(data));
+  const jsonStr = JSON.stringify(data);
+  // 1. Simpan lokal dulu (instant)
+  localStorage.setItem('faceDesc_' + nia, jsonStr);
+  // 2. Kirim ke GAS sebagai backup (agar tidak hilang jika ganti device/browser)
+  try {
+    const res = await api({ action: 'saveFaceDescriptor', NIA: nia, faceJson: jsonStr });
+    if(res && res.ok) {
+      console.log('✅ Face ID NIA ' + nia + ' berhasil disimpan ke GAS');
+    } else {
+      console.warn('⚠️ GAS saveFaceDescriptor:', res?.msg);
+    }
+  } catch(e) {
+    console.warn('⚠️ GAS saveFaceDescriptor gagal (offline?):', e.message);
+    // Tidak perlu error ke user — data lokal sudah tersimpan
+  }
 }
 
 function loadFaceDescriptor(nia) {
@@ -7498,6 +7532,32 @@ function loadFaceDescriptor(nia) {
     return data.map(d => new Float32Array(d));
   } catch(e) { return null; }
 }
+
+// Ambil face descriptor dari GAS dan simpan ke localStorage (untuk device baru / browser bersih)
+async function pullFaceDescriptorDariGAS(nia) {
+  try {
+    const res = await api({ action: 'getFaceDescriptor', NIA: nia });
+    if(res && res.ok && res.faceJson) {
+      localStorage.setItem('faceDesc_' + nia, res.faceJson);
+      console.log('✅ Face ID NIA ' + nia + ' berhasil dipulihkan dari GAS');
+      return true;
+    }
+  } catch(e) {
+    console.warn('⚠️ pullFaceDescriptorDariGAS gagal:', e.message);
+  }
+  return false;
+}
+
+// Sync semua face descriptor dari GAS untuk NIA yang belum ada di localStorage
+async function syncSemuaFaceDescriptorDariGAS() {
+  if(!allAnggota || allAnggota.length === 0) return;
+  for(const a of allAnggota) {
+    if(!localStorage.getItem('faceDesc_' + a.NIA)) {
+      await pullFaceDescriptorDariGAS(a.NIA);
+    }
+  }
+}
+window.syncSemuaFaceDescriptorDariGAS = syncSemuaFaceDescriptorDariGAS;
 
 function hasFaceID(nia) {
   return !!localStorage.getItem('faceDesc_' + nia);
@@ -7721,11 +7781,16 @@ async function mulaiScanFaceID() {
   const nia = document.getElementById('input-NIA').value.trim();
   if(!nia) { showToast('Isi NIA dulu','error'); return; }
   
-  // Cek apakah punya Face ID
+  // Cek apakah punya Face ID (dengan fallback ke GAS)
   if(!hasFaceID(nia)) {
-    showToast('⚠️ Kamu belum punya Face ID di perangkat ini. Daftar dulu!','error');
-    setTimeout(() => goToFaceEnroll('scan'), 1500);
-    return;
+    showToast('⌛ Mengecek Face ID dari server...','info');
+    const pulled = await pullFaceDescriptorDariGAS(nia);
+    if(!pulled) {
+      showToast('⚠️ Kamu belum punya Face ID di perangkat ini. Daftar dulu!','error');
+      setTimeout(() => goToFaceEnroll('scan'), 1500);
+      return;
+    }
+    showToast('✅ Face ID ditemukan, melanjutkan...','success');
   }
   
   document.getElementById('face-scan-status-msg').textContent = 'Memuat model AI...';
