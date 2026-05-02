@@ -71,32 +71,44 @@ body {
 /* LANDING */
 #page-landing {
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   background: var(--bg);
   position: relative;
   background-image: url('https://raw.githubusercontent.com/kipmup-hrd/absensi-kipmup/main/KIPM%20PRESENZA.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  padding-right: 8%;
 }
 #page-landing::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(8,10,14,0.72);
+  background: rgba(8,10,14,0.45);
   z-index: 0;
 }
 #page-landing > * { position: relative; z-index: 1; }
 .landing-card {
-  background: rgba(17,19,24,0.82);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(15,18,24,0.78);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: var(--radius-lg);
   padding: 36px 32px 40px;
   width: 100%;
   max-width: 420px;
   text-align: center;
+}
+@media (max-width: 600px) {
+  #page-landing {
+    justify-content: center;
+    padding-right: 0;
+    align-items: center;
+    padding: 20px;
+  }
+  .landing-card {
+    max-width: 100%;
+  }
 }
 /* LOGIN ADMIN - pojok kanan atas */
 .landing-admin-corner {
