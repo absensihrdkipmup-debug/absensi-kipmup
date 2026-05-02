@@ -70,7 +70,7 @@ body {
 
 /* LANDING */
 #page-landing {
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-end;
   background: var(--bg);
   position: relative;
@@ -79,6 +79,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   padding-right: 8%;
+  padding-top: 60px;
 }
 #page-landing::before {
   content: '';
@@ -110,11 +111,11 @@ body {
     max-width: 100%;
   }
 }
-/* LOGIN ADMIN - pojok kanan atas */
+/* LOGIN ADMIN - pojok kiri atas */
 .landing-admin-corner {
   position: fixed;
   top: 16px;
-  right: 16px;
+  left: 16px;
   z-index: 200;
 }
 .landing-admin-corner-btn {
