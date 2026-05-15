@@ -8553,15 +8553,26 @@ function kipmRender() {
         : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(90,100,120,0.2);color:var(--text3);">Pasif</span>';
       const safeGk = gk.replace(/'/g,"\\'");
       const safeId = (m.id||'').replace(/'/g,"\\'");
+      const safeNia = (m.nia||'').replace(/'/g,"\\'");
+      const safeJabatan = (m.jabatan||'').replace(/"/g,'&quot;').replace(/'/g,"\\'");
+      // Cek apakah NIA terdaftar di sistem absensi
+      const bisaAbsenList = (typeof allAnggota !== 'undefined' && allAnggota.length > 0) ? allAnggota : realAnggota;
+      const bisaAbsen = bisaAbsenList.some(a => a.NIA === m.nia);
+      const absenBadge = bisaAbsen
+        ? '<span title="NIA terdaftar di sistem absensi" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(74,222,128,0.15);color:var(--accent);white-space:nowrap;">✅ Bisa</span>'
+        : '<span title="NIA tidak terdaftar di sistem absensi BPH aktif" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,0.1);color:var(--red);white-space:nowrap;">✗ Tidak</span>';
       const editBtns = isFounder
         ? '<span style="font-size:10px;color:var(--text3);padding:2px 8px;">🔒 Founder</span>'
-        : '<button onclick="kipmOpenEdit(\''+safeGk+'\',\''+safeId+'\')" style="font-size:11px;padding:4px 10px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);color:var(--accent);border-radius:6px;cursor:pointer;font-family:var(--font);margin-right:4px;">✏️ Edit</button>'
-          + '<button onclick="kipmDeleteMember(\''+safeGk+'\',\''+safeId+'\')" style="font-size:11px;padding:4px 8px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.22);color:var(--red);border-radius:6px;cursor:pointer;font-family:var(--font);">🗑️</button>';
+        : '<button onclick="kipmOpenEditNIA(\''+safeGk+'\',\''+safeId+'\',\''+safeNia+'\')" title="Edit NIA" style="font-size:11px;padding:4px 8px;background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3);color:var(--accent2);border-radius:6px;cursor:pointer;font-family:var(--font);margin-right:3px;">🔢 NIA</button>'
+          + '<button onclick="kipmOpenEditJabatan(\''+safeGk+'\',\''+safeId+'\',\''+safeJabatan+'\')" title="Edit Jabatan" style="font-size:11px;padding:4px 8px;background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);color:#c084fc;border-radius:6px;cursor:pointer;font-family:var(--font);margin-right:3px;">🏷️ Jabatan</button>'
+          + '<button onclick="kipmOpenEdit(\''+safeGk+'\',\''+safeId+'\')" title="Edit lengkap" style="font-size:11px;padding:4px 8px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);color:var(--accent);border-radius:6px;cursor:pointer;font-family:var(--font);margin-right:3px;">✏️</button>'
+          + '<button onclick="kipmDeleteMember(\''+safeGk+'\',\''+safeId+'\')" title="Hapus" style="font-size:11px;padding:4px 8px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.22);color:var(--red);border-radius:6px;cursor:pointer;font-family:var(--font);">🗑️</button>';
       return '<tr>'
         + '<td style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:9px 12px;">'+(m.nia||'-')+'</td>'
         + '<td style="font-size:13px;font-weight:600;padding:9px 12px;">'+m.nama+'</td>'
         + '<td style="padding:9px 12px;"><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;background:'+jc+'22;color:'+jc+';white-space:nowrap;">'+m.jabatan+'</span></td>'
         + '<td style="padding:9px 12px;">'+statusBadge+'</td>'
+        + '<td style="padding:9px 12px;">'+absenBadge+'</td>'
         + '<td style="padding:9px 8px;white-space:nowrap;">'+editBtns+'</td>'
         + '</tr>';
     }).join('');
@@ -8590,7 +8601,7 @@ function kipmRender() {
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>'
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>'
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Status</th>'
-            + ''
+            + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;" title="Apakah NIA terdaftar di sistem absensi BPH aktif">Absensi</th>'
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Aksi</th>'
           + '</tr></thead>'
           + '<tbody>'+(visMembers.length ? rowsHTML : emptyRow)+'</tbody>'
@@ -8633,6 +8644,36 @@ function kipmOpenEdit(genKey, memberId) {
   document.getElementById('modal-kipm-edit').classList.add('show');
 }
 window.kipmOpenEdit = kipmOpenEdit;
+
+// ── QUICK EDIT NIA ──
+function kipmOpenEditNIA(genKey, memberId, currentNia) {
+  const newNia = prompt('Edit NIA untuk anggota ini:\n(Pastikan NIA sesuai format, misal: 092025001)', currentNia || '');
+  if (newNia === null) return; // cancelled
+  const trimmed = newNia.trim();
+  if (!trimmed) { showToast('NIA tidak boleh kosong','error'); return; }
+  const members = kipmData[genKey]?.members || [];
+  const idx = members.findIndex(x => x.id === memberId);
+  if (idx === -1) { showToast('Anggota tidak ditemukan','error'); return; }
+  members[idx] = { ...members[idx], nia: trimmed };
+  kipmSave(); kipmRender();
+  showToast('✅ NIA diperbarui: ' + trimmed, 'success');
+}
+window.kipmOpenEditNIA = kipmOpenEditNIA;
+
+// ── QUICK EDIT JABATAN ──
+function kipmOpenEditJabatan(genKey, memberId, currentJabatan) {
+  const newJabatan = prompt('Edit Jabatan untuk anggota ini:', currentJabatan || '');
+  if (newJabatan === null) return; // cancelled
+  const trimmed = newJabatan.trim();
+  if (!trimmed) { showToast('Jabatan tidak boleh kosong','error'); return; }
+  const members = kipmData[genKey]?.members || [];
+  const idx = members.findIndex(x => x.id === memberId);
+  if (idx === -1) { showToast('Anggota tidak ditemukan','error'); return; }
+  members[idx] = { ...members[idx], jabatan: trimmed, isFounder: trimmed.toLowerCase().startsWith('founder') };
+  kipmSave(); kipmRender();
+  showToast('✅ Jabatan diperbarui: ' + trimmed, 'success');
+}
+window.kipmOpenEditJabatan = kipmOpenEditJabatan;
 
 function kipmCloseEdit() { document.getElementById('modal-kipm-edit').classList.remove('show'); }
 window.kipmCloseEdit = kipmCloseEdit;
