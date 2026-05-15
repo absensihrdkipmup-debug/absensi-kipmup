@@ -770,7 +770,6 @@ const realAnggota = [
 ];
 
 const jadwalMingguanDefault = {
-  const jadwalMingguanDefault = {
   // SENIN: Mariyah Sujana, Maudyna Tasya A., Melany Septiana Putri, Darwita Sangadji, Afief Baharmus, Ahmad Haidar Pasha, Tofan Habibi, Nasya Aliyah Inka
   1: ['092025012', '092025013', '092025014', '092025007', '092025002', '092025004', '082024029', '092025027'],
   // SELASA: Ririn Dwi Lestari, Reno Rafly Anggara, Milka Nur Azizah, Majda Tsania, Hasya Balqis Khoirunissa, M. Rasya Raafi Ramadhan, Baim Daniel Musyafa, M. Raditia Ramadhan
@@ -8283,7 +8282,15 @@ window.exportRiwayatDPCSV = exportRiwayatDPCSV;
 // =============================================
 // KIPM DATA ANGGOTA SYSTEM
 // =============================================
-const KIPM_STORE_KEY = 'kipmAnggotaData_v3'; // v3 = data fresh dari Excel
+const KIPM_STORE_KEY = 'kipmAnggotaData_v4'; // v4 = fix render, clear old corrupt cache
+// Bersihkan cache versi lama yang mungkin corrupt
+(function() {
+  try {
+    ['kipmAnggotaData_v1','kipmAnggotaData_v2','kipmAnggotaData_v3'].forEach(k => {
+      localStorage.removeItem(k);
+    });
+  } catch(e) {}
+})();
 // Auto-clear versi lama agar data baru langsung muncul
 try {
   ['kipmAnggotaData_v1','kipmAnggotaData_v2'].forEach(k => localStorage.removeItem(k));
@@ -8300,22 +8307,35 @@ function kipmColorFor(hex) {
 
 // ── KIPM: Load data — prioritas KIPM_DEFAULT_DATA (hardcoded Excel), localStorage opsional ──
 function kipmLoad() {
-  // Selalu mulai dari KIPM_DEFAULT_DATA agar data pasti tersedia
-  if (!kipmData) {
+  // Selalu pastikan kipmData valid dari KIPM_DEFAULT_DATA
+  if (!kipmData || Object.keys(kipmData).length === 0) {
     kipmData = JSON.parse(JSON.stringify(KIPM_DEFAULT_DATA));
   }
-  // Coba override dengan localStorage jika ada perubahan manual
+  // Coba override dengan localStorage HANYA jika data valid dan tidak berkurang drastis
   try {
     const saved = localStorage.getItem(KIPM_STORE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      const keys = Object.keys(parsed || {});
-      if (keys.length > 0 && keys.some(k => Array.isArray(parsed[k]?.members) && (parsed[k].members||[]).length > 0)) {
+      const defaultKeys = Object.keys(KIPM_DEFAULT_DATA);
+      const parsedKeys = Object.keys(parsed || {});
+      const defaultTotal = Object.values(KIPM_DEFAULT_DATA).reduce((s,g)=>s+(g.members||[]).length,0);
+      const parsedTotal = Object.values(parsed||{}).reduce((s,g)=>s+(g.members||[]).length,0);
+      // Hanya pakai localStorage jika semua gen ada dan member tidak terlalu sedikit
+      const hasAllGens = defaultKeys.every(k => parsedKeys.includes(k));
+      const notTooFewMembers = parsedTotal >= Math.floor(defaultTotal * 0.5);
+      if (hasAllGens && notTooFewMembers && parsedKeys.length > 0) {
         kipmData = parsed;
+      } else {
+        // Data localStorage tidak valid, hapus dan pakai default
+        try { localStorage.removeItem(KIPM_STORE_KEY); } catch(e2) {}
       }
     }
   } catch(e) {
-    // localStorage tidak tersedia atau corrupt — tidak masalah, pakai default
+    try { localStorage.removeItem(KIPM_STORE_KEY); } catch(e2) {}
+  }
+  // Final safety: pastikan kipmData tidak pernah kosong
+  if (!kipmData || Object.keys(kipmData).length === 0) {
+    kipmData = JSON.parse(JSON.stringify(KIPM_DEFAULT_DATA));
   }
 }
 
@@ -8378,7 +8398,9 @@ function kipmGenKeys() {
 
 // ── Init: selalu dari KIPM_DEFAULT_DATA (hardcoded), GAS sync di background ──
 function kipmInit() {
-  // Paksa isi dari default jika kosong — tidak bergantung localStorage/GAS
+  // Muat data — kipmLoad() akan validasi localStorage vs default
+  kipmLoad();
+  // Pastikan data tidak pernah kosong
   if (!kipmData || Object.keys(kipmData).length === 0) {
     kipmData = JSON.parse(JSON.stringify(KIPM_DEFAULT_DATA));
   }
@@ -8387,9 +8409,19 @@ function kipmInit() {
   if (selGen) selGen.value = '';
   const selStat = document.getElementById('kipm-filter-status');
   if (selStat) selStat.value = '';
-  // Langsung render — data sudah pasti ada
+  // Pastikan container visible sebelum render
+  const container = document.getElementById('kipm-table-container');
+  if (container) container.style.display = '';
+  // Render pertama — langsung
   kipmUpdateGenFilter();
   kipmRender();
+  // Fallback render jika belum muncul (misal: tab baru visible)
+  setTimeout(() => {
+    const c = document.getElementById('kipm-table-container');
+    if (c && (!c.innerHTML || c.innerHTML.trim() === '')) {
+      kipmRender();
+    }
+  }, 150);
   // Background: coba sync GAS, update jika berhasil
   kipmLoadFromGAS().then(updated => {
     const badge = document.getElementById('kipm-sync-badge');
@@ -8407,7 +8439,7 @@ window.kipmInit = kipmInit;
 function kipmResetData() {
   if (!confirm('Reset data KIPM ke data default?\nPerubahan manual AKAN HILANG.\n\nLakukan ini hanya jika data tidak muncul sama sekali.')) return;
   try { localStorage.removeItem(KIPM_STORE_KEY); } catch(e) {}
-  kipmData = null;
+  kipmData = JSON.parse(JSON.stringify(KIPM_DEFAULT_DATA));
   kipmInit();
   showToast('✅ Data KIPM direset ke default','success');
 }
@@ -8460,12 +8492,17 @@ function jabatanColor(j) {
 }
 
 function kipmRender() {
+  // Safety: pastikan kipmData selalu valid
   if (!kipmData || Object.keys(kipmData).length === 0) {
     kipmData = JSON.parse(JSON.stringify(KIPM_DEFAULT_DATA));
   }
+  try {
   const q = (document.getElementById('kipm-cari')?.value||'').toLowerCase();
-  const genFilter = document.getElementById('kipm-filter-gen')?.value||'';
-  const statusFilter = document.getElementById('kipm-filter-status')?.value||'';
+  // Ambil nilai filter dengan safety check
+  const genFilterEl = document.getElementById('kipm-filter-gen');
+  const statusFilterEl = document.getElementById('kipm-filter-status');
+  const genFilter = (genFilterEl ? genFilterEl.value : '') || '';
+  const statusFilter = (statusFilterEl ? statusFilterEl.value : '') || '';
 
   const container = document.getElementById('kipm-table-container');
   if (!container) {
@@ -8474,7 +8511,7 @@ function kipmRender() {
   }
 
   // Paksa container visible agar innerHTML ter-render
-  container.style.display = '';
+  container.style.display = 'block';
 
   const all = kipmAllMembers();
   const totalAktif = all.filter(m=>m.status==='Aktif').length;
@@ -8563,6 +8600,21 @@ function kipmRender() {
   });
 
   container.innerHTML = html || '<div style="color:var(--text3);text-align:center;padding:40px;">Tidak ada data.</div>';
+  } catch(err) {
+    console.error('kipmRender error:', err);
+    // Fallback: render tabel sederhana dari KIPM_DEFAULT_DATA langsung
+    try {
+      const fb = document.getElementById('kipm-table-container');
+      if (fb) {
+        let fbHtml = '';
+        Object.entries(KIPM_DEFAULT_DATA).forEach(([gk, g]) => {
+          const clr = g.color || '#8a96a8';
+          fbHtml += '<div style="background:var(--bg2);border:1px solid '+clr+'44;border-radius:14px;overflow:hidden;margin-bottom:16px;">'            + '<div style="padding:11px 16px;border-bottom:1px solid var(--border);font-weight:700;color:'+clr+';">'+gk+' ('+( g.members||[]).length+' anggota)</div>'            + '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'            + '<thead><tr style="background:var(--bg3);"><th style="padding:8px 12px;font-size:10px;text-align:left;">NIA</th><th style="padding:8px 12px;font-size:10px;text-align:left;">Nama</th><th style="padding:8px 12px;font-size:10px;text-align:left;">Jabatan</th></tr></thead><tbody>'            + (g.members||[]).map(m=>'<tr><td style="padding:8px 12px;font-family:monospace;font-size:11px;">'+(m.nia||'-')+'</td><td style="padding:8px 12px;font-size:13px;">'+m.nama+'</td><td style="padding:8px 12px;font-size:11px;">'+m.jabatan+'</td></tr>').join('')            + '</tbody></table></div></div>';
+        });
+        fb.innerHTML = fbHtml;
+      }
+    } catch(e2) {}
+  }
 }
 window.kipmRender = kipmRender;
 
