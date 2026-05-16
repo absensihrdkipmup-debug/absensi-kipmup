@@ -822,28 +822,21 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
     <div class="btn-choice">
       <button class="btn-main" onclick="goToUjiCoba()" style="background:linear-gradient(135deg,rgba(74,222,128,0.20),rgba(34,197,94,0.12)); color:var(--accent); border-color:rgba(74,222,128,0.55); box-shadow:0 2px 12px rgba(74,222,128,0.15);">
         <span class="btn-icon">🏛️</span>
-        <span class="btn-text"><span class="btn-label">Absen KIPM-UP</span><span class="btn-sublabel">Absen harian dengan foto — sistem utama</span></span>
+        <span class="btn-text"><span class="btn-label">Absen Piket &amp; Anggota KIPM-UP</span><span class="btn-sublabel">Absen harian dengan foto — sistem utama</span></span>
         <span class="btn-arrow">›</span>
       </button>
       <!-- Absen Piket (Lama) disembunyikan — masih bisa diakses via Admin -->
 
       <button class="btn-main btn-kegiatan" onclick="goToKegiatanScan()">
         <span class="btn-icon">🎯</span>
-        <span class="btn-text"><span class="btn-label">Absen Kegiatan</span><span class="btn-sublabel">Rapat / Kelas / Event</span></span>
+        <span class="btn-text"><span class="btn-label">Absen Kegiatan KIPM-UP</span><span class="btn-sublabel">Rapat / Kelas / Event</span></span>
         <span class="btn-arrow">›</span>
       </button>
-      <div style="display:flex; gap:8px;">
-        <button class="btn-main" onclick="goToIzinAnggota()" style="flex:1; background:linear-gradient(135deg,rgba(251,146,60,0.14),rgba(234,88,12,0.07)); color:#fb923c; border-color:rgba(251,146,60,0.33);">
-          <span class="btn-icon">📝</span>
-          <span class="btn-text"><span class="btn-label" style="font-size:13px;">Ajukan Izin</span><span class="btn-sublabel">Tidak bisa hadir</span></span>
-          <span class="btn-arrow">›</span>
-        </button>
-        <button class="btn-main" onclick="goTo('pengaduan')" style="flex:1; background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(6,182,212,0.06)); color:var(--accent2); border-color:rgba(34,211,238,0.32);">
-          <span class="btn-icon">💬</span>
-          <span class="btn-text"><span class="btn-label" style="font-size:13px;">Pengaduan</span><span class="btn-sublabel">Saran &amp; aspirasi</span></span>
-          <span class="btn-arrow">›</span>
-        </button>
-      </div>
+      <button class="btn-main" onclick="goToIzinAnggota()" style="background:linear-gradient(135deg,rgba(251,146,60,0.14),rgba(34,211,238,0.08)); color:#fb923c; border-color:rgba(251,146,60,0.38);">
+        <span class="btn-icon">📝</span>
+        <span class="btn-text"><span class="btn-label">Ajukan Izin &amp; Pengaduan</span><span class="btn-sublabel">Tidak bisa hadir · Saran &amp; aspirasi</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
       <button class="btn-main btn-streamlit" onclick="window.open('https://kipmup-sigma.streamlit.app/','_blank')">
         <span class="btn-icon">📊</span>
         <span class="btn-text"><span class="btn-label">KIPM SIGMA <span style="color:#d4af37;font-weight:700;">Σ</span></span><span class="btn-sublabel">Statistik &amp; Analitik</span></span>
@@ -1759,9 +1752,17 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
 <div id="page-izin-anggota" class="page">
   <div style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px; align-items:center;">
     <div class="back-btn" id="izin-back-btn" onclick="goTo('landing')">←</div>
-    <div><div style="font-weight:600;">Ajukan Izin / Ketidakhadiran</div><div style="font-size:12px; color:var(--text2);">Isi form izin sebelum atau saat kegiatan</div></div>
+    <div><div style="font-weight:600;">📝 Izin &amp; Pengaduan KIPM</div><div style="font-size:12px; color:var(--text2);">Ajukan izin atau sampaikan aspirasi</div></div>
   </div>
-  <div style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
+
+  <!-- Tab switcher -->
+  <div style="background:var(--bg2); border-bottom:1px solid var(--border); padding:0 20px; display:flex; gap:0;">
+    <button id="tab-izin-btn" onclick="switchIzinTab('izin')" style="padding:12px 20px; background:none; border:none; border-bottom:2px solid var(--accent); color:var(--accent); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; transition:all 0.18s;">📝 Ajukan Izin</button>
+    <button id="tab-pengaduan-btn" onclick="switchIzinTab('pengaduan')" style="padding:12px 20px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text3); font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.18s;">💬 Pengaduan</button>
+  </div>
+
+  <!-- TAB IZIN -->
+  <div id="tab-izin-panel" style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
 
     <!-- WARNING komunikasi HR -->
     <div style="background:rgba(248,113,113,0.09); border:1px solid rgba(248,113,113,0.35); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; gap:10px;">
@@ -1811,15 +1812,9 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       </div>
     </div>
   </div>
-</div>
 
-<!-- HALAMAN PENGADUAN / MASUKAN -->
-<div id="page-pengaduan" class="page">
-  <div style="background:var(--bg2); padding:16px 20px; display:flex; gap:12px; align-items:center;">
-    <div class="back-btn" onclick="goTo('landing')">←</div>
-    <div><div style="font-weight:600;">💬 Pengaduan / Masukan / Solusi</div><div style="font-size:12px; color:var(--text2);">Aspirasi &amp; saran untuk KIPM-UP</div></div>
-  </div>
-  <div style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
+  <!-- TAB PENGADUAN -->
+  <div id="tab-pengaduan-panel" style="display:none; padding:20px; max-width:480px; margin:0 auto; width:100%;">
     <div style="background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; gap:10px;">
       <span style="font-size:20px; flex-shrink:0;">💡</span>
       <div style="font-size:12px; color:var(--text2); line-height:1.6;">
@@ -1862,6 +1857,36 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
     </div>
   </div>
 </div>
+
+<script>
+function switchIzinTab(tab) {
+  const izinPanel = document.getElementById('tab-izin-panel');
+  const pengaduanPanel = document.getElementById('tab-pengaduan-panel');
+  const izinBtn = document.getElementById('tab-izin-btn');
+  const pengaduanBtn = document.getElementById('tab-pengaduan-btn');
+  if (tab === 'izin') {
+    izinPanel.style.display = '';
+    pengaduanPanel.style.display = 'none';
+    izinBtn.style.borderBottomColor = 'var(--accent)';
+    izinBtn.style.color = 'var(--accent)';
+    izinBtn.style.fontWeight = '700';
+    pengaduanBtn.style.borderBottomColor = 'transparent';
+    pengaduanBtn.style.color = 'var(--text3)';
+    pengaduanBtn.style.fontWeight = '600';
+  } else {
+    izinPanel.style.display = 'none';
+    pengaduanPanel.style.display = '';
+    pengaduanBtn.style.borderBottomColor = 'var(--accent2)';
+    pengaduanBtn.style.color = 'var(--accent2)';
+    pengaduanBtn.style.fontWeight = '700';
+    izinBtn.style.borderBottomColor = 'transparent';
+    izinBtn.style.color = 'var(--text3)';
+    izinBtn.style.fontWeight = '600';
+  }
+}
+</script>
+
+<!-- HALAMAN PENGADUAN dihapus — sudah digabung ke page-izin-anggota -->
 
 <!-- HALAMAN QR LIVE -->
 <div id="page-qr" class="page">
@@ -10340,20 +10365,47 @@ function ujicobaRenderHistory() {
       container.innerHTML = '<div style="font-size:11px; color:var(--text3); text-align:center; padding:10px;">Belum ada rekap hari ini</div>';
       return;
     }
-    container.innerHTML = todayRecords.map(r => {
+    container.innerHTML = todayRecords.map((r, idx) => {
       const iD = r.tipe === 'DATANG';
-      return '<div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:10px; align-items:center;">' +
-        (r.foto ? '<img src="' + r.foto + '" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid ' + (iD ? 'var(--accent)' : '#c084fc') + '; flex-shrink:0;">' : '<div style="width:40px; height:40px; border-radius:50%; background:var(--bg3); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px;">👤</div>') +
-        '<div style="flex:1; min-width:0;">' +
-        '<div style="font-size:12px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + (r.nama || r.nia) + '</div>' +
-        '<div style="font-size:10px; color:#94a3b8; margin-top:1px;">' + (r.nia ? 'NIA ' + r.nia + ' · ' : '') + r.waktuStr + '</div>' +
-        '</div>' +
-        '<span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; background:' + (iD ? 'rgba(74,222,128,0.15)' : 'rgba(192,132,252,0.15)') + '; color:' + (iD ? 'var(--accent)' : '#c084fc') + '; border:1px solid ' + (iD ? 'rgba(74,222,128,0.3)' : 'rgba(192,132,252,0.3)') + ';">' + (iD ? '🟢 Datang' : '🟣 Pulang') + '</span>' +
-        '</div>';
+      const borderCol = iD ? 'var(--accent)' : '#c084fc';
+      const fotoHTML = r.foto
+        ? `<img src="${r.foto}" onclick="ujicobaPreviewFoto('${idx}')" style="width:72px; height:72px; border-radius:10px; object-fit:cover; border:2px solid ${borderCol}; flex-shrink:0; cursor:pointer; transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk preview">`
+        : `<div style="width:72px; height:72px; border-radius:10px; background:var(--bg3); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:28px; border:2px solid var(--border2);">👤</div>`;
+      return `<div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:10px; align-items:center;">
+        ${fotoHTML}
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.nama && r.nama !== r.nia ? r.nama : (r.nia || '—')}</div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:2px;">${r.nia ? 'NIA ' + r.nia : ''}</div>
+          <div style="font-size:10px; color:var(--text3); margin-top:1px;">${r.waktuStr || ''}</div>
+        </div>
+        <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; background:${iD ? 'rgba(74,222,128,0.15)' : 'rgba(192,132,252,0.15)'}; color:${iD ? 'var(--accent)' : '#c084fc'}; border:1px solid ${iD ? 'rgba(74,222,128,0.3)' : 'rgba(192,132,252,0.3)'};">${iD ? '🟢 Datang' : '🟣 Pulang'}</span>
+      </div>`;
     }).join('');
+    // Store records globally for preview
+    window._ujicobaHistoryRecords = todayRecords;
   } catch(e) {
     container.innerHTML = '<div style="font-size:11px; color:var(--text3);">Gagal memuat rekap</div>';
   }
+}
+
+function ujicobaPreviewFoto(idx) {
+  const records = window._ujicobaHistoryRecords || [];
+  const r = records[parseInt(idx)];
+  if (!r || !r.foto) return;
+  const iD = r.tipe === 'DATANG';
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;';
+  overlay.onclick = () => document.body.removeChild(overlay);
+  overlay.innerHTML = `
+    <img src="${r.foto}" style="max-width:90vw;max-height:72vh;border-radius:16px;border:3px solid ${iD ? 'var(--accent)' : '#c084fc'};object-fit:contain;">
+    <div style="text-align:center;">
+      <div style="font-size:16px;font-weight:700;color:white;">${r.nama || r.nia || '—'}</div>
+      ${r.nia && r.nama !== r.nia ? `<div style="font-size:12px;color:#94a3b8;">NIA ${r.nia}</div>` : ''}
+      <div style="font-size:12px;color:#94a3b8;margin-top:4px;">${iD ? '🟢 Datang' : '🟣 Pulang'} · ${r.waktuStr || ''}</div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.45);">Tap untuk menutup</div>
+  `;
+  document.body.appendChild(overlay);
 }
 // ── Dashboard Widget: Absen KIPM-UP Hari Ini ──
 function refreshDashboardUjicoba() {
