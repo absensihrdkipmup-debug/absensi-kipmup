@@ -820,9 +820,14 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
     <div class="landing-sub-title">Sistem Absensi KIPM-UP</div>
     <div class="landing-sub">Catat kehadiranmu, wujudkan komitmen,<br>dan tumbuh bersama KIPM-UP.</div>
     <div class="btn-choice">
-      <button class="btn-main" onclick="goTo('kiosk-login')" style="background:linear-gradient(135deg,rgba(74,222,128,0.16),rgba(34,197,94,0.08)); color:var(--accent); border-color:rgba(74,222,128,0.38);">
-        <span class="btn-icon">🖥️</span>
-        <span class="btn-text"><span class="btn-label">Absen Piket</span><span class="btn-sublabel">Piket</span></span>
+      <button class="btn-main" onclick="goToUjiCoba()" style="background:linear-gradient(135deg,rgba(74,222,128,0.20),rgba(34,197,94,0.12)); color:var(--accent); border-color:rgba(74,222,128,0.55); box-shadow:0 2px 12px rgba(74,222,128,0.15);">
+        <span class="btn-icon">🏛️</span>
+        <span class="btn-text"><span class="btn-label">Absen KIPM-UP</span><span class="btn-sublabel">Absen harian dengan foto — sistem utama</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
+      <button class="btn-main" onclick="goTo('kiosk-login')" style="background:rgba(255,255,255,0.03); color:var(--text3); border-color:rgba(255,255,255,0.12); font-size:12px;">
+        <span class="btn-icon" style="font-size:16px;">🖥️</span>
+        <span class="btn-text"><span class="btn-label" style="font-size:13px;">Absen Piket (Lama)</span><span class="btn-sublabel">Sistem kiosk — QR Bursa</span></span>
         <span class="btn-arrow">›</span>
       </button>
 
@@ -846,11 +851,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <span class="btn-text"><span class="btn-label">KIPM SIGMA <span style="color:#d4af37;font-weight:700;">Σ</span></span><span class="btn-sublabel">Statistik &amp; Analitik</span></span>
         <span class="btn-arrow">›</span>
       </button>
-      <button class="btn-main" onclick="goToUjiCoba()" style="background:linear-gradient(135deg,rgba(251,191,36,0.14),rgba(245,158,11,0.07)); color:#fbbf24; border-color:rgba(251,191,36,0.35);">
-        <span class="btn-icon">🧪</span>
-        <span class="btn-text"><span class="btn-label">Absen Uji Coba</span><span class="btn-sublabel">Sistem absensi baru — beta</span></span>
-        <span class="btn-arrow">›</span>
-      </button>
+
     </div>
     <div class="landing-tagline">"Investasi terbaik adalah pada dirimu sendiri dan komunitasmu."<br>— KIPM-UP —</div>
   </div>
@@ -864,8 +865,8 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
 <div id="modal-ujicoba-password" class="modal-overlay" style="z-index:500;">
   <div class="modal-box" style="max-width:380px; text-align:center;">
     <div style="font-size:32px; margin-bottom:8px;">🔐</div>
-    <div style="font-size:18px; font-weight:700; margin-bottom:4px; color:var(--text);">Absen Uji Coba</div>
-    <div style="font-size:12px; color:var(--text3); margin-bottom:20px;">Masukkan password untuk mengakses fitur beta ini</div>
+    <div style="font-size:18px; font-weight:700; margin-bottom:4px; color:var(--text);">Absen KIPM-UP</div>
+    <div style="font-size:12px; color:var(--text3); margin-bottom:20px;">Masukkan password untuk mengakses sistem absensi utama</div>
     <input type="password" id="ujicoba-pass-input" class="form-input" placeholder="Password..." style="text-align:center; font-size:16px; letter-spacing:3px; margin-bottom:12px;" onkeydown="if(event.key==='Enter') checkUjiCobaPassword()">
     <div id="ujicoba-pass-error" style="display:none; color:var(--red); font-size:12px; margin-bottom:10px;">❌ Password salah. Coba lagi.</div>
     <div style="display:flex; gap:10px;">
@@ -883,10 +884,10 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
   <div style="background:var(--bg2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; gap:12px; align-items:center; flex-shrink:0;">
     <div class="back-btn" onclick="goTo('landing')">←</div>
     <div style="flex:1;">
-      <div style="font-weight:700; font-size:15px;">🧪 Absen Uji Coba</div>
+      <div style="font-weight:700; font-size:15px;">🏛️ Absen KIPM-UP</div>
       <div id="ujicoba-tanggal" style="font-size:11px; color:var(--text3);"></div>
     </div>
-    <div style="background:rgba(251,191,36,0.15); border:1px solid rgba(251,191,36,0.35); color:#fbbf24; font-size:10px; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:0.5px;">BETA</div>
+    <div style="background:rgba(74,222,128,0.15); border:1px solid rgba(74,222,128,0.35); color:var(--accent); font-size:10px; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:0.5px;">UTAMA</div>
   </div>
 
   <!-- 3-Column Layout -->
@@ -905,7 +906,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
 
       <!-- Rekap Absen Hari Ini -->
       <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:22px; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-        <span>🗂️</span> Rekap Absen Hari Ini
+        <span>🗂️</span> Rekap Absen Hari Ini (Perangkat Ini)
       </div>
       <div id="ujicoba-history-list" style="display:flex; flex-direction:column; gap:8px;">
         <div style="font-size:11px; color:var(--text3); text-align:center; padding:10px;">Belum ada rekap hari ini</div>
@@ -1913,6 +1914,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       <button class="nav-item" onclick="switchTab('izin')" data-tab="izin">📝 Izin & Ketidakhadiran</button>
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota BPH Aktif</button>
       <button class="nav-item" onclick="switchTab('data-kipm')" data-tab="data-kipm">📚 Data Anggota KIPM</button>
+      <button class="nav-item" onclick="switchTab('riwayat-kipmup')" data-tab="riwayat-kipmup">🏛️ Riwayat Absen KIPM-UP</button>
       <button class="nav-item" onclick="switchTab('konten')" data-tab="konten">🖊️ Edit Konten Halaman</button>
       <!-- Papan Peringkat dihapus — sudah terintegrasi di Riwayat DP & Riwayat Piket -->
     </nav>
@@ -2166,9 +2168,9 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       </div>
 
       <!-- REKAP TAB -->
-      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><select class="form-input" id="rekap-filter-status" style="width:auto;"><option value="">Semua</option><option value="piket">Piket</option><option value="nonpiket">Non-Piket</option></select><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button>
+      <div id="tab-rekap" class="tab-panel"><div class="table-card"><div class="table-card-header" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><input type="date" id="rekap-from" class="filter-input"><input type="date" id="rekap-to" class="filter-input"><select class="form-input" id="rekap-filter-status" style="width:auto;"><option value="">Semua</option><option value="piket">Piket</option><option value="nonpiket">Non-Piket</option></select><select class="form-input" id="rekap-filter-source" style="width:auto;"><option value="">Semua Sumber</option><option value="kipmup">🏛️ Absen KIPM-UP</option><option value="kiosk">🖥️ Kiosk/QR Lama</option></select><button class="btn-sm primary" onclick="loadRekap()">Filter</button><button class="btn-sm blue" onclick="exportCSV()">⬇ Export CSV</button>
 <button class="btn-sm danger" onclick="resetFilterRekap()" title="Reset filter tanggal dan kosongkan tampilan rekap" style="margin-left:4px;">🔄 Reset Filter</button>
-<button class="btn-sm" onclick="showHapusRekapModal()" title="⚠️ Hapus data absensi dari Google Sheets" style="margin-left:4px; background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.4); color:var(--red);">🗑️ Hapus Rekap</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Status</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Divisi</th><th>Durasi</th><th>GPS</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
+<button class="btn-sm" onclick="showHapusRekapModal()" title="⚠️ Hapus data absensi dari Google Sheets" style="margin-left:4px; background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.4); color:var(--red);">🗑️ Hapus Rekap</button></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Tipe</th><th>Status</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Divisi</th><th>Sumber</th><th>Durasi</th><th>GPS</th></tr></thead><tbody id="tbl-rekap"></tbody></table></div></div></div>
 
       <!-- RIWAYAT PIKET TAB — rekap per anggota: alpha, hadir, sakit, izin -->
       <div id="tab-riwayat-piket" class="tab-panel">
@@ -2192,7 +2194,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
             <button class="btn-sm primary" onclick="loadRiwayatPiket()">🔍 Tampilkan</button>
             <button class="btn-sm" onclick="exportRiwayatCSV()">⬇ Export CSV</button>
             <button class="btn-sm" onclick="resetTampilanPiket()" title="Kosongkan tampilan riwayat piket. Data di GAS tetap aman." style="background:rgba(248,113,113,0.10);border-color:rgba(248,113,113,0.35);color:var(--red);">🔄 Reset Tampilan</button>
-            <button class="btn-sm" onclick="resetDataLokalUjicoba()" title="Hapus semua data lokal Absen Uji Coba dari perangkat ini." style="background:rgba(248,113,113,0.18);border-color:rgba(248,113,113,0.55);color:var(--red);font-weight:700;">🗑️ Reset Data Lokal (Uji Coba)</button>
+
           </div>
           <!-- View toggle -->
           <div style="display:flex;gap:6px;margin-bottom:8px;">
@@ -2325,6 +2327,54 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
 
 
       <!-- KONTEN TAB -->
+      <!-- RIWAYAT ABSEN KIPM-UP TAB -->
+      <div id="tab-riwayat-kipmup" class="tab-panel">
+        <div class="table-card" style="padding:16px; margin-bottom:16px;">
+          <div style="font-weight:700; font-size:15px; margin-bottom:12px;">🏛️ Riwayat Absensi KIPM-UP</div>
+          <div style="font-size:12px; color:var(--text2); margin-bottom:12px; background:rgba(74,222,128,0.06); border:1px solid rgba(74,222,128,0.2); border-radius:8px; padding:10px;">
+            ℹ️ Data absensi dari sistem Absen KIPM-UP (foto kamera). Data ini juga tersimpan di Google Sheets yang sama dengan absensi piket.
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+            <input type="date" class="form-input filter-input" id="kipmup-from" style="width:auto;">
+            <div style="font-size:12px; color:var(--text2);">s/d</div>
+            <input type="date" class="form-input filter-input" id="kipmup-to" style="width:auto;">
+            <select class="form-input" id="kipmup-filter-tipe" style="width:auto;">
+              <option value="">Semua Tipe</option>
+              <option value="DATANG">🟢 Datang</option>
+              <option value="PULANG">🟣 Pulang</option>
+            </select>
+            <select class="form-input" id="kipmup-filter-piket" style="width:auto;">
+              <option value="">Semua Status</option>
+              <option value="piket">✅ Piket</option>
+              <option value="nonpiket">⚡ Non-Piket</option>
+            </select>
+            <input class="form-input" id="kipmup-cari" placeholder="Cari nama / NIA..." style="width:150px;" oninput="renderRiwayatKipmup()">
+            <button class="btn-sm primary" onclick="loadRiwayatKipmup()">🔍 Tampilkan</button>
+            <button class="btn-sm" onclick="exportRiwayatKipmupCSV()">⬇ Export CSV</button>
+          </div>
+          <div style="font-size:11px; color:var(--text3);" id="kipmup-info"></div>
+        </div>
+        <!-- Stat boxes -->
+        <div id="kipmup-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;"></div>
+        <!-- Table -->
+        <div class="table-card">
+          <div class="table-scroll">
+            <table>
+              <thead><tr>
+                <th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th>
+                <th>Status Piket</th><th>Foto</th>
+              </tr></thead>
+              <tbody id="tbl-riwayat-kipmup"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Reset button -->
+        <div style="margin-top:12px;">
+          <button class="btn-sm" onclick="resetDataLokalUjicoba()" style="background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.35); color:var(--red); font-size:12px;">🗑️ Reset Data Lokal Perangkat Ini</button>
+          <span style="font-size:11px; color:var(--text3); margin-left:8px;">Hanya menghapus data di browser ini. Data di Google Sheets tetap aman.</span>
+        </div>
+      </div>
+
       <div id="tab-konten" class="tab-panel">
         <div class="table-card" style="padding:20px; margin-bottom:16px;">
           <div style="font-weight:600; font-size:15px; margin-bottom:4px;">🖥️ Pengaturan Kiosk Bursa</div>
@@ -3253,7 +3303,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
   document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); 
   
-  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'riwayat-dp':'🛡️ Riwayat Absensi DP', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
+  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'riwayat-dp':'🛡️ Riwayat Absensi DP', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'riwayat-kipmup':'🏛️ Riwayat Absen KIPM-UP', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
   document.getElementById('tab-title').innerText = titles[tab] || ''; 
   
   if(tab==='dashboard') loadDashboard(); 
@@ -3267,6 +3317,14 @@ function switchTab(tab){
   if(tab==='izin'){ switchSubIzin('masuk'); document.getElementById('izin-tanggal').value = getTodayWIB(); }
   if(tab==='ranking'){ initRankingBulan(); loadAllRankings(); }
   if(tab==='data-kipm'){ setTimeout(kipmInit, 0); }
+  if(tab==='riwayat-kipmup'){
+    const today = getTodayWIB();
+    const fromEl = document.getElementById('kipmup-from');
+    const toEl   = document.getElementById('kipmup-to');
+    if(fromEl && !fromEl.value) { fromEl.value = today; }
+    if(toEl   && !toEl.value)   { toEl.value   = today; }
+    loadRiwayatKipmup();
+  }
 }
 
 // ADMIN: JADWAL LOGIC
@@ -3423,6 +3481,9 @@ async function loadDashboard(){
   else tbody.innerHTML='<tr><td colspan="4" class="empty-state">Belum ada absensi hari ini</td></tr>'; 
   renderSelfieGalleryDashboard();
   renderDashboardSesiAktif();
+
+  // Load ujicoba widget
+  refreshDashboardUjicoba();
 
   // Auto-refresh selfie gallery setiap 2 menit selama dashboard terbuka
   if (window._selfieRefreshTimer) clearInterval(window._selfieRefreshTimer);
@@ -3586,6 +3647,9 @@ async function loadRekap(){
         : `<span style="color:var(--text3);font-size:10px;">—</span>`;
       const anggota = allAnggota.find(a=>a.NIA===r.NIA);
       const divisi = anggota ? anggota.divisi : (r.divisi||'-');
+      const sourceBadge = r.source === 'kipmup'
+        ? `<span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:rgba(74,222,128,0.12);color:var(--accent);border:1px solid rgba(74,222,128,0.3);">🏛️ KIPM-UP</span>`
+        : `<span style="font-size:10px;color:var(--text3);padding:2px 6px;">🖥️ Kiosk</span>`;
       return `<tr>
         <td style="font-size:12px;">${r.tanggal}</td>
         <td><span class="badge ${r.tipe==='DATANG'?'badge-hadir':'badge-pulang'}" style="font-size:10px;">${r.tipe}</span></td>
@@ -3594,11 +3658,12 @@ async function loadRekap(){
         <td style="font-family:var(--mono); font-size:12px;">${r.NIA}</td>
         <td>${r.nama}</td>
         <td style="font-size:11px;color:var(--text2);">${divisi}</td>
+        <td>${sourceBadge}</td>
         <td style="font-family:var(--mono); font-size:12px; color:var(--accent2);">${durasi}</td>
         <td>${gpsLink}</td>
       </tr>`;
     }).join('');
-  } else tbody.innerHTML='<tr><td colspan="9" class="empty-state">Tidak ada data di tanggal tersebut</td></tr>'; 
+  } else tbody.innerHTML='<tr><td colspan="10" class="empty-state">Tidak ada data di tanggal tersebut</td></tr>'; 
 }
 
 async function exportCSV(){ 
@@ -5922,6 +5987,119 @@ function filterKipmTable() {
   if(typeof kipmRender === 'function') kipmRender();
 }
 window.filterKipmTable = filterKipmTable;
+
+// ── Riwayat Absensi KIPM-UP Tab ──
+let _kipmupDataCache = [];
+
+async function loadRiwayatKipmup() {
+  const from = document.getElementById('kipmup-from')?.value || '';
+  const to   = document.getElementById('kipmup-to')?.value   || '';
+  const infoEl = document.getElementById('kipmup-info');
+  const statsEl = document.getElementById('kipmup-stats');
+
+  if(!from || !to) { if(infoEl) infoEl.textContent = 'Pilih rentang tanggal terlebih dahulu.'; return; }
+  if(infoEl) infoEl.textContent = '⏳ Mengambil data dari server...';
+
+  let allData = [];
+  try {
+    const res = await api({ action: 'getRekapAbsensi', from, to });
+    if(res && res.ok && Array.isArray(res.data)) allData = res.data;
+  } catch(e) { console.warn('Gagal ambil data KIPM-UP:', e); }
+
+  // Filter hanya yang ber-source 'kipmup'
+  _kipmupDataCache = allData.filter(r => r.source === 'kipmup');
+
+  if(infoEl) infoEl.textContent = `Ditemukan ${_kipmupDataCache.length} record Absen KIPM-UP (dari ${from} s/d ${to})`;
+  renderRiwayatKipmup();
+}
+
+function renderRiwayatKipmup() {
+  const tbody = document.getElementById('tbl-riwayat-kipmup');
+  const statsEl = document.getElementById('kipmup-stats');
+  if (!tbody) return;
+
+  const filterTipe  = document.getElementById('kipmup-filter-tipe')?.value  || '';
+  const filterPiket = document.getElementById('kipmup-filter-piket')?.value || '';
+  const cari = (document.getElementById('kipmup-cari')?.value || '').toLowerCase();
+
+  let rows = [..._kipmupDataCache];
+  if(filterTipe) rows = rows.filter(r => r.tipe === filterTipe);
+  if(filterPiket === 'piket') rows = rows.filter(r => r.isJadwal === 'true' || r.isJadwal === true);
+  if(filterPiket === 'nonpiket') rows = rows.filter(r => !r.isJadwal || r.isJadwal === 'false');
+  if(cari) rows = rows.filter(r => (r.nama||'').toLowerCase().includes(cari) || (r.NIA||'').toLowerCase().includes(cari));
+
+  // Stats
+  if(statsEl) {
+    const datang  = _kipmupDataCache.filter(r=>r.tipe==='DATANG').length;
+    const pulang  = _kipmupDataCache.filter(r=>r.tipe==='PULANG').length;
+    const piket   = _kipmupDataCache.filter(r=>r.tipe==='DATANG' && (r.isJadwal==='true'||r.isJadwal===true)).length;
+    const unik    = new Set(_kipmupDataCache.filter(r=>r.tipe==='DATANG').map(r=>r.NIA)).size;
+    statsEl.innerHTML = `
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent);">${datang}</div>
+        <div style="font-size:11px;color:var(--text3);">Total Datang</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:#c084fc;">${pulang}</div>
+        <div style="font-size:11px;color:var(--text3);">Total Pulang</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent3);">${piket}</div>
+        <div style="font-size:11px;color:var(--text3);">Datang (Piket)</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent2);">${unik}</div>
+        <div style="font-size:11px;color:var(--text3);">Anggota Unik</div>
+      </div>`;
+  }
+
+  if(!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada data Absen KIPM-UP untuk filter ini</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const iD = r.tipe === 'DATANG';
+    const isPiket = r.isJadwal === 'true' || r.isJadwal === true;
+    const piketBadge = isPiket
+      ? '<span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:rgba(74,222,128,0.15);color:var(--accent);">✅ Piket</span>'
+      : '<span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:rgba(245,158,11,0.15);color:#f59e0b;">⚡ Non-Piket</span>';
+    const waktuFmt = r.waktu ? new Date(r.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : (r.waktuStr || '-');
+    const fotoHTML = r.foto
+      ? `<img src="${r.foto}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid ${iD?'var(--accent)':'#c084fc'};">`
+      : '<span style="color:var(--text3);font-size:11px;">—</span>';
+    return `<tr>
+      <td style="font-size:12px;">${r.tanggal||''}</td>
+      <td><span class="badge ${iD?'badge-hadir':'badge-pulang'}" style="font-size:10px;">${r.tipe}</span></td>
+      <td style="font-family:var(--mono);font-size:12px;">${waktuFmt}</td>
+      <td style="font-family:var(--mono);font-size:12px;">${r.NIA||''}</td>
+      <td>${r.nama||''}</td>
+      <td>${piketBadge}</td>
+      <td>${fotoHTML}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportRiwayatKipmupCSV() {
+  if(!_kipmupDataCache.length) { showToast('Tidak ada data untuk di-export', 'error'); return; }
+  const header = 'Tanggal,Tipe,Waktu,NIA,Nama,Status Piket,Source';
+  const rows = _kipmupDataCache.map(r => {
+    const isPiket = (r.isJadwal==='true'||r.isJadwal===true) ? 'Piket' : 'Non-Piket';
+    const waktu = r.waktu ? new Date(r.waktu).toLocaleTimeString('id-ID') : (r.waktuStr||'');
+    return [r.tanggal||'', r.tipe||'', waktu, r.NIA||'', (r.nama||'').replace(/,/g,' '), isPiket, r.source||'kipmup'].join(',');
+  });
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'riwayat_kipmup_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('CSV berhasil diunduh', 'success');
+}
+
+window.loadRiwayatKipmup = loadRiwayatKipmup;
+window.renderRiwayatKipmup = renderRiwayatKipmup;
+window.exportRiwayatKipmupCSV = exportRiwayatKipmupCSV;
 
 window.initRiwayatPiket = initRiwayatPiket;
 
@@ -9543,7 +9721,8 @@ function ujicobaSubmit() {
         NIA: nia,
         tipe: ujicobaCurrentTipe,
         lat: '', lng: '', acc: '',
-        isJadwal: isPiket ? 'true' : 'false'
+        isJadwal: isPiket ? 'true' : 'false',
+        source: 'kipmup'
       });
       if (gasRes && gasRes.ok) {
         console.log('✅ [Uji Coba] Absen ' + ujicobaCurrentTipe + ' berhasil masuk GAS — NIA ' + nia);
@@ -9595,6 +9774,15 @@ function ujicobaReset() {
 
 // ── Load Piket Hari Ini — TERHUBUNG ke jadwalMingguan (sama dengan Kiosk & Absen Piket) ──
 function ujicobaLoadPiket() {
+  // Sync jadwal from GAS into localStorage so isPiket detection is accurate
+  (async () => {
+    try {
+      const jadwalRes = await api({ action: 'getJadwalPiket' });
+      if (jadwalRes && jadwalRes.ok && jadwalRes.data) {
+        localStorage.setItem('jadwal_piket', JSON.stringify(jadwalRes.data));
+      }
+    } catch(e) { console.warn('[Ujicoba] Gagal sync jadwal piket:', e.message); }
+  })();
   const container = document.getElementById('ujicoba-piket-list');
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
@@ -9856,6 +10044,64 @@ function ujicobaRenderHistory() {
     container.innerHTML = '<div style="font-size:11px; color:var(--text3);">Gagal memuat rekap</div>';
   }
 }
+// ── Dashboard Widget: Absen KIPM-UP Hari Ini ──
+function refreshDashboardUjicoba() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('ujicoba_absen') || '[]'); } catch(e) {}
+  const todayRecs = records.filter(r => r.tanggal === todayStr || (r.waktu && r.waktu.startsWith(todayStr)));
+
+  // Stats
+  const statsEl = document.getElementById('dashboard-ujicoba-stats');
+  if (statsEl) {
+    const datang = todayRecs.filter(r => r.tipe === 'DATANG').length;
+    const pulang = todayRecs.filter(r => r.tipe === 'PULANG').length;
+    const piket  = todayRecs.filter(r => r.isPiket && r.tipe === 'DATANG').length;
+    statsEl.innerHTML = `
+      <div style="background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:22px; font-weight:700; color:var(--accent);">${datang}</div>
+        <div style="font-size:11px; color:var(--text3);">Datang</div>
+      </div>
+      <div style="background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.25); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:22px; font-weight:700; color:#c084fc;">${pulang}</div>
+        <div style="font-size:11px; color:var(--text3);">Pulang</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:22px; font-weight:700; color:var(--accent3);">${piket}</div>
+        <div style="font-size:11px; color:var(--text3);">Piket Hadir</div>
+      </div>`;
+  }
+
+  // Table
+  const tbody = document.getElementById('tbl-dashboard-ujicoba');
+  if (!tbody) return;
+  if (!todayRecs.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada absensi KIPM-UP hari ini di perangkat ini</td></tr>';
+    return;
+  }
+  tbody.innerHTML = todayRecs.map(r => {
+    const iD = r.tipe === 'DATANG';
+    const badgeColor = iD ? 'rgba(74,222,128,0.15)' : 'rgba(192,132,252,0.15)';
+    const textColor  = iD ? 'var(--accent)' : '#c084fc';
+    const borderColor = iD ? 'rgba(74,222,128,0.35)' : 'rgba(192,132,252,0.35)';
+    const piketBadge = r.isPiket
+      ? '<span style="font-size:10px; background:rgba(74,222,128,0.12); color:var(--accent); border-radius:6px; padding:2px 6px; border:1px solid rgba(74,222,128,0.3);">✅ Piket</span>'
+      : '<span style="font-size:10px; background:rgba(245,158,11,0.12); color:var(--accent3); border-radius:6px; padding:2px 6px; border:1px solid rgba(245,158,11,0.25);">⚡ Non-Piket</span>';
+    const fotoHTML = r.foto
+      ? `<img src="${r.foto}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid ${textColor};">`
+      : '<span style="color:var(--text3); font-size:11px;">—</span>';
+    return `<tr>
+      <td><span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; background:${badgeColor}; color:${textColor}; border:1px solid ${borderColor};">${iD ? '🟢 DATANG' : '🟣 PULANG'}</span></td>
+      <td style="font-family:var(--mono); font-size:12px;">${r.waktuStr || ''}</td>
+      <td style="font-family:var(--mono); font-size:12px;">${r.nia || ''}</td>
+      <td>${r.nama || r.nia || ''}</td>
+      <td>${piketBadge}</td>
+      <td>${fotoHTML}</td>
+    </tr>`;
+  }).join('');
+}
+window.refreshDashboardUjicoba = refreshDashboardUjicoba;
+
 // ── End Absen Uji Coba ──
 </script>
 
