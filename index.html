@@ -832,16 +832,6 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <span class="btn-text"><span class="btn-label">Absen Kegiatan KIPM-UP</span><span class="btn-sublabel">Rapat / Kelas / Event</span></span>
         <span class="btn-arrow">›</span>
       </button>
-      <button class="btn-main" onclick="showModalTampilQRKegiatan()" style="background:linear-gradient(135deg,rgba(167,139,250,0.22),rgba(139,92,246,0.12)); color:#c084fc; border-color:rgba(167,139,250,0.6);">
-        <span class="btn-icon">📲</span>
-        <span class="btn-text"><span class="btn-label">Tampilkan QR Kegiatan</span><span class="btn-sublabel">Admin · Tampilkan QR untuk peserta scan</span></span>
-        <span class="btn-arrow">›</span>
-      </button>
-      <button class="btn-main" onclick="goToRiwayatKegiatan()" style="background:linear-gradient(135deg,rgba(34,211,238,0.14),rgba(6,182,212,0.07)); color:var(--accent2); border-color:rgba(34,211,238,0.35);">
-        <span class="btn-icon">📋</span>
-        <span class="btn-text"><span class="btn-label">Riwayat Absensi Kegiatan</span><span class="btn-sublabel">Lihat kehadiran event / rapat</span></span>
-        <span class="btn-arrow">›</span>
-      </button>
       <button class="btn-main" onclick="goToIzinAnggota()" style="background:linear-gradient(135deg,rgba(251,146,60,0.14),rgba(34,211,238,0.08)); color:#fb923c; border-color:rgba(251,146,60,0.38);">
         <span class="btn-icon">📝</span>
         <span class="btn-text"><span class="btn-label">Ajukan Izin &amp; Pengaduan</span><span class="btn-sublabel">Tidak bisa hadir · Saran &amp; aspirasi</span></span>
@@ -1655,7 +1645,15 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       <div style="font-size:11px; color:var(--text3); margin-top:4px;" id="kegiatan-countdown-text">Menghitung...</div>
     </div>
 
-    <!-- Sistem Poin Kegiatan -->
+    <!-- Bahan Presentasi Download -->
+    <div id="kegiatan-bahan-download" style="display:none; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+      <div style="font-size:11px; font-weight:700; color:var(--accent2); margin-bottom:6px;">📎 BAHAN PRESENTASI</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="font-size:22px;">📄</div>
+        <div style="flex:1; font-size:12px; color:var(--text2);" id="kegiatan-bahan-nama">-</div>
+        <button onclick="downloadKegiatanBahan()" style="background:var(--accent2); color:#0a1a2e; border:none; font-family:var(--font); font-size:12px; font-weight:600; padding:7px 14px; border-radius:20px; cursor:pointer; white-space:nowrap;">⬇️ Download</button>
+      </div>
+    </div>
     <div style="background:rgba(251,191,36,0.07); border:1px solid rgba(251,191,36,0.25); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
       <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:6px;">🏆 Sistem Poin Kehadiran</div>
       <div style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text2);">
@@ -1802,6 +1800,13 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
           <select class="form-input" id="izin-anggota-kegiatan">
             <option value="piket">Piket Harian</option>
             <option value="rapat">Rapat</option>
+            <option value="ruak">Rapat Umum Anggota KIPM (RUAK)</option>
+            <option value="tot">Rapat Train of Trainers (TOT)</option>
+            <option value="kindvestor">Rapat KINDVESTOR</option>
+            <option value="bph">Rapat Badan Pengurus Harian</option>
+            <option value="evaluasi">Rapat Evaluasi Kegiatan</option>
+            <option value="seminar-1">Seminar Pasar Modal 1</option>
+            <option value="seminar-2">Seminar Pasar Modal 2</option>
             <option value="kelas-enr">Kelas EnR</option>
             <option value="kelas-tnd">Kelas TnD</option>
             <option value="semua">Semua Kegiatan Hari Ini</option>
@@ -2004,6 +2009,13 @@ function switchIzinTab(tab) {
                 <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px;">Jenis Kegiatan</label>
                 <select class="form-input" id="sesi-jenis">
                   <option value="rapat">🏛️ Rapat</option>
+                  <option value="ruak">🗳️ Rapat Umum Anggota KIPM (RUAK)</option>
+                  <option value="tot">🔄 Rapat Train of Trainers (TOT)</option>
+                  <option value="kindvestor">💼 Rapat KINDVESTOR</option>
+                  <option value="bph">📋 Rapat Badan Pengurus Harian</option>
+                  <option value="evaluasi">📊 Rapat Evaluasi Kegiatan</option>
+                  <option value="seminar-1">📉 Seminar Pasar Modal 1</option>
+                  <option value="seminar-2">📈 Seminar Pasar Modal 2</option>
                   <option value="kelas-enr">📈 Kelas EnR (Pasar Modal)</option>
                   <option value="kelas-tnd">🎓 Kelas TnD</option>
                   <option value="lainnya">📌 Lainnya</option>
@@ -2128,6 +2140,13 @@ function switchIzinTab(tab) {
                 <select class="form-input" id="izin-jenis-kegiatan">
                   <option value="piket">Piket Harian</option>
                   <option value="rapat">Rapat</option>
+                  <option value="ruak">Rapat Umum Anggota KIPM (RUAK)</option>
+                  <option value="tot">Rapat Train of Trainers (TOT)</option>
+                  <option value="kindvestor">Rapat KINDVESTOR</option>
+                  <option value="bph">Rapat Badan Pengurus Harian</option>
+                  <option value="evaluasi">Rapat Evaluasi Kegiatan</option>
+                  <option value="seminar-1">Seminar Pasar Modal 1</option>
+                  <option value="seminar-2">Seminar Pasar Modal 2</option>
                   <option value="kelas-enr">Kelas EnR</option>
                   <option value="kelas-tnd">Kelas TnD</option>
                   <option value="semua">Semua Kegiatan Hari Ini</option>
@@ -4357,7 +4376,10 @@ function isSesiAktif(sesi) {
 function jenisBadge(jenis) {
   const map = {
     'rapat':'🏛️ Rapat','kelas-enr':'📈 Kelas EnR','kelas-tnd':'🎓 Kelas TnD','lainnya':'📌 Lainnya',
-    'piket':'📋 Piket'
+    'piket':'📋 Piket',
+    'ruak':'🗳️ RUAK','tot':'🔄 TOT','kindvestor':'💼 KINDVESTOR',
+    'bph':'📋 Rapat BPH','evaluasi':'📊 Rapat Evaluasi',
+    'seminar-1':'📉 Seminar Pasar Modal 1','seminar-2':'📈 Seminar Pasar Modal 2'
   };
   return map[jenis] || jenis;
 }
@@ -5041,6 +5063,18 @@ function goToKegiatanScan() {
       else { ruanganEl.style.display = 'none'; }
     }
     startKegiatanCountdown(sesi);
+    // Tampilkan bahan presentasi jika ada
+    const bahanDiv = document.getElementById('kegiatan-bahan-download');
+    const bahanNama = document.getElementById('kegiatan-bahan-nama');
+    if (sesi.bahanFile && bahanDiv && bahanNama) {
+      bahanNama.textContent = sesi.bahanFile.name + ' (' + (sesi.bahanFile.size/1024).toFixed(1) + ' KB)';
+      bahanDiv.style.display = 'block';
+      window._kegiatanBahanURL = sesi.bahanFile.dataURL;
+      window._kegiatanBahanNama = sesi.bahanFile.name;
+    } else if (bahanDiv) {
+      bahanDiv.style.display = 'none';
+      window._kegiatanBahanURL = null;
+    }
   } else {
     // Device anggota — tidak ada sesiList (sessionStorage beda device)
     // Set mode "scan langsung" — info sesi akan dibaca dari QR
@@ -5050,6 +5084,9 @@ function goToKegiatanScan() {
     document.getElementById('kegiatan-sesi-detail').textContent = 'Info sesi akan terdeteksi otomatis dari QR Code';
     document.getElementById('kegiatan-countdown-text').textContent = 'Siap scan QR kegiatan...';
     document.getElementById('kegiatan-countdown-bar').style.width = '100%';
+    const bahanDiv = document.getElementById('kegiatan-bahan-download');
+    if (bahanDiv) bahanDiv.style.display = 'none';
+    window._kegiatanBahanURL = null;
   }
   document.getElementById('izin-anggota-tanggal').value = getTodayWIB();
   resetKegiatanSelfie();
@@ -5385,6 +5422,16 @@ function downloadKsBahan() {
   a.click();
   showToast('⬇️ Mengunduh bahan presentasi...', 'success');
 }
+
+function downloadKegiatanBahan() {
+  if (!window._kegiatanBahanURL) return;
+  const a = document.createElement('a');
+  a.href = window._kegiatanBahanURL;
+  a.download = window._kegiatanBahanNama || 'bahan-presentasi';
+  a.click();
+  showToast('⬇️ Mengunduh bahan presentasi...', 'success');
+}
+window.downloadKegiatanBahan = downloadKegiatanBahan;
 
 function previewSelfieKegiatan(nia, src) {
   document.getElementById('modal-selfie-preview').classList.add('show');
@@ -7386,7 +7433,7 @@ window.loadAnggotaForPickerSilent=loadAnggotaForPickerSilent;
 window.goToKegiatanScan=goToKegiatanScan;
 
 // ── TAMPIL QR KEGIATAN dari Landing (dengan password) ──
-const TAMPIL_QR_PASS = 'kipmup2025'; // password bisa diubah admin
+const TAMPIL_QR_PASS = 'Stocklab2017'; // password bisa diubah admin
 let qrPublikInterval = null;
 
 function showModalTampilQRKegiatan() {
@@ -7409,7 +7456,7 @@ window.closeTampilQRModal = closeTampilQRModal;
 function checkTampilQRPassword() {
   const pass = document.getElementById('tampil-qr-pass').value.trim();
   // Accept admin password OR ujicoba password
-  const adminPass = localStorage.getItem('adminPass') || 'kipmup2025';
+  const adminPass = localStorage.getItem('adminPass') || 'Stocklab2017';
   if (pass === adminPass || pass === TAMPIL_QR_PASS) {
     closeTampilQRModal();
     tampilQRKegiatanPublik();
