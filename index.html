@@ -886,8 +886,13 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
 
     <!-- ══ KOLOM KIRI: Daftar Piket Hari Ini ══ -->
     <div style="border-right:1px solid var(--border); padding:16px; overflow-y:auto; background:var(--bg);">
-      <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; display:flex; align-items:center; gap:6px;">
-        <span>📋</span> Piket Hari Ini
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:6px; flex-wrap:wrap;">
+        <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+          <span>📋</span> Piket Hari Ini
+        </div>
+        <button onclick="showRekapLupaPulang()" title="Lihat siapa yang lupa absen pulang" style="display:flex; align-items:center; gap:4px; padding:4px 10px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); color:var(--accent3); font-family:var(--font); font-size:10px; font-weight:700; border-radius:8px; cursor:pointer; white-space:nowrap; transition:all 0.2s;" onmouseover="this.style.background='rgba(245,158,11,0.25)'" onmouseout="this.style.background='rgba(245,158,11,0.15)'">
+          ⏰ Lupa Pulang
+        </button>
       </div>
       <div id="ujicoba-piket-list" style="display:flex; flex-direction:column; gap:8px;">
         <div style="color:var(--text3); font-size:12px; display:flex; align-items:center; gap:6px; padding:10px; background:var(--bg2); border-radius:10px; border:1px solid var(--border);">
@@ -2265,7 +2270,7 @@ function switchIzinTab(tab) {
       </div>
       
       <!-- ANGGOTA TAB -->
-      <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Face ID</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
+      <div id="tab-anggota" class="tab-panel"><div class="table-card"><div class="table-card-header"><button class="btn-sm primary" onclick="showAddAnggota()">+ Tambah Anggota</button></div><div class="table-scroll"><table><thead><tr><th>NIA</th><th>Nama</th><th>Divisi</th><th>Aksi</th></tr></thead><tbody id="tbl-anggota"></tbody></table></div></div></div>
 
       <!-- DATA ANGGOTA KIPM TAB -->
       <div id="tab-data-kipm" class="tab-panel">
@@ -2724,10 +2729,12 @@ let jadwalPollInterval = null; // Auto-refresh status piket realtime (15 detik)
 function startGPSWatch() {
   const gpsEl = document.getElementById('gps-status');
   const gpsAnggotaEl = document.getElementById('gps-status-anggota');
+  const gpsBadgeEl = document.getElementById('ujicoba-gps-badge'); // badge di halaman ujicoba
 
   function setGPSStatus(msg, color) {
     if(gpsEl) { gpsEl.innerHTML = msg; gpsEl.style.color = color || ''; }
     if(gpsAnggotaEl) { gpsAnggotaEl.innerHTML = msg; gpsAnggotaEl.style.color = color || ''; }
+    if(gpsBadgeEl) { gpsBadgeEl.innerHTML = msg; gpsBadgeEl.style.color = color || ''; }
   }
 
   if (!navigator.geolocation) {
@@ -3756,28 +3763,17 @@ async function exportCSV(){
 // ADMIN: DATA ANGGOTA
 function renderAnggotaRows(tbody, data) {
   if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada data anggota</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data anggota</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(a => {
-    let hasFaceID = false;
-    try { hasFaceID = !!localStorage.getItem('faceDesc_' + a.NIA); } catch(e) {}
-    const faceStatus = hasFaceID 
-      ? `<span style="font-size:11px; background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.35); padding:2px 8px; border-radius:20px; white-space:nowrap;">🤖 Terdaftar</span>`
-      : `<span style="font-size:11px; color:var(--text3);">—</span>`;
-    const resetFaceBtn = hasFaceID
-      ? `<button class="btn-sm danger" onclick="adminResetFaceID('${a.NIA}','${(a.nama||'').replace(/'/g,"\'")}')">🗑️ Reset Face ID</button>`
-      : '';
     return `<tr>
       <td style="font-family:var(--mono); font-size:12px;">${a.NIA}</td>
       <td>${a.nama}</td>
       <td><span style="font-size:12px; color:var(--text2);">${a.divisi||'-'}</span></td>
-      
-      <td style="text-align:center;">${faceStatus}</td>
       <td style="display:flex; gap:6px; flex-wrap:wrap;">
         <button class="btn-sm primary" onclick="showEditAnggota('${a.NIA}')">✏️ Edit</button>
         <button class="btn-sm danger" onclick="deleteAnggota('${a.NIA}')">🗑️ Hapus</button>
-        ${resetFaceBtn}
       </td>
     </tr>`;
   }).join('');
@@ -9751,7 +9747,7 @@ document.body.classList.add('on-landing');
         document.body.classList.remove('on-landing');
         const tgl = document.getElementById('ujicoba-tanggal');
         if (tgl) tgl.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        setTimeout(() => { ujicobaLoadPiket(); ujicobaLoadEvents(); ujicobaReset(); ujicobaRenderHistory(); }, 100);
+        setTimeout(() => { ujicobaLoadPiket(); ujicobaLoadEvents(); ujicobaReset(); ujicobaRenderHistory(); if(typeof startGPSWatch==='function') startGPSWatch(); }, 100);
       }
     }
   }
@@ -9806,6 +9802,8 @@ function checkUjiCobaPassword() {
     ujicobaLoadEvents();
     ujicobaReset();
     ujicobaRenderHistory();
+    // Mulai GPS watch saat halaman ujicoba dibuka
+    if (typeof startGPSWatch === 'function') startGPSWatch();
   } else {
     document.getElementById('ujicoba-pass-error').style.display = 'block';
     document.getElementById('ujicoba-pass-input').value = '';
@@ -9936,6 +9934,34 @@ function ujicobaSubmit() {
   if (!nia) { showToast('Masukkan NIA terlebih dahulu', 'error'); return; }
   if (!ujicobaFotoData) { showToast('Ambil foto selfie terlebih dahulu', 'error'); return; }
 
+  // ── CEK DUPLIKASI ABSEN ──
+  const _todayCheck = new Date().toISOString().split('T')[0];
+  let _sudahDatang = false, _sudahPulang = false;
+  try {
+    const _recs = JSON.parse(localStorage.getItem('ujicoba_absen') || '[]');
+    _recs.forEach(r => {
+      if ((r.nia === nia) && (r.tanggal === _todayCheck || (r.waktu && r.waktu.startsWith(_todayCheck)))) {
+        if (r.tipe === 'DATANG') _sudahDatang = true;
+        if (r.tipe === 'PULANG') _sudahPulang = true;
+      }
+    });
+  } catch(e2) {}
+
+  if (ujicobaCurrentTipe === 'DATANG' && _sudahDatang) {
+    // Sudah absen datang — tampilkan notif khusus (bukan error biasa)
+    showUjicobaNotifDuplikat(nia);
+    return;
+  }
+  if (ujicobaCurrentTipe === 'PULANG' && !_sudahDatang) {
+    showToast('⚠️ Kamu belum absen DATANG hari ini. Absen datang dulu!', 'error');
+    ujicobaSetTipe('DATANG');
+    return;
+  }
+  if (ujicobaCurrentTipe === 'PULANG' && _sudahPulang) {
+    showToast('✅ Kamu sudah absen PULANG hari ini. Sampai jumpa besok!', 'info');
+    return;
+  }
+
   // Resolve name + jabatan + generasi from anggota data
   let namaAnggota = nia;
   let jabatan = '';
@@ -10018,7 +10044,9 @@ function ujicobaSubmit() {
             token: token,
             NIA: nia,
             tipe: ujicobaCurrentTipe,
-            lat: '', lng: '', acc: '',
+            lat: (typeof currentGPS !== 'undefined' && currentGPS.lat) ? String(currentGPS.lat) : '',
+            lng: (typeof currentGPS !== 'undefined' && currentGPS.lng) ? String(currentGPS.lng) : '',
+            acc: (typeof currentGPS !== 'undefined' && currentGPS.acc) ? String(currentGPS.acc) : '',
             isJadwal: isPiket ? 'true' : 'false',
             source: 'kipmup',
             bypassToken: 'KIPMUP2017SECRET' // flag untuk GAS agar bisa bypass validasi token jika perlu
@@ -10048,7 +10076,7 @@ function ujicobaSubmit() {
         // Simpan ke pending sync untuk retry nanti
         try {
           const pending = JSON.parse(localStorage.getItem('ujicoba_pending_sync') || '[]');
-          pending.push({ nia, nama: namaAnggota, tipe: ujicobaCurrentTipe, waktu: record.waktu, isPiket, tanggal: todayStr });
+          pending.push({ nia, nama: namaAnggota, tipe: ujicobaCurrentTipe, waktu: record.waktu, isPiket, tanggal: todayStr, lat: (typeof currentGPS!=='undefined'&&currentGPS.lat)?String(currentGPS.lat):'', lng: (typeof currentGPS!=='undefined'&&currentGPS.lng)?String(currentGPS.lng):'', acc: (typeof currentGPS!=='undefined'&&currentGPS.acc)?String(currentGPS.acc):'' });
           if (pending.length > 100) pending.splice(0, pending.length - 100);
           localStorage.setItem('ujicoba_pending_sync', JSON.stringify(pending));
         } catch(e2) {}
@@ -10066,15 +10094,8 @@ function ujicobaSubmit() {
   // ── Tampilkan notif modal selamat ──
   showUjicobaNotif(ujicobaCurrentTipe, namaAnggota);
 
-  // Countdown di notif modal
-  let countdown = 5;
-  const ctEl = document.getElementById('ujicoba-notif-countdown');
+  // Tidak ada countdown otomatis — user harus klik Tutup sendiri
   clearInterval(window._ujicoba_notif_interval);
-  window._ujicoba_notif_interval = setInterval(() => {
-    countdown--;
-    if (ctEl) ctEl.textContent = 'Halaman refresh otomatis dalam ' + countdown + ' detik...';
-    if (countdown <= 0) clearInterval(window._ujicoba_notif_interval);
-  }, 1000);
 }
 
 function ujicobaReset() {
@@ -10292,17 +10313,44 @@ function ujicobaLoadEvents() {
   }).join('');
 }
 
+// ── NOTIF DUPLIKAT ABSEN ──
+function showUjicobaNotifDuplikat(nia) {
+  let nama = nia;
+  try {
+    const allData = JSON.parse(localStorage.getItem('kipmAnggotaData') || '{}');
+    Object.values(allData).forEach(gen => {
+      if (gen.members) gen.members.forEach(m => { if (m.nia === nia) nama = m.nama; });
+    });
+  } catch(e) {}
+  document.getElementById('duplikat-notif-nama').textContent = nama;
+  document.getElementById('modal-ujicoba-duplikat').classList.add('show');
+}
+function closeUjicobaNotifDuplikat() {
+  document.getElementById('modal-ujicoba-duplikat').classList.remove('show');
+  // Auto switch ke tipe PULANG supaya mudah
+  ujicobaSetTipe('PULANG');
+  ujicobaReset();
+}
+
 // ── NOTIF MODAL ABSENSI BERHASIL ──
 function showUjicobaNotif(tipe, nama) {
   const modal = document.getElementById('modal-ujicoba-notif');
   const isDatang = tipe === 'DATANG';
 
-  document.getElementById('ujicoba-notif-emoji').textContent = isDatang ? '😊' : '👋';
+  // Update header gradient
+  const header = document.getElementById('ujicoba-notif-header');
+  if (header) {
+    header.style.background = isDatang
+      ? 'linear-gradient(135deg,rgba(74,222,128,0.25),rgba(34,211,238,0.15))'
+      : 'linear-gradient(135deg,rgba(192,132,252,0.25),rgba(96,165,250,0.15))';
+  }
+
+  document.getElementById('ujicoba-notif-emoji').textContent = isDatang ? '🎉' : '👋';
   document.getElementById('ujicoba-notif-title').textContent = isDatang
-    ? 'Selamat! Absensi Datang Berhasil'
-    : 'Selamat! Absensi Pulang Berhasil';
+    ? 'Yeay! Absensi Datang Berhasil! 🎊'
+    : 'Sampai Jumpa! Absensi Pulang Berhasil!';
   document.getElementById('ujicoba-notif-nama').textContent = nama;
-  document.getElementById('ujicoba-notif-badge').textContent = isDatang ? '🟢 Datang' : '🟣 Pulang';
+  document.getElementById('ujicoba-notif-badge').textContent = isDatang ? '🟢 Datang Tercatat' : '🟣 Pulang Tercatat';
   document.getElementById('ujicoba-notif-badge').style.background = isDatang
     ? 'rgba(74,222,128,0.2)' : 'rgba(192,132,252,0.2)';
   document.getElementById('ujicoba-notif-badge').style.color = isDatang ? 'var(--accent)' : '#c084fc';
@@ -10336,10 +10384,10 @@ function showUjicobaNotif(tipe, nama) {
 function closeUjicobaNotif(doRefresh) {
   document.getElementById('modal-ujicoba-notif').classList.remove('show');
   clearTimeout(window._ujicoba_notif_timer);
-  if (doRefresh) {
-    if (ujicobaStream) { ujicobaStream.getTracks().forEach(t => t.stop()); ujicobaStream = null; }
-    window.location.reload();
-  }
+  clearInterval(window._ujicoba_notif_interval);
+  // Reset form untuk absen berikutnya (tidak auto-reload, biar user tenang baca notif)
+  if (ujicobaStream) { ujicobaStream.getTracks().forEach(t => t.stop()); ujicobaStream = null; }
+  ujicobaReset();
 }
 
 // ── Render rekap history di kolom kiri ──
@@ -10390,6 +10438,75 @@ function ujicobaRenderHistory() {
     container.innerHTML = '<div style="font-size:11px; color:var(--text3);">Gagal memuat rekap</div>';
   }
 }
+
+// ── REKAP LUPA ABSEN PULANG ──
+// Dipanggil saat jam 20:00 atau manual oleh admin
+function getRekappLupaPulang() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('ujicoba_absen') || '[]'); } catch(e) {}
+  const todayRecs = records.filter(r => r.tanggal === todayStr || (r.waktu && r.waktu.startsWith(todayStr)));
+  
+  // Cari yang sudah DATANG tapi belum PULANG
+  const datangNIAs = new Set(todayRecs.filter(r => r.tipe === 'DATANG').map(r => r.nia));
+  const pulangNIAs = new Set(todayRecs.filter(r => r.tipe === 'PULANG').map(r => r.nia));
+  const lupaPulang = [...datangNIAs].filter(nia => !pulangNIAs.has(nia));
+  
+  return lupaPulang.map(nia => {
+    const rec = todayRecs.find(r => r.nia === nia && r.tipe === 'DATANG');
+    return { nia, nama: rec ? rec.nama : nia, waktuDatang: rec ? rec.waktuStr : '' };
+  });
+}
+
+function showRekapLupaPulang() {
+  const lupa = getRekappLupaPulang();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'z-index:700;';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:480px; padding:28px;">
+      <button onclick="this.closest('.modal-overlay').remove()" class="modal-close">✕</button>
+      <div style="font-size:18px; font-weight:800; margin-bottom:6px; color:var(--accent3);">⏰ Rekap Lupa Absen Pulang</div>
+      <div style="font-size:12px; color:var(--text3); margin-bottom:16px;">${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      ${lupa.length === 0
+        ? '<div style="text-align:center; padding:24px; color:var(--accent); font-size:14px; font-weight:600;">✅ Semua anggota sudah absen pulang hari ini!</div>'
+        : `<div style="font-size:12px; color:var(--text2); margin-bottom:12px;">⚠️ <b style="color:var(--accent3);">${lupa.length} anggota</b> belum absen pulang — dianggap <b style="color:var(--accent);">HADIR</b> hari ini.</div>
+           <div style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;">
+             ${lupa.map((x, i) => `
+               <div style="background:var(--bg3); border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:12px; display:flex; align-items:center; gap:12px;">
+                 <div style="width:32px; height:32px; border-radius:50%; background:rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--accent3); flex-shrink:0;">${i+1}</div>
+                 <div style="flex:1;">
+                   <div style="font-size:13px; font-weight:700; color:var(--text);">${x.nama}</div>
+                   <div style="font-size:11px; color:var(--text3);">NIA: ${x.nia} · Datang: ${x.waktuDatang || '—'}</div>
+                 </div>
+                 <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; background:rgba(245,158,11,0.15); color:var(--accent3); border:1px solid rgba(245,158,11,0.4); white-space:nowrap;">⚠️ Lupa Pulang</span>
+               </div>`).join('')}
+           </div>
+           <div style="margin-top:14px; font-size:11px; color:var(--text3); text-align:center; padding:10px; background:var(--bg3); border-radius:10px; border:1px solid var(--border);">
+             ℹ️ Anggota yang lupa absen pulang <b style="color:var(--accent);">tetap dianggap hadir</b> pada hari ini. Admin dapat menginputkan absen pulang manual jika diperlukan.
+           </div>`
+      }
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+}
+
+// Auto-trigger rekap lupa pulang jam 20:00
+(function autoRekapLupaPulang() {
+  function checkJam20() {
+    const now = new Date();
+    if (now.getHours() === 20 && now.getMinutes() === 0) {
+      const lupa = getRekappLupaPulang();
+      if (lupa.length > 0) {
+        showRekapLupaPulang();
+        // Tandai sudah ditampilkan hari ini
+        localStorage.setItem('rekap_lupa_shown', new Date().toISOString().split('T')[0]);
+      }
+    }
+  }
+  // Cek setiap menit
+  setInterval(checkJam20, 60000);
+})();
 
 function ujicobaPreviewFoto(idx) {
   const records = window._ujicobaHistoryRecords || [];
@@ -10483,7 +10600,9 @@ async function syncPendingAbsen() {
           token: token,
           NIA: item.nia,
           tipe: item.tipe,
-          lat: '', lng: '', acc: '',
+          lat: item.lat || '',
+          lng: item.lng || '',
+          acc: item.acc || '',
           isJadwal: item.isPiket ? 'true' : 'false',
           source: 'kipmup',
           bypassToken: 'KIPMUP2017SECRET'
@@ -10511,19 +10630,59 @@ window.syncPendingAbsen = syncPendingAbsen;
 
 <!-- ══ MODAL NOTIF ABSENSI BERHASIL ══ -->
 <div id="modal-ujicoba-notif" class="modal-overlay" style="z-index:600;">
-  <div class="modal-box" style="max-width:400px; text-align:center; padding:32px 28px;">
-    <div id="ujicoba-notif-emoji" style="font-size:56px; margin-bottom:12px; display:block; line-height:1; animation:notifBounce 0.6s cubic-bezier(0.34,1.56,0.64,1);">😊</div>
-    <div id="ujicoba-notif-title" style="font-size:18px; font-weight:800; color:var(--text); margin-bottom:8px; line-height:1.3;"></div>
-    <div id="ujicoba-notif-nama" style="font-size:13px; color:var(--text2); margin-bottom:10px; font-weight:600;"></div>
-    <span id="ujicoba-notif-badge" style="display:inline-block; font-size:12px; font-weight:700; padding:5px 14px; border-radius:20px; border:1px solid; margin-bottom:20px;"></span>
-    <div id="ujicoba-notif-msg" style="font-size:13px; color:#cbd5e1; line-height:1.8; text-align:left; background:var(--bg3); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border);"><div id="ujicoba-gas-status" style="font-size:11px; color:var(--text3); margin-top:8px;">⏳ Mengirim data ke server...</div></div>
-    <div style="font-size:11px; color:var(--text3); margin-bottom:14px;" id="ujicoba-notif-countdown"></div>
-    <button onclick="closeUjicobaNotif(true)" style="width:100%; padding:12px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; border-radius:12px; cursor:pointer;">👍 Tutup & Lanjut</button>
+  <div class="modal-box" style="max-width:460px; text-align:center; padding:0; overflow:hidden; border-radius:24px; border:none;">
+    <!-- Header berwarna dinamis -->
+    <div id="ujicoba-notif-header" style="padding:32px 28px 24px; background:linear-gradient(135deg,rgba(74,222,128,0.25),rgba(34,211,238,0.15)); position:relative;">
+      <!-- Confetti decorations -->
+      <div style="position:absolute;top:10px;left:20px;font-size:24px;opacity:0.6;animation:float1 3s ease-in-out infinite;">🎊</div>
+      <div style="position:absolute;top:10px;right:20px;font-size:24px;opacity:0.6;animation:float2 3s ease-in-out infinite;">🎉</div>
+      <div style="position:absolute;bottom:10px;left:40px;font-size:18px;opacity:0.4;animation:float2 4s ease-in-out infinite;">⭐</div>
+      <div style="position:absolute;bottom:10px;right:40px;font-size:18px;opacity:0.4;animation:float1 4s ease-in-out infinite;">✨</div>
+      <div id="ujicoba-notif-emoji" style="font-size:80px; margin-bottom:12px; display:block; line-height:1; animation:notifBounce 0.7s cubic-bezier(0.34,1.56,0.64,1);">😊</div>
+      <div id="ujicoba-notif-title" style="font-size:22px; font-weight:900; color:var(--text); margin-bottom:8px; line-height:1.3; letter-spacing:0.3px;"></div>
+      <div id="ujicoba-notif-nama" style="font-size:15px; color:var(--accent); margin-bottom:10px; font-weight:700;"></div>
+      <span id="ujicoba-notif-badge" style="display:inline-block; font-size:13px; font-weight:700; padding:6px 18px; border-radius:30px; border:2px solid;"></span>
+    </div>
+    <!-- Body -->
+    <div style="padding:20px 24px;">
+      <div id="ujicoba-notif-msg" style="font-size:13px; color:#cbd5e1; line-height:2; text-align:left; background:var(--bg3); border-radius:14px; padding:18px; margin-bottom:16px; border:1px solid var(--border);">
+        <div id="ujicoba-gas-status" style="font-size:11px; color:var(--text3); margin-top:10px; padding-top:8px; border-top:1px solid var(--border);">⏳ Mengirim data ke server...</div>
+      </div>
+      <!-- TIDAK ada countdown auto-close, hanya tombol manual -->
+      <button onclick="closeUjicobaNotif(true)" style="width:100%; padding:15px; background:linear-gradient(135deg,var(--accent),#22d3ee); color:#0a1a0f; border:none; font-family:var(--font); font-size:15px; font-weight:800; border-radius:14px; cursor:pointer; letter-spacing:0.5px; transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        ✅ Oke, Tutup!
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- ══ MODAL NOTIF DUPLIKAT ABSEN ══ -->
+<div id="modal-ujicoba-duplikat" class="modal-overlay" style="z-index:600;">
+  <div class="modal-box" style="max-width:440px; text-align:center; padding:0; overflow:hidden; border-radius:24px; border:none;">
+    <div style="padding:32px 28px 24px; background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(251,146,60,0.15)); position:relative;">
+      <div style="font-size:80px; margin-bottom:12px; line-height:1; animation:notifBounce 0.7s cubic-bezier(0.34,1.56,0.64,1);">⚠️</div>
+      <div style="font-size:22px; font-weight:900; color:var(--text); margin-bottom:8px;">Sudah Absen Datang!</div>
+      <div id="duplikat-notif-nama" style="font-size:15px; color:var(--accent3); margin-bottom:10px; font-weight:700;"></div>
+      <span style="display:inline-block; font-size:13px; font-weight:700; padding:6px 18px; border-radius:30px; border:2px solid rgba(245,158,11,0.6); background:rgba(245,158,11,0.15); color:var(--accent3);">🟡 Sudah Tercatat</span>
+    </div>
+    <div style="padding:20px 24px;">
+      <div style="font-size:13px; color:#cbd5e1; line-height:2; text-align:left; background:var(--bg3); border-radius:14px; padding:18px; margin-bottom:16px; border:1px solid var(--border);">
+        ✅ Kamu <strong style="color:var(--accent);">sudah absen DATANG</strong> hari ini!<br><br>
+        Sekarang tinggal absen <strong style="color:#c084fc;">PULANG</strong> saja saat kamu hendak pergi.<br><br>
+        <em style="color:#94a3b8;">Absensi datang tidak bisa dilakukan lebih dari 1 kali per hari.</em>
+      </div>
+      <button onclick="closeUjicobaNotifDuplikat()" style="width:100%; padding:15px; background:linear-gradient(135deg,var(--accent3),#fb923c); color:#0a1a0f; border:none; font-family:var(--font); font-size:15px; font-weight:800; border-radius:14px; cursor:pointer; letter-spacing:0.5px; transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        👍 Mengerti, Tutup!
+      </button>
+    </div>
+  </div>
+</div>
+
 <style>
-@keyframes notifBounce { from { opacity:0; transform:scale(0.5); } to { opacity:1; transform:scale(1); } }
-#modal-ujicoba-notif .modal-box { animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes notifBounce { from { opacity:0; transform:scale(0.4) rotate(-10deg); } 50% { transform:scale(1.1) rotate(3deg); } to { opacity:1; transform:scale(1) rotate(0deg); } }
+@keyframes float1 { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-8px) rotate(15deg); } }
+@keyframes float2 { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-6px) rotate(-12deg); } }
+#modal-ujicoba-notif .modal-box, #modal-ujicoba-duplikat .modal-box { animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 </style>
 
 <!-- ── MODAL EDIT ANGGOTA KIPM ── -->
