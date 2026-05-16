@@ -1913,6 +1913,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota BPH Aktif</button>
       <button class="nav-item" onclick="switchTab('data-kipm')" data-tab="data-kipm">📚 Data Anggota KIPM</button>
       <button class="nav-item" onclick="switchTab('riwayat-kipmup')" data-tab="riwayat-kipmup">🏛️ Riwayat Absen KIPM-UP</button>
+      <button class="nav-item" onclick="switchTab('riwayat-nonbph')" data-tab="riwayat-nonbph">🌱 Riwayat Absen Non-BPH</button>
       <button class="nav-item" onclick="switchTab('konten')" data-tab="konten">🖊️ Edit Konten Halaman</button>
       <!-- Papan Peringkat dihapus — sudah terintegrasi di Riwayat DP & Riwayat Piket -->
     </nav>
@@ -2370,6 +2371,59 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <div style="margin-top:12px;">
           <button class="btn-sm" onclick="resetDataLokalUjicoba()" style="background:rgba(248,113,113,0.12); border-color:rgba(248,113,113,0.35); color:var(--red); font-size:12px;">🗑️ Reset Data Lokal Perangkat Ini</button>
           <span style="font-size:11px; color:var(--text3); margin-left:8px;">Hanya menghapus data di browser ini. Data di Google Sheets tetap aman.</span>
+        </div>
+      </div>
+
+      <!-- ══ TAB RIWAYAT ABSEN NON-BPH ══ -->
+      <div id="tab-riwayat-nonbph" class="tab-panel">
+        <!-- Filter Card -->
+        <div class="table-card" style="padding:16px; margin-bottom:16px;">
+          <div style="font-weight:700; font-size:15px; margin-bottom:6px;">🌱 Riwayat Absensi Anggota Non-BPH</div>
+          <div style="font-size:12px; color:var(--text2); margin-bottom:12px; background:rgba(192,132,252,0.06); border:1px solid rgba(192,132,252,0.2); border-radius:8px; padding:10px;">
+            ℹ️ Menampilkan absensi anggota KIPM yang <b style="color:#c084fc;">bukan</b> bagian dari BPH aktif (Gen 8 & 9 BPH). Data diambil langsung dari Google Sheets berdasarkan NIA.
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+            <input type="date" class="form-input filter-input" id="nonbph-from" style="width:auto;">
+            <div style="font-size:12px; color:var(--text2);">s/d</div>
+            <input type="date" class="form-input filter-input" id="nonbph-to" style="width:auto;">
+            <select class="form-input" id="nonbph-filter-tipe" style="width:auto;" onchange="renderRiwayatNonBPH()">
+              <option value="">Semua Tipe</option>
+              <option value="DATANG">🟢 Datang</option>
+              <option value="PULANG">🟣 Pulang</option>
+            </select>
+            <select class="form-input" id="nonbph-filter-gen" style="width:auto;" onchange="renderRiwayatNonBPH()">
+              <option value="">Semua Generasi</option>
+              <option value="GEN 1">GEN 1</option>
+              <option value="GEN 2">GEN 2</option>
+              <option value="GEN 3">GEN 3</option>
+              <option value="GEN 4">GEN 4</option>
+              <option value="GEN 5">GEN 5</option>
+              <option value="GEN 6">GEN 6</option>
+              <option value="GEN 7">GEN 7</option>
+              <option value="GEN 8">GEN 8</option>
+              <option value="GEN 9">GEN 9</option>
+            </select>
+            <input class="form-input" id="nonbph-cari" placeholder="Cari nama / NIA..." style="width:150px;" oninput="renderRiwayatNonBPH()">
+            <button class="btn-sm primary" onclick="loadRiwayatNonBPH()">🔍 Tampilkan</button>
+            <button class="btn-sm" onclick="exportRiwayatNonBPHCSV()">⬇ Export CSV</button>
+          </div>
+          <div style="font-size:11px; color:var(--text3);" id="nonbph-info"></div>
+        </div>
+        <!-- Stat boxes -->
+        <div id="nonbph-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;"></div>
+        <!-- Per-anggota cards -->
+        <div id="nonbph-cards" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; margin-bottom:16px;"></div>
+        <!-- Raw table -->
+        <div class="table-card">
+          <div style="font-size:12px; font-weight:600; color:var(--text2); padding:12px 16px 8px;">📋 Semua Record</div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr>
+                <th>Tanggal</th><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th><th>Gen</th><th>Jabatan</th><th>Durasi</th><th>GPS</th>
+              </tr></thead>
+              <tbody id="tbl-nonbph"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -3301,7 +3355,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
   document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); 
   
-  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'riwayat-dp':'🛡️ Riwayat Absensi DP', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'riwayat-kipmup':'🏛️ Riwayat Absen KIPM-UP', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
+  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'riwayat-dp':'🛡️ Riwayat Absensi DP', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'riwayat-kipmup':'🏛️ Riwayat Absen KIPM-UP', 'riwayat-nonbph':'🌱 Riwayat Absen Non-BPH', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
   document.getElementById('tab-title').innerText = titles[tab] || ''; 
   
   if(tab==='dashboard') loadDashboard(); 
@@ -3322,6 +3376,14 @@ function switchTab(tab){
     if(fromEl && !fromEl.value) { fromEl.value = today; }
     if(toEl   && !toEl.value)   { toEl.value   = today; }
     loadRiwayatKipmup();
+  }
+  if(tab==='riwayat-nonbph'){
+    const today = getTodayWIB();
+    const fromEl = document.getElementById('nonbph-from');
+    const toEl   = document.getElementById('nonbph-to');
+    if(fromEl && !fromEl.value) { fromEl.value = today; }
+    if(toEl   && !toEl.value)   { toEl.value   = today; }
+    loadRiwayatNonBPH();
   }
 }
 
@@ -6098,6 +6160,212 @@ function exportRiwayatKipmupCSV() {
 window.loadRiwayatKipmup = loadRiwayatKipmup;
 window.renderRiwayatKipmup = renderRiwayatKipmup;
 window.exportRiwayatKipmupCSV = exportRiwayatKipmupCSV;
+
+// ══════════════════════════════════════════════════
+// ── Riwayat Absensi Non-BPH ──
+// ══════════════════════════════════════════════════
+
+// Set NIA BPH aktif (sama dgn realAnggota)
+const _bphNIASet = new Set(realAnggota.map(a => a.NIA));
+
+// Peta NIA → info anggota KIPM (semua generasi)
+function _buildKipmLookup() {
+  const map = {};
+  Object.entries(KIPM_DEFAULT_DATA).forEach(([genKey, genData]) => {
+    (genData.members || []).forEach(m => {
+      map[m.nia] = { nama: m.nama, jabatan: m.jabatan, generasi: genKey, status: m.status };
+    });
+  });
+  return map;
+}
+const _kipmLookup = _buildKipmLookup();
+
+// Fungsi bantu: cari generasi dari NIA
+function _getGenFromNIA(nia) {
+  return _kipmLookup[nia]?.generasi || '—';
+}
+
+let _nonbphDataCache = [];
+
+async function loadRiwayatNonBPH() {
+  const from   = document.getElementById('nonbph-from')?.value || '';
+  const to     = document.getElementById('nonbph-to')?.value   || '';
+  const infoEl = document.getElementById('nonbph-info');
+  const statsEl= document.getElementById('nonbph-stats');
+
+  if (!from || !to) {
+    if (infoEl) infoEl.textContent = 'Pilih rentang tanggal terlebih dahulu.';
+    return;
+  }
+  if (infoEl) infoEl.textContent = '⏳ Mengambil data dari server...';
+
+  let allData = [];
+  try {
+    const res = await api({ action: 'getRekapAbsensi', from, to });
+    if (res && res.ok && Array.isArray(res.data)) allData = res.data;
+  } catch(e) { console.warn('Gagal ambil data Non-BPH:', e); }
+
+  // Filter: NIA tidak ada di BPH, tapi ada di data KIPM (atau setidaknya punya record)
+  _nonbphDataCache = allData.filter(r => !_bphNIASet.has(r.NIA));
+
+  if (infoEl) infoEl.textContent = `Ditemukan ${_nonbphDataCache.length} record Non-BPH (${from} s/d ${to})`;
+  renderRiwayatNonBPH();
+}
+window.loadRiwayatNonBPH = loadRiwayatNonBPH;
+
+function renderRiwayatNonBPH() {
+  const tbody  = document.getElementById('tbl-nonbph');
+  const cards  = document.getElementById('nonbph-cards');
+  const statsEl= document.getElementById('nonbph-stats');
+  if (!tbody) return;
+
+  const filterTipe = document.getElementById('nonbph-filter-tipe')?.value || '';
+  const filterGen  = document.getElementById('nonbph-filter-gen')?.value  || '';
+  const cari       = (document.getElementById('nonbph-cari')?.value || '').toLowerCase();
+
+  let rows = [..._nonbphDataCache];
+  if (filterTipe) rows = rows.filter(r => r.tipe === filterTipe);
+  if (filterGen)  rows = rows.filter(r => _getGenFromNIA(r.NIA) === filterGen);
+  if (cari)       rows = rows.filter(r =>
+    (r.nama || _kipmLookup[r.NIA]?.nama || '').toLowerCase().includes(cari) ||
+    (r.NIA  || '').toLowerCase().includes(cari)
+  );
+
+  // ── Stats ──
+  if (statsEl) {
+    const datang = _nonbphDataCache.filter(r => r.tipe === 'DATANG').length;
+    const pulang = _nonbphDataCache.filter(r => r.tipe === 'PULANG').length;
+    const unikNIA= new Set(_nonbphDataCache.filter(r => r.tipe === 'DATANG').map(r => r.NIA)).size;
+    const genSet = new Set(_nonbphDataCache.map(r => _getGenFromNIA(r.NIA)).filter(g => g !== '—'));
+    statsEl.innerHTML = `
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent);">${datang}</div>
+        <div style="font-size:11px;color:var(--text3);">Total Datang</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:#c084fc;">${pulang}</div>
+        <div style="font-size:11px;color:var(--text3);">Total Pulang</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent2);">${unikNIA}</div>
+        <div style="font-size:11px;color:var(--text3);">Anggota Unik</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent3);">${genSet.size}</div>
+        <div style="font-size:11px;color:var(--text3);">Generasi Aktif</div>
+      </div>`;
+  }
+
+  // ── Per-anggota cards ──
+  if (cards) {
+    // Kelompokkan per NIA (hanya DATANG untuk tampilan ringkas)
+    const perAnggota = {};
+    _nonbphDataCache.forEach(r => {
+      if (!perAnggota[r.NIA]) perAnggota[r.NIA] = { datang: 0, pulang: 0, terakhir: '' };
+      if (r.tipe === 'DATANG') { perAnggota[r.NIA].datang++; perAnggota[r.NIA].terakhir = r.tanggal || ''; }
+      if (r.tipe === 'PULANG') perAnggota[r.NIA].pulang++;
+    });
+
+    // Filter sesuai pencarian
+    let niaDitampil = Object.keys(perAnggota);
+    if (filterGen) niaDitampil = niaDitampil.filter(n => _getGenFromNIA(n) === filterGen);
+    if (cari) niaDitampil = niaDitampil.filter(n => {
+      const info = _kipmLookup[n];
+      return (info?.nama || '').toLowerCase().includes(cari) || n.includes(cari);
+    });
+
+    if (!niaDitampil.length) {
+      cards.innerHTML = '<div style="color:var(--text3);text-align:center;padding:24px;grid-column:1/-1;">Tidak ada anggota Non-BPH ditemukan untuk filter ini.</div>';
+    } else {
+      cards.innerHTML = niaDitampil.sort((a,b) => (perAnggota[b].datang - perAnggota[a].datang)).map(nia => {
+        const info = _kipmLookup[nia] || {};
+        const stat = perAnggota[nia];
+        const gen  = info.generasi || _getGenFromNIA(nia);
+        const genColor = {
+          'GEN 1':'#8a96a8','GEN 2':'#60a5fa','GEN 3':'#a78bfa','GEN 4':'#4ade80',
+          'GEN 5':'#f59e0b','GEN 6':'#22d3ee','GEN 7':'#f87171','GEN 8':'#fb923c','GEN 9':'#c084fc'
+        }[gen] || 'var(--text3)';
+        return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${info.nama || nia}</div>
+              <div style="font-size:11px;color:var(--text3);font-family:var(--mono);">${nia}</div>
+            </div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${genColor}22;color:${genColor};border:1px solid ${genColor}44;white-space:nowrap;">${gen}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text2);">${info.jabatan || '—'}</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;background:rgba(74,222,128,0.08);border-radius:8px;padding:8px;text-align:center;">
+              <div style="font-size:16px;font-weight:700;color:var(--accent);">${stat.datang}</div>
+              <div style="font-size:10px;color:var(--text3);">Datang</div>
+            </div>
+            <div style="flex:1;background:rgba(192,132,252,0.08);border-radius:8px;padding:8px;text-align:center;">
+              <div style="font-size:16px;font-weight:700;color:#c084fc;">${stat.pulang}</div>
+              <div style="font-size:10px;color:var(--text3);">Pulang</div>
+            </div>
+          </div>
+          ${stat.terakhir ? `<div style="font-size:10px;color:var(--text3);">Terakhir hadir: <b style="color:var(--text2);">${stat.terakhir}</b></div>` : ''}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Raw table ──
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada data Non-BPH untuk filter ini</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const info  = _kipmLookup[r.NIA] || {};
+    const gen   = info.generasi || _getGenFromNIA(r.NIA);
+    const nama  = r.nama || info.nama || r.NIA;
+    const waktu = formatWaktu ? formatWaktu(r.waktu) : (r.waktu || '—');
+    const durasi= r.durasi && r.durasi !== '-' && !r.durasi.startsWith('NaN') ? r.durasi : '—';
+    const gpsLink = (r.gpsLat && r.gpsLat !== '')
+      ? `<a href="https://maps.google.com/?q=${r.gpsLat},${r.gpsLng}" target="_blank" style="color:var(--accent2);font-size:11px;">📍 Lihat</a>`
+      : `<span style="color:var(--text3);font-size:11px;">—</span>`;
+    const tipeBadge = r.tipe === 'DATANG'
+      ? `<span class="badge badge-hadir" style="font-size:10px;">DATANG</span>`
+      : `<span class="badge badge-pulang" style="font-size:10px;">PULANG</span>`;
+    return `<tr>
+      <td style="font-size:12px;">${r.tanggal || '—'}</td>
+      <td>${tipeBadge}</td>
+      <td style="font-family:var(--mono);font-size:12px;">${waktu}</td>
+      <td style="font-family:var(--mono);font-size:12px;">${r.NIA}</td>
+      <td>${nama}</td>
+      <td><span style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);">${gen}</span></td>
+      <td style="font-size:11px;color:var(--text2);">${info.jabatan || '—'}</td>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--accent2);">${durasi}</td>
+      <td>${gpsLink}</td>
+    </tr>`;
+  }).join('');
+}
+window.renderRiwayatNonBPH = renderRiwayatNonBPH;
+
+function exportRiwayatNonBPHCSV() {
+  if (!_nonbphDataCache.length) { showToast('Tidak ada data untuk diekspor', 'error'); return; }
+  const header = 'Tanggal,Tipe,Waktu,NIA,Nama,Generasi,Jabatan,Durasi';
+  const rows = _nonbphDataCache.map(r => {
+    const info  = _kipmLookup[r.NIA] || {};
+    const waktu = formatWaktu ? formatWaktu(r.waktu) : (r.waktu || '');
+    return [
+      r.tanggal || '', r.tipe || '', waktu,
+      r.NIA || '', (r.nama || info.nama || '').replace(/,/g, ' '),
+      info.generasi || _getGenFromNIA(r.NIA),
+      (info.jabatan || '').replace(/,/g, ' '),
+      r.durasi || ''
+    ].join(',');
+  });
+  const csv  = [header, ...rows].join('\n');
+  const url  = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  const a    = Object.assign(document.createElement('a'), { href: url, download: 'riwayat-nonbph.csv' });
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+window.exportRiwayatNonBPHCSV = exportRiwayatNonBPHCSV;
+
+// ── End Riwayat Non-BPH ──
 
 window.initRiwayatPiket = initRiwayatPiket;
 
