@@ -944,6 +944,23 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <button id="ujicoba-btn-ulang" onclick="ujicobaUlangFoto()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:12px; padding:9px 14px; border-radius:30px; cursor:pointer;">🔄 Ulang</button>
       </div>
 
+      <!-- Link Galeri BEI — selalu tampil -->
+      <a href="https://rdis.idx.co.id/id/register-visit-onsite/401" target="_blank" id="ujicoba-galeri-link" style="display:block; width:100%; text-decoration:none; background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(234,88,12,0.08)); border:1px solid rgba(245,158,11,0.4); border-radius:14px; padding:14px 16px; transition:all 0.2s;">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div style="font-size:26px; flex-shrink:0; line-height:1;">⚠️</div>
+          <div style="flex:1;">
+            <div style="font-size:11px; font-weight:800; color:#f59e0b; letter-spacing:0.5px; margin-bottom:5px;">JANGAN LUPA!</div>
+            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:5px;">Absen juga di sini →</div>
+            <div style="font-size:11px; color:var(--text2); margin-bottom:8px;">Daftar Hadir Galeri Bursa BEI — wajib diisi setiap hadir</div>
+            <div style="font-size:10px; color:var(--text3); font-style:italic; line-height:1.5; background:rgba(0,0,0,0.2); border-radius:8px; padding:8px 10px; border-left:2px solid #f59e0b;">
+              💡 Bantu galeri ini lebih maju! Dengan kalian mengisi link ini, galeri kita berpotensi menjadi <strong style="color:#fbbf24;">galeri teraktif</strong> dan rewardnya besar. Yuk manfaatkan!
+            </div>
+            <div style="font-size:10px; color:var(--text3); margin-top:6px; font-family:var(--mono);">rdis.idx.co.id · Register Visit Onsite</div>
+          </div>
+          <div style="font-size:16px; color:var(--text3); flex-shrink:0; align-self:center;">›</div>
+        </div>
+      </a>
+
       <!-- Tombol Submit -->
       <button id="ujicoba-btn-submit" onclick="ujicobaSubmit()" style="display:none; width:100%; padding:13px; background:linear-gradient(135deg, rgba(74,222,128,0.25), rgba(34,197,94,0.15)); border:1px solid rgba(74,222,128,0.5); color:var(--accent); font-family:var(--font); font-size:14px; font-weight:700; border-radius:14px; cursor:pointer; transition:all 0.2s;">✅ Catat Absen</button>
 
@@ -956,10 +973,10 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       </div>
     </div>
 
-    <!-- ══ KOLOM KANAN: Event Minggu Ini ══ -->
+    <!-- ══ KOLOM KANAN: Event Mendatang ══ -->
     <div style="padding:16px; overflow-y:auto; background:var(--bg);">
       <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; display:flex; align-items:center; gap:6px;">
-        <span>📅</span> Event Minggu Ini
+        <span>📅</span> Event Mendatang
       </div>
       <div id="ujicoba-event-list" style="display:flex; flex-direction:column; gap:10px;">
         <div style="color:var(--text3); font-size:12px; padding:10px; background:var(--bg2); border-radius:10px; border:1px solid var(--border);">⏳ Memuat event...</div>
@@ -9211,6 +9228,27 @@ console.log('✅ KIPM Data Anggota System ready');
 // Init landing state
 document.body.classList.add('on-landing');
 
+// ── Auto-restore halaman ujicoba setelah reload (skip password) ──
+(function() {
+  const hash = window.location.hash;
+  if (hash === '#ujicoba') {
+    // Skip password after reload — user already authenticated this session via sessionStorage
+    const authed = sessionStorage.getItem('ujicoba_authed');
+    if (authed === '1') {
+      document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+      const pg = document.getElementById('page-ujicoba');
+      if (pg) {
+        pg.style.display = 'flex';
+        pg.classList.add('active');
+        document.body.classList.remove('on-landing');
+        const tgl = document.getElementById('ujicoba-tanggal');
+        if (tgl) tgl.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        setTimeout(() => { ujicobaLoadPiket(); ujicobaLoadEvents(); ujicobaReset(); }, 100);
+      }
+    }
+  }
+})();
+
 // ════════════════════════════════════════════
 //  ABSEN UJI COBA — Password Lock + 3 Column
 // ════════════════════════════════════════════
@@ -9235,6 +9273,7 @@ function closeUjiCobaModal() {
 function checkUjiCobaPassword() {
   const val = document.getElementById('ujicoba-pass-input').value;
   if (val === UJICOBA_PASSWORD) {
+    sessionStorage.setItem('ujicoba_authed', '1'); // remember auth for this session
     closeUjiCobaModal();
     // Navigate to uji coba page
     document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
@@ -9356,47 +9395,103 @@ function ujicobaSubmit() {
   if (!nia) { showToast('Masukkan NIA terlebih dahulu', 'error'); return; }
   if (!ujicobaFotoData) { showToast('Ambil foto selfie terlebih dahulu', 'error'); return; }
 
-  // Resolve name
-  let namaAnggota = 'NIA: ' + nia;
+  // Resolve name + jabatan + generasi from anggota data
+  let namaAnggota = nia;
+  let jabatan = '';
+  let generasi = '';
+  let isPiket = false;
   try {
     const allData = JSON.parse(localStorage.getItem('kipmAnggotaData') || '{}');
-    Object.values(allData).forEach(gen => {
-      if (gen.members) gen.members.forEach(m => { if (m.nia === nia) namaAnggota = m.nama; });
+    Object.entries(allData).forEach(([genKey, gen]) => {
+      if (gen.members) gen.members.forEach(m => {
+        if (m.nia === nia) {
+          namaAnggota = m.nama;
+          jabatan = m.jabatan || '';
+          generasi = genKey;
+        }
+      });
     });
+  } catch(e) {}
+
+  // Check if this person is scheduled for piket today
+  try {
+    const cached = JSON.parse(localStorage.getItem('jadwal_piket') || 'null');
+    if (cached && Array.isArray(cached)) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const todayName = dayNames[new Date().getDay()];
+      cached.forEach(entry => {
+        const entryDate = entry.tanggal || entry.date || '';
+        const entryHari = entry.hari || '';
+        if (entryDate === todayStr || entryHari === todayName) {
+          if (entry.anggota) {
+            const arr = Array.isArray(entry.anggota) ? entry.anggota : [entry.anggota];
+            arr.forEach(a => { if ((a.nia || a) === nia || (a.nama || a) === namaAnggota) isPiket = true; });
+          }
+          if (entry.nia === nia || entry.nama === namaAnggota) isPiket = true;
+        }
+      });
+    }
   } catch(e) {}
 
   const now = new Date();
   const waktuStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const todayStr = now.toISOString().split('T')[0];
 
-  // Save to localStorage (dashboard record)
+  // ── Save to ujicoba_absen (full history, all anggota piket & non-piket)
   const record = {
     id: Date.now(),
-    nia, nama: namaAnggota,
+    nia,
+    nama: namaAnggota,
+    jabatan,
+    generasi,
+    isPiket,        // true = anggota piket hari ini, false = non-piket/hadir biasa
     tipe: ujicobaCurrentTipe,
     foto: ujicobaFotoData,
+    tanggal: todayStr,
     waktu: now.toISOString(),
     waktuStr
   };
   try {
     const records = JSON.parse(localStorage.getItem('ujicoba_absen') || '[]');
     records.unshift(record);
-    // Keep latest 200
-    if (records.length > 200) records.splice(200);
+    if (records.length > 500) records.splice(500);
     localStorage.setItem('ujicoba_absen', JSON.stringify(records));
-  } catch(e) {}
+  } catch(e) { showToast('⚠️ Gagal menyimpan data lokal', 'error'); }
 
-  // Show success
+  // ── Show success result ──
   document.getElementById('ujicoba-photo-btns').style.display = 'none';
   document.getElementById('ujicoba-btn-submit').style.display = 'none';
+  document.getElementById('ujicoba-galeri-link').style.display = 'none';
   const result = document.getElementById('ujicoba-result');
-  document.getElementById('ujicoba-result-nama').textContent = (ujicobaCurrentTipe === 'DATANG' ? '🟢 Datang' : '🟣 Pulang') + ' — ' + namaAnggota;
-  document.getElementById('ujicoba-result-info').textContent = 'Tercatat pukul ' + waktuStr + ' · NIA ' + nia;
+  document.getElementById('ujicoba-result-nama').textContent =
+    (ujicobaCurrentTipe === 'DATANG' ? '🟢 Datang' : '🟣 Pulang') + ' — ' + namaAnggota;
+  document.getElementById('ujicoba-result-info').textContent =
+    'Tercatat pukul ' + waktuStr +
+    ' · NIA ' + nia +
+    (isPiket ? ' · ✅ Piket' : ' · 👤 Non-Piket');
   result.style.display = 'block';
 
   showToast('✅ Absen berhasil dicatat!', 'success');
 
-  // Update piket list status
+  // ── Update piket list status immediately ──
   ujicobaUpdatePiketStatus(nia, ujicobaCurrentTipe, waktuStr);
+
+  // ── Auto-refresh halaman setelah 3 detik ──
+  let countdown = 3;
+  const infoEl = document.getElementById('ujicoba-result-info');
+  const baseText = infoEl.textContent;
+  const timer = setInterval(() => {
+    countdown--;
+    infoEl.textContent = baseText + ' · Refresh dalam ' + countdown + 's...';
+    if (countdown <= 0) {
+      clearInterval(timer);
+      // Stop camera stream if any
+      if (ujicobaStream) { ujicobaStream.getTracks().forEach(t => t.stop()); ujicobaStream = null; }
+      // Full page refresh — data sudah tersimpan di localStorage
+      window.location.reload();
+    }
+  }, 1000);
 }
 
 function ujicobaReset() {
@@ -9510,15 +9605,19 @@ function ujicobaUpdatePiketStatus(nia, tipe, waktu) {
   setTimeout(() => ujicobaLoadPiket(), 300);
 }
 
-// ── Load Event Minggu Ini ──
+// ── Load Event Mendatang ──
 function ujicobaLoadEvents() {
   const container = document.getElementById('ujicoba-event-list');
   const now = new Date();
-  // Get start and end of this week (Mon-Sun)
-  const day = now.getDay(); // 0=Sun
+  // Get start of today
+  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+  // Show next 14 days of upcoming events
+  const futureEnd = new Date(now); futureEnd.setDate(now.getDate() + 14); futureEnd.setHours(23,59,59,999);
+
+  // Week calculation for recurring
+  const day = now.getDay();
   const diffToMon = (day === 0) ? -6 : 1 - day;
   const monday = new Date(now); monday.setDate(now.getDate() + diffToMon); monday.setHours(0,0,0,0);
-  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23,59,59,999);
 
   // Try to get from localStorage (agenda/kegiatan)
   let events = [];
@@ -9527,15 +9626,18 @@ function ujicobaLoadEvents() {
     const all = JSON.parse(agendaRaw);
     all.forEach(ev => {
       const evDate = new Date(ev.tanggal || ev.date || '');
-      if (evDate >= monday && evDate <= sunday) events.push(ev);
+      if (evDate >= todayStart && evDate <= futureEnd) events.push(ev);
     });
   } catch(e) {}
 
-  // Also try recurring kegiatan from jadwal
+  // 6 recurring events
   const RECURRING = [
     { nama: 'Rapat Evaluasi Mingguan', ikon: '🏛️', hari: 5, waktu: '16:00 WIB', tempat: 'Ruang KIPM / Sekre', warna: 'rgba(74,222,128,0.12)', border: 'rgba(74,222,128,0.3)', textColor: 'var(--accent)' },
     { nama: 'Trading Bersama (Live Session)', ikon: '📈', hari: 3, waktu: '09:00 WIB', tempat: 'via Google Meet', warna: 'rgba(34,211,238,0.1)', border: 'rgba(34,211,238,0.3)', textColor: 'var(--accent2)' },
     { nama: 'Kelas Edukasi Pasar Modal', ikon: '🎓', hari: null, waktu: 'Minggu ke-2 & ke-4', tempat: 'Pemateri Eksternal', warna: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.3)', textColor: '#fb923c' },
+    { nama: 'Analisis Saham Mingguan', ikon: '📊', hari: 1, waktu: '13:00 WIB', tempat: 'Ruang KIPM / Online', warna: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.3)', textColor: '#c084fc' },
+    { nama: 'Diskusi IPO & Emiten Baru', ikon: '🔍', hari: 2, waktu: '15:30 WIB', tempat: 'via WhatsApp / Meet', warna: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.3)', textColor: '#60a5fa' },
+    { nama: 'Review Portofolio Anggota', ikon: '💼', hari: 4, waktu: '14:00 WIB', tempat: 'Ruang KIPM', warna: 'rgba(212,175,55,0.1)', border: 'rgba(212,175,55,0.3)', textColor: '#d4af37' },
   ];
 
   if (events.length > 0) {
@@ -9550,13 +9652,13 @@ function ujicobaLoadEvents() {
         '</div>';
     }).join('');
   } else {
-    // Show recurring schedule for this week
+    // Show 6 recurring events for this week
     const dayLabels = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
     container.innerHTML = RECURRING.map(ev => {
       let hariStr = '';
       if (ev.hari !== null) {
         const d = new Date(monday);
-        const diff = (ev.hari - 1 + 7) % 7; // Mon=1
+        const diff = (ev.hari - 1 + 7) % 7;
         d.setDate(monday.getDate() + diff);
         hariStr = dayLabels[d.getDay()] + ', ' + d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
       } else {
