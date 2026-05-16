@@ -832,6 +832,16 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <span class="btn-text"><span class="btn-label">Absen Kegiatan KIPM-UP</span><span class="btn-sublabel">Rapat / Kelas / Event</span></span>
         <span class="btn-arrow">›</span>
       </button>
+      <button class="btn-main" onclick="showModalTampilQRKegiatan()" style="background:linear-gradient(135deg,rgba(167,139,250,0.22),rgba(139,92,246,0.12)); color:#c084fc; border-color:rgba(167,139,250,0.6);">
+        <span class="btn-icon">📲</span>
+        <span class="btn-text"><span class="btn-label">Tampilkan QR Kegiatan</span><span class="btn-sublabel">Admin · Tampilkan QR untuk peserta scan</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
+      <button class="btn-main" onclick="goToRiwayatKegiatan()" style="background:linear-gradient(135deg,rgba(34,211,238,0.14),rgba(6,182,212,0.07)); color:var(--accent2); border-color:rgba(34,211,238,0.35);">
+        <span class="btn-icon">📋</span>
+        <span class="btn-text"><span class="btn-label">Riwayat Absensi Kegiatan</span><span class="btn-sublabel">Lihat kehadiran event / rapat</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
       <button class="btn-main" onclick="goToIzinAnggota()" style="background:linear-gradient(135deg,rgba(251,146,60,0.14),rgba(34,211,238,0.08)); color:#fb923c; border-color:rgba(251,146,60,0.38);">
         <span class="btn-icon">📝</span>
         <span class="btn-text"><span class="btn-label">Ajukan Izin &amp; Pengaduan</span><span class="btn-sublabel">Tidak bisa hadir · Saran &amp; aspirasi</span></span>
@@ -2541,14 +2551,167 @@ function switchIzinTab(tab) {
 
 <!-- MODAL QR SESI KEGIATAN -->
 <div class="modal-overlay" id="modal-qr-sesi">
-  <div class="modal-box" style="text-align:center; max-width:360px;">
+  <div class="modal-box" style="text-align:center; max-width:400px;">
     <button class="modal-close" onclick="closeQRSesi()">✕</button>
     <div style="font-size:11px; font-weight:600; color:#c084fc; letter-spacing:1px; margin-bottom:4px;">QR SESI KEGIATAN</div>
     <div class="modal-title" id="qr-sesi-nama" style="font-size:16px; margin-bottom:4px;"></div>
     <div style="font-size:12px; color:var(--text2); margin-bottom:16px;" id="qr-sesi-info"></div>
     <div style="background:white; padding:12px; border-radius:16px; display:inline-block; margin-bottom:12px;" id="qr-sesi-canvas"></div>
-    <div style="background:var(--bg3); border-radius:8px; padding:8px 12px; font-family:var(--mono); font-size:13px; color:#c084fc; letter-spacing:2px;" id="qr-sesi-token"></div>
-    <div style="font-size:11px; color:var(--text3); margin-top:8px;">Tampilkan ke peserta untuk di-scan</div>
+    <div style="background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--accent); margin-bottom:8px;" id="qr-sesi-hint">
+      📱 Peserta scan dengan <b>kamera HP biasa</b> — tidak perlu aplikasi!<br>
+      <span style="color:var(--text3); font-size:11px;">Anggota & non-anggota bisa absen via link yang terbuka</span>
+    </div>
+    <div style="background:var(--bg3); border-radius:8px; padding:8px 12px; font-family:var(--mono); font-size:11px; color:#c084fc;" id="qr-sesi-token"></div>
+    <div style="font-size:11px; color:var(--text3); margin-top:6px;">Tampilkan layar ini ke peserta</div>
+  </div>
+</div>
+
+<!-- ══ MODAL PASSWORD TAMPIL QR KEGIATAN ══ -->
+<div id="modal-tampil-qr-kegiatan" class="modal-overlay" style="z-index:500;">
+  <div class="modal-box" style="max-width:380px; text-align:center;">
+    <div style="font-size:32px; margin-bottom:8px;">📲</div>
+    <div style="font-size:18px; font-weight:700; margin-bottom:4px; color:var(--text);">Tampilkan QR Kegiatan</div>
+    <div style="font-size:12px; color:var(--text3); margin-bottom:20px;">Masukkan password admin untuk menampilkan QR aktif ke peserta</div>
+    <input type="password" id="tampil-qr-pass" class="form-input" placeholder="Password admin..." style="text-align:center; font-size:16px; letter-spacing:3px; margin-bottom:12px;" onkeydown="if(event.key==='Enter') checkTampilQRPassword()">
+    <div id="tampil-qr-error" style="display:none; color:var(--red); font-size:12px; margin-bottom:10px;">❌ Password salah. Coba lagi.</div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-sm" style="flex:1; padding:11px;" onclick="closeTampilQRModal()">Batal</button>
+      <button class="btn-sm primary" style="flex:1; padding:11px; font-size:13px;" onclick="checkTampilQRPassword()">🔓 Tampilkan QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL QR KEGIATAN PUBLIK (dari landing) ══ -->
+<div id="modal-qr-publik" class="modal-overlay" style="z-index:510;">
+  <div class="modal-box" style="text-align:center; max-width:420px;">
+    <button class="modal-close" onclick="closeQRPublik()">✕</button>
+    <div style="font-size:11px; font-weight:700; color:#c084fc; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px;">QR Kegiatan Aktif</div>
+    <div id="qr-publik-nama" style="font-size:18px; font-weight:700; margin-bottom:4px;"></div>
+    <div id="qr-publik-info" style="font-size:12px; color:var(--text2); margin-bottom:16px;"></div>
+    <div style="background:white; padding:16px; border-radius:20px; display:inline-block; margin-bottom:14px; box-shadow:0 4px 20px rgba(0,0,0,0.3);" id="qr-publik-canvas"></div>
+    <div style="background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:10px; padding:12px 16px; font-size:12px; color:var(--accent); margin-bottom:10px;">
+      📱 Scan dengan <b>kamera HP biasa</b> — langsung terbuka!<br>
+      <span style="color:var(--text3); font-size:11px; margin-top:2px; display:block;">Anggota & tamu undangan bisa absen tanpa aplikasi</span>
+    </div>
+    <div id="qr-publik-countdown" style="font-size:13px; color:var(--accent3); font-weight:600; margin-bottom:10px;"></div>
+    <button onclick="closeQRPublik()" style="background:var(--bg3); border:1px solid var(--border2); color:var(--text2); font-family:var(--font); font-size:13px; padding:9px 24px; border-radius:20px; cursor:pointer;">Tutup</button>
+  </div>
+</div>
+
+<!-- ══ HALAMAN RIWAYAT ABSENSI KEGIATAN (Publik) ══ -->
+<div id="page-riwayat-kegiatan" class="page" style="overflow-y:auto; min-height:100vh;">
+  <div style="background:var(--bg2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; gap:12px; align-items:center; flex-shrink:0;">
+    <div class="back-btn" onclick="goTo('landing')">←</div>
+    <div>
+      <div style="font-weight:700; font-size:15px;">📋 Riwayat Absensi Kegiatan</div>
+      <div style="font-size:11px; color:var(--text3);">Data kehadiran rapat, kelas & event KIPM-UP</div>
+    </div>
+  </div>
+  <div style="padding:16px; max-width:600px; margin:0 auto; width:100%;">
+    <!-- Filter jenis -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;">
+      <button class="tab-sub-btn active" id="rwkt-tab-semua" onclick="switchRwktJenis('')">Semua</button>
+      <button class="tab-sub-btn" id="rwkt-tab-rapat" onclick="switchRwktJenis('rapat')">🏛️ Rapat</button>
+      <button class="tab-sub-btn" id="rwkt-tab-kelas-tnd" onclick="switchRwktJenis('kelas-tnd')">🎓 Kelas TnD</button>
+      <button class="tab-sub-btn" id="rwkt-tab-kelas-enr" onclick="switchRwktJenis('kelas-enr')">📈 Kelas EnR</button>
+      <button class="tab-sub-btn" id="rwkt-tab-lainnya" onclick="switchRwktJenis('lainnya')">📌 Lainnya</button>
+    </div>
+    <div id="riwayat-kegiatan-list" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="color:var(--text3); text-align:center; padding:32px; font-size:13px;">⏳ Memuat data...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HALAMAN ABSEN KEGIATAN PUBLIK (via QR URL) ══ -->
+<div id="page-absen-publik" class="page" style="overflow-y:auto; min-height:100vh;">
+  <div style="background:var(--bg2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; gap:12px; align-items:center;">
+    <div class="back-btn" onclick="goTo('landing')">←</div>
+    <div>
+      <div style="font-weight:700; font-size:15px;" id="publik-sesi-title">Absensi Kegiatan</div>
+      <div style="font-size:11px; color:var(--text3);" id="publik-sesi-sub">KIPM-UP</div>
+    </div>
+  </div>
+  <div style="padding:20px; max-width:480px; margin:0 auto; width:100%;">
+    
+    <!-- Info Sesi -->
+    <div id="publik-sesi-info-box" style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-radius:12px; padding:16px; margin-bottom:16px;">
+      <div style="font-size:12px; color:#c084fc; font-weight:600; margin-bottom:6px;">SESI KEGIATAN</div>
+      <div id="publik-nama-sesi" style="font-size:17px; font-weight:700; margin-bottom:4px;">Memuat...</div>
+      <div id="publik-detail-sesi" style="font-size:12px; color:var(--text2);"></div>
+      <div id="publik-countdown" style="font-size:11px; color:var(--accent3); margin-top:6px;"></div>
+    </div>
+
+    <!-- Expired notice -->
+    <div id="publik-expired-notice" style="display:none; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); border-radius:12px; padding:20px; text-align:center; margin-bottom:16px;">
+      <div style="font-size:40px; margin-bottom:8px;">⏹</div>
+      <div style="font-size:16px; font-weight:700; color:var(--red);">Waktu Absen Sudah Habis</div>
+      <div style="font-size:12px; color:var(--text3); margin-top:6px;">Sesi kegiatan ini sudah berakhir. Hubungi admin jika ada kendala.</div>
+    </div>
+
+    <!-- Form Absen -->
+    <div id="publik-form-absen">
+      <!-- Pilihan Jenis Peserta -->
+      <div style="background:var(--bg2); border-radius:12px; padding:14px; margin-bottom:14px;">
+        <div style="font-size:11px; color:var(--text3); font-weight:600; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.8px;">Jenis Peserta</div>
+        <div style="display:flex; gap:8px;">
+          <button id="publik-btn-anggota" onclick="setPubJenisPeserta('anggota')" style="flex:1; padding:10px 8px; background:rgba(74,222,128,0.18); border:1px solid var(--accent); color:var(--accent); border-radius:10px; font-family:var(--font); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;">🏛️ Anggota KIPM</button>
+          <button id="publik-btn-nonmember" onclick="setPubJenisPeserta('nonmember')" style="flex:1; padding:10px 8px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); border-radius:10px; font-family:var(--font); font-size:12px; cursor:pointer; transition:all 0.2s;">👤 Tamu / Non-Anggota</button>
+        </div>
+      </div>
+
+      <!-- Form Anggota -->
+      <div id="publik-form-anggota" style="background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:14px;">
+        <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:6px; font-weight:600;">NIA (Nomor Induk Anggota)</label>
+        <input class="form-input" id="publik-nia" placeholder="Contoh: 092025001" style="margin-bottom:8px;" oninput="publikCheckNIA()">
+        <div id="publik-nama-preview" style="font-size:12px; color:var(--accent); font-weight:600; min-height:18px;"></div>
+      </div>
+
+      <!-- Form Non-Anggota -->
+      <div id="publik-form-nonmember" style="display:none; background:var(--bg2); border-radius:12px; padding:16px; margin-bottom:14px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px; font-weight:600;">Nama Lengkap *</label>
+            <input class="form-input" id="publik-nama-tamu" placeholder="Nama Anda">
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--text2); display:block; margin-bottom:4px; font-weight:600;">Asal Instansi / Prodi</label>
+            <input class="form-input" id="publik-instansi" placeholder="Contoh: Manajemen FEB UP">
+          </div>
+        </div>
+      </div>
+
+      <!-- Selfie -->
+      <div style="background:var(--bg2); border-radius:12px; padding:20px; margin-bottom:14px; text-align:center;">
+        <div style="font-size:14px; font-weight:600; margin-bottom:4px;">📸 Foto Selfie <span style="font-size:12px; color:var(--text3); font-weight:400;">(opsional)</span></div>
+        <div id="publik-cam-wrapper" style="position:relative; width:180px; height:180px; border-radius:50%; overflow:hidden; border:3px solid var(--border2); background:var(--bg3); margin:12px auto; display:flex; align-items:center; justify-content:center;">
+          <video id="publik-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
+          <img id="publik-preview" style="display:none; width:100%; height:100%; object-fit:cover;" alt="">
+          <div id="publik-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--text3);">
+            <div style="font-size:36px;">👤</div>
+            <div style="font-size:10px;">Kamera belum aktif</div>
+          </div>
+        </div>
+        <canvas id="publik-canvas" style="display:none;"></canvas>
+        <div id="publik-cam-status" style="font-size:11px; color:var(--text3); margin-bottom:10px;">Opsional — bisa langsung absen tanpa foto</div>
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button id="publik-btn-buka" onclick="publikBukaKamera()" style="background:rgba(34,211,238,0.12); color:var(--accent2); border:1px solid rgba(34,211,238,0.3); font-family:var(--font); font-size:12px; padding:8px 16px; border-radius:24px; cursor:pointer;">📷 Buka Kamera</button>
+          <button id="publik-btn-ambil" onclick="publikAmbilFoto()" style="display:none; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:12px; font-weight:700; padding:8px 16px; border-radius:24px; cursor:pointer;">📸 Foto</button>
+          <button id="publik-btn-ulang" onclick="publikUlangFoto()" style="display:none; background:var(--bg3); color:var(--text2); border:1px solid var(--border2); font-family:var(--font); font-size:12px; padding:8px 14px; border-radius:24px; cursor:pointer;">🔄 Ulang</button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button id="publik-btn-submit" onclick="publikSubmitAbsen()" style="width:100%; padding:14px; background:linear-gradient(135deg,rgba(167,139,250,0.25),rgba(139,92,246,0.15)); border:1px solid rgba(167,139,250,0.5); color:#c084fc; font-family:var(--font); font-size:15px; font-weight:700; border-radius:14px; cursor:pointer; transition:all 0.2s;">✅ Catat Absensi Saya</button>
+
+      <!-- Sukses -->
+      <div id="publik-sukses" style="display:none; background:rgba(74,222,128,0.1); border:1px solid var(--accent); border-radius:16px; padding:24px; text-align:center; margin-top:14px;">
+        <div style="font-size:48px; margin-bottom:10px;">✅</div>
+        <div style="font-size:18px; font-weight:700; color:var(--accent); margin-bottom:6px;">Absensi Berhasil!</div>
+        <div id="publik-sukses-nama" style="font-size:14px; color:var(--text2); margin-bottom:8px;"></div>
+        <div id="publik-sukses-waktu" style="font-size:12px; color:var(--text3);"></div>
+        <button onclick="goTo('landing')" style="margin-top:16px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); font-family:var(--font); font-size:13px; padding:9px 24px; border-radius:20px; cursor:pointer;">← Kembali ke Beranda</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3024,6 +3187,8 @@ function goTo(page){
   }
   if(page!=='qr' && qrRefreshInterval){ clearInterval(qrRefreshInterval); qrRefreshInterval=null; }
   if(page!=='qr' && qrCountdownInterval){ clearInterval(qrCountdownInterval); qrCountdownInterval=null; qrLastToken=null; }
+  if(page==='riwayat-kegiatan'){ setTimeout(() => renderRiwayatKegiatan(), 50); }
+  if(page!=='absen-publik') { if(publikSelfieStream){ publikSelfieStream.getTracks().forEach(t=>t.stop()); publikSelfieStream=null; } }
 }
 
 function setScanType(t){ 
@@ -4151,17 +4316,32 @@ async function kirimFotoKeGAS(NIA, nama, waktu, selfieBase64, tipe) {
 }
 
 function generateSesiQRToken(sesiId, secret, endTime, namaSesi, ruangan) {
-  // QR berisi data lengkap agar bisa divalidasi tanpa sessionStorage
-  // Format: KIPM-SESI:{sesiId}:{hash}:{endTime}:{b64nama}:{b64ruangan}
+  // QR berisi URL langsung agar bisa dibuka dari kamera HP biasa
+  // Format token (untuk backward compat): KIPM-SESI:{sesiId}:{hash}:{endTime}:{b64nama}:{b64ruangan}
   const hash = md5(sesiId + '_' + secret + '_KIPMUP').substring(0,8).toUpperCase();
   const b64nama = btoa(encodeURIComponent(namaSesi||'')).replace(/=/g,'');
   const b64ruangan = btoa(encodeURIComponent(ruangan||'')).replace(/=/g,'');
-  return 'KIPM-SESI:' + sesiId + ':' + hash + ':' + endTime + ':' + b64nama + ':' + b64ruangan;
+  const rawToken = 'KIPM-SESI:' + sesiId + ':' + hash + ':' + endTime + ':' + b64nama + ':' + b64ruangan;
+  // Encode jadi URL agar kamera biasa bisa scan
+  const baseUrl = window.location.origin + window.location.pathname;
+  return baseUrl + '?sesi=' + encodeURIComponent(rawToken);
+}
+
+function getRawTokenFromQR(qrText) {
+  // Ekstrak raw token dari URL QR atau langsung jika sudah format lama
+  if (qrText && qrText.includes('?sesi=')) {
+    try {
+      const url = new URL(qrText);
+      return decodeURIComponent(url.searchParams.get('sesi') || '');
+    } catch(e) {}
+  }
+  return qrText; // format lama
 }
 
 function parseSesiQRToken(qrText) {
-  if(!qrText || !qrText.startsWith('KIPM-SESI:')) return null;
-  const parts = qrText.split(':');
+  const raw = getRawTokenFromQR(qrText);
+  if(!raw || !raw.startsWith('KIPM-SESI:')) return null;
+  const parts = raw.split(':');
   if(parts.length < 4) return null;
   let namaSesi = '', ruangan = '';
   try { if(parts[4]) namaSesi = decodeURIComponent(atob(parts[4]+'==')); } catch(e){}
@@ -4446,12 +4626,20 @@ function renderDetailSesi(sesi) {
     </div>
     ${sesi.absensi.length > 0 ? `
     <div style="margin-top:10px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:6px;">✅ Yang sudah absen (${sesi.absensi.length})</div>
+      <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">
+        ${sesi.absensi.map(a => `
+          <span style="font-size:11px; padding:3px 8px; border-radius:12px; background:${a.isNonAnggota?'rgba(34,211,238,0.12)':'rgba(74,222,128,0.1)'}; color:${a.isNonAnggota?'var(--accent2)':'var(--accent)'}; display:inline-flex; align-items:center; gap:3px;">
+            ${a.isNonAnggota ? '👤' : '🏛️'} ${a.nama.split(' ')[0]}
+            ${a.isNonAnggota && a.instansi ? `<small style="color:var(--text3)">(${a.instansi})</small>` : ''}
+          </span>`).join('')}
+      </div>
       <div style="font-size:12px; font-weight:600; margin-bottom:6px;">📸 Foto Selfie Peserta</div>
       <div class="selfie-grid">
-        ${sesi.absensi.filter(a=>a.selfieMini).map(a => `
+        ${sesi.absensi.filter(a=>a.selfieMini||a.selfieDataURL).map(a => `
           <div class="selfie-item" onclick="previewSelfieKegiatan('${a.NIA}', '${a.selfieDataURL || a.selfieMini}')">
-            <img src="${a.selfieMini}" alt="${a.nama}">
-            <div class="selfie-label">${a.nama.split(' ')[0]}</div>
+            <img src="${a.selfieMini || a.selfieDataURL}" alt="${a.nama}">
+            <div class="selfie-label">${a.nama.split(' ')[0]}${a.isNonAnggota ? ' 👤' : ''}</div>
           </div>`).join('')}
       </div>
     </div>` : ''}`;
@@ -4484,8 +4672,11 @@ function showQRSesi(sesiId) {
   document.getElementById('qr-sesi-info').textContent = `${jenisBadge(sesi.jenis)} · Sisa ${Math.ceil(sisaMs/60000)} menit`;
   const canvas = document.getElementById('qr-sesi-canvas');
   canvas.innerHTML = '';
-  new QRCode(canvas, {text: sesi.qrToken, width:200, height:200, correctLevel: QRCode.CorrectLevel.H});
-  document.getElementById('qr-sesi-token').textContent = sesi.qrToken;
+  // QR berisi URL agar bisa scan dari kamera biasa
+  const qrUrl = sesi.qrToken;
+  new QRCode(canvas, {text: qrUrl, width:200, height:200, correctLevel: QRCode.CorrectLevel.M});
+  document.getElementById('qr-sesi-token').textContent = sesi.nama + ' · Scan dengan kamera HP';
+  document.getElementById('qr-sesi-hint').style.display = 'block';
   if(sesiQRDisplayInterval) clearInterval(sesiQRDisplayInterval);
   sesiQRDisplayInterval = setInterval(() => {
     const sisa = Math.max(0, sesi.endTime - Date.now());
@@ -5006,7 +5197,8 @@ function kegiatanToggleScan() {
 async function prosesAbsenKegiatan(nia, qrText) {
   // === SELF-CONTAINED QR VALIDATION ===
   // Coba parse QR baru (tidak butuh sessionStorage)
-  const parsed = parseSesiQRToken(qrText);
+  const rawToken = getRawTokenFromQR(qrText);
+  const parsed = parseSesiQRToken(rawToken || qrText);
   let sesi = null;
 
   if(parsed) {
@@ -7192,6 +7384,357 @@ window.submitIzinAnggota=submitIzinAnggota; window.goToIzinAnggota=goToIzinAnggo
 window.submitPengaduan=submitPengaduan;
 window.loadAnggotaForPickerSilent=loadAnggotaForPickerSilent;
 window.goToKegiatanScan=goToKegiatanScan;
+
+// ── TAMPIL QR KEGIATAN dari Landing (dengan password) ──
+const TAMPIL_QR_PASS = 'kipmup2025'; // password bisa diubah admin
+let qrPublikInterval = null;
+
+function showModalTampilQRKegiatan() {
+  const modal = document.getElementById('modal-tampil-qr-kegiatan');
+  if (modal) {
+    modal.classList.add('show');
+    document.getElementById('tampil-qr-pass').value = '';
+    document.getElementById('tampil-qr-error').style.display = 'none';
+    setTimeout(() => document.getElementById('tampil-qr-pass').focus(), 200);
+  }
+}
+window.showModalTampilQRKegiatan = showModalTampilQRKegiatan;
+
+function closeTampilQRModal() {
+  const modal = document.getElementById('modal-tampil-qr-kegiatan');
+  if (modal) modal.classList.remove('show');
+}
+window.closeTampilQRModal = closeTampilQRModal;
+
+function checkTampilQRPassword() {
+  const pass = document.getElementById('tampil-qr-pass').value.trim();
+  // Accept admin password OR ujicoba password
+  const adminPass = localStorage.getItem('adminPass') || 'kipmup2025';
+  if (pass === adminPass || pass === TAMPIL_QR_PASS) {
+    closeTampilQRModal();
+    tampilQRKegiatanPublik();
+  } else {
+    document.getElementById('tampil-qr-error').style.display = 'block';
+    document.getElementById('tampil-qr-pass').value = '';
+  }
+}
+window.checkTampilQRPassword = checkTampilQRPassword;
+
+function tampilQRKegiatanPublik() {
+  const aktif = sesiList.filter(isSesiAktif);
+  if (!aktif.length) {
+    showToast('❌ Tidak ada sesi kegiatan aktif. Buat sesi terlebih dahulu di Admin → Kegiatan.', 'error');
+    return;
+  }
+  const sesi = aktif[0];
+  const modal = document.getElementById('modal-qr-publik');
+  modal.classList.add('show');
+  document.getElementById('qr-publik-nama').textContent = sesi.nama;
+  document.getElementById('qr-publik-info').textContent = jenisBadge(sesi.jenis) + (sesi.ruangan ? ' · 🏢 ' + sesi.ruangan : '');
+  const canvas = document.getElementById('qr-publik-canvas');
+  canvas.innerHTML = '';
+  new QRCode(canvas, { text: sesi.qrToken, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+  
+  if (qrPublikInterval) clearInterval(qrPublikInterval);
+  qrPublikInterval = setInterval(() => {
+    const sisa = Math.max(0, sesi.endTime - Date.now());
+    const mnt = Math.floor(sisa/60000), dtk = Math.floor((sisa%60000)/1000);
+    const el = document.getElementById('qr-publik-countdown');
+    if (el) el.textContent = sisa > 0 ? `⏱ Sisa waktu: ${mnt}m ${dtk}s` : '⏹ Waktu habis';
+    if (sisa <= 0) { clearInterval(qrPublikInterval); }
+  }, 1000);
+}
+window.tampilQRKegiatanPublik = tampilQRKegiatanPublik;
+
+function closeQRPublik() {
+  const modal = document.getElementById('modal-qr-publik');
+  if (modal) modal.classList.remove('show');
+  if (qrPublikInterval) clearInterval(qrPublikInterval);
+}
+window.closeQRPublik = closeQRPublik;
+
+// ── RIWAYAT KEGIATAN (Publik) ──
+let _rwktJenisAktif = '';
+
+function goToRiwayatKegiatan() {
+  renderRiwayatKegiatan();
+  goTo('riwayat-kegiatan');
+}
+window.goToRiwayatKegiatan = goToRiwayatKegiatan;
+
+function switchRwktJenis(jenis) {
+  _rwktJenisAktif = jenis;
+  ['semua','rapat','kelas-tnd','kelas-enr','lainnya'].forEach(j => {
+    const btn = document.getElementById('rwkt-tab-' + j);
+    if (btn) btn.classList.toggle('active', (jenis === '' && j === 'semua') || jenis === j);
+  });
+  renderRiwayatKegiatan();
+}
+window.switchRwktJenis = switchRwktJenis;
+
+function renderRiwayatKegiatan() {
+  const el = document.getElementById('riwayat-kegiatan-list');
+  if (!el) return;
+  let filtered = sesiList.filter(s => !_rwktJenisAktif || s.jenis === _rwktJenisAktif);
+  filtered = filtered.sort((a, b) => b.startTime - a.startTime);
+  if (!filtered.length) {
+    el.innerHTML = '<div style="color:var(--text3); text-align:center; padding:32px; font-size:13px;">Belum ada data kegiatan. Data tersimpan saat sesi dibuat di Admin.</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(sesi => {
+    const hadir = sesi.absensi.length;
+    const total = sesi.peserta.length;
+    const hadirNonAnggota = sesi.absensi.filter(a => a.isNonAnggota).length;
+    const hadirAnggota = hadir - hadirNonAnggota;
+    const izin = (sesi.izin || []).length;
+    const alpha = Math.max(0, total - hadirAnggota - izin);
+    const pct = total > 0 ? Math.round((hadirAnggota/total)*100) : 0;
+    const tgl = new Date(sesi.startTime).toLocaleDateString('id-ID', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+    const mulai = new Date(sesi.startTime).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+    const isAktif = isSesiAktif(sesi);
+    return `<div class="sesi-card" style="border-color:${isAktif?'var(--accent)':'var(--border2)'};">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <div>
+          <div style="font-weight:600; font-size:14px;">${sesi.nama}</div>
+          <div style="font-size:11px; color:var(--text2); margin-top:2px;">${jenisBadge(sesi.jenis)} · ${tgl} · ${mulai}</div>
+          ${sesi.ruangan ? `<div style="font-size:11px; color:var(--text3);">🏢 ${sesi.ruangan}</div>` : ''}
+        </div>
+        <div style="text-align:right;">
+          ${isAktif ? '<span class="badge badge-hadir" style="font-size:10px;">🟢 AKTIF</span>' : ''}
+          <div style="font-size:18px; font-weight:700; color:${pct>=80?'var(--accent)':pct>=60?'var(--accent3)':'var(--red)'}; margin-top:4px;">${pct}%</div>
+          <div style="font-size:10px; color:var(--text3);">kehadiran anggota</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+        <span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(74,222,128,0.15); color:var(--accent);">✅ Anggota: ${hadirAnggota}/${total}</span>
+        ${hadirNonAnggota > 0 ? `<span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(34,211,238,0.15); color:var(--accent2);">👤 Tamu: ${hadirNonAnggota}</span>` : ''}
+        ${izin > 0 ? `<span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(245,158,11,0.15); color:#f59e0b;">📋 Izin: ${izin}</span>` : ''}
+        ${alpha > 0 ? `<span style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(248,113,113,0.15); color:var(--red);">❌ Alpha: ${alpha}</span>` : ''}
+      </div>
+      <!-- Daftar hadir -->
+      <div style="font-size:11px; color:var(--text3); font-weight:600; margin-bottom:6px;">Hadir (${hadir} orang):</div>
+      <div style="display:flex; flex-wrap:wrap; gap:4px;">
+        ${sesi.absensi.length ? sesi.absensi.map(a => `
+          <span style="font-size:11px; padding:3px 8px; border-radius:12px; background:${a.isNonAnggota?'rgba(34,211,238,0.12)':'rgba(74,222,128,0.1)'}; color:${a.isNonAnggota?'var(--accent2)':'var(--accent)'}; display:flex; align-items:center; gap:3px;">
+            ${a.isNonAnggota ? '👤' : '🏛️'} ${a.nama.split(' ')[0]} ${a.isNonAnggota && a.instansi ? `<span style="color:var(--text3)">(${a.instansi})</span>` : ''}
+            <span style="color:var(--text3); font-size:10px;">${a.waktu}</span>
+          </span>`).join('') : '<span style="color:var(--text3); font-size:11px;">Belum ada yang hadir</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderRiwayatKegiatan = renderRiwayatKegiatan;
+
+// ── HALAMAN ABSEN PUBLIK via URL QR ──
+let publikSesiToken = null;
+let publikJenisPeserta = 'anggota';
+let publikSelfieStream = null;
+let publikSelfieDataURL = null;
+let publikCountdownInterval = null;
+
+function initAbsenPublik() {
+  // Cek apakah ada parameter ?sesi= di URL
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sesiParam = params.get('sesi');
+    if (sesiParam) {
+      const decoded = decodeURIComponent(sesiParam);
+      const parsed = parseSesiQRToken(decoded);
+      if (parsed) {
+        publikSesiToken = decoded;
+        tampilAbsenPublik(parsed);
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
+}
+
+function tampilAbsenPublik(parsed) {
+  // Set info sesi
+  document.getElementById('publik-sesi-title').textContent = parsed.namaSesi || 'Absensi Kegiatan';
+  document.getElementById('publik-sesi-sub').textContent = parsed.ruangan ? '🏢 ' + parsed.ruangan : 'KIPM-UP';
+  document.getElementById('publik-nama-sesi').textContent = parsed.namaSesi || 'Kegiatan KIPM-UP';
+  document.getElementById('publik-detail-sesi').textContent = parsed.ruangan ? '🏢 ' + parsed.ruangan : '';
+  
+  // Cek expired
+  if (Date.now() > parsed.endTime) {
+    document.getElementById('publik-expired-notice').style.display = 'block';
+    document.getElementById('publik-form-absen').style.display = 'none';
+    document.getElementById('publik-countdown').textContent = '⏹ Waktu absen sudah berakhir';
+    goTo('absen-publik');
+    return;
+  }
+  
+  // Countdown
+  if (publikCountdownInterval) clearInterval(publikCountdownInterval);
+  publikCountdownInterval = setInterval(() => {
+    const sisa = Math.max(0, parsed.endTime - Date.now());
+    const mnt = Math.floor(sisa/60000), dtk = Math.floor((sisa%60000)/1000);
+    const el = document.getElementById('publik-countdown');
+    if (el) el.textContent = sisa > 0 ? `⏱ Sisa waktu: ${mnt}m ${dtk}s` : '⏹ Waktu habis';
+    if (sisa <= 0) {
+      clearInterval(publikCountdownInterval);
+      document.getElementById('publik-expired-notice').style.display = 'block';
+      document.getElementById('publik-form-absen').style.display = 'none';
+    }
+  }, 1000);
+  
+  setPubJenisPeserta('anggota');
+  goTo('absen-publik');
+}
+
+function setPubJenisPeserta(jenis) {
+  publikJenisPeserta = jenis;
+  const isAnggota = jenis === 'anggota';
+  document.getElementById('publik-btn-anggota').style.background = isAnggota ? 'rgba(74,222,128,0.18)' : 'var(--bg3)';
+  document.getElementById('publik-btn-anggota').style.borderColor = isAnggota ? 'var(--accent)' : 'var(--border2)';
+  document.getElementById('publik-btn-anggota').style.color = isAnggota ? 'var(--accent)' : 'var(--text2)';
+  document.getElementById('publik-btn-nonmember').style.background = !isAnggota ? 'rgba(34,211,238,0.12)' : 'var(--bg3)';
+  document.getElementById('publik-btn-nonmember').style.borderColor = !isAnggota ? 'var(--accent2)' : 'var(--border2)';
+  document.getElementById('publik-btn-nonmember').style.color = !isAnggota ? 'var(--accent2)' : 'var(--text2)';
+  document.getElementById('publik-form-anggota').style.display = isAnggota ? 'block' : 'none';
+  document.getElementById('publik-form-nonmember').style.display = !isAnggota ? 'block' : 'none';
+}
+window.setPubJenisPeserta = setPubJenisPeserta;
+
+function publikCheckNIA() {
+  const nia = document.getElementById('publik-nia').value.trim();
+  const anggota = allAnggota.find(a => a.NIA === nia);
+  const el = document.getElementById('publik-nama-preview');
+  if (anggota) {
+    el.textContent = '✅ ' + anggota.nama + ' · ' + anggota.divisi;
+  } else {
+    el.textContent = nia.length >= 9 ? '⚠️ NIA tidak ditemukan' : '';
+  }
+}
+window.publikCheckNIA = publikCheckNIA;
+
+function publikBukaKamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+    .then(stream => {
+      publikSelfieStream = stream;
+      const video = document.getElementById('publik-video');
+      video.srcObject = stream;
+      video.style.display = 'block';
+      document.getElementById('publik-placeholder').style.display = 'none';
+      document.getElementById('publik-btn-buka').style.display = 'none';
+      document.getElementById('publik-btn-ambil').style.display = 'inline-block';
+      document.getElementById('publik-cam-status').textContent = 'Kamera aktif — siap foto';
+    })
+    .catch(() => showToast('Gagal akses kamera. Coba langsung absen tanpa foto.', 'error'));
+}
+window.publikBukaKamera = publikBukaKamera;
+
+function publikAmbilFoto() {
+  const video = document.getElementById('publik-video');
+  const canvas = document.getElementById('publik-canvas');
+  canvas.width = 200; canvas.height = 200;
+  canvas.getContext('2d').drawImage(video, 0, 0, 200, 200);
+  publikSelfieDataURL = canvas.toDataURL('image/jpeg', 0.6);
+  if (publikSelfieStream) { publikSelfieStream.getTracks().forEach(t=>t.stop()); publikSelfieStream = null; }
+  video.style.display = 'none';
+  const preview = document.getElementById('publik-preview');
+  preview.src = publikSelfieDataURL;
+  preview.style.display = 'block';
+  document.getElementById('publik-btn-ambil').style.display = 'none';
+  document.getElementById('publik-btn-ulang').style.display = 'inline-block';
+  document.getElementById('publik-cam-status').textContent = '📸 Foto berhasil diambil';
+}
+window.publikAmbilFoto = publikAmbilFoto;
+
+function publikUlangFoto() {
+  publikSelfieDataURL = null;
+  document.getElementById('publik-preview').style.display = 'none';
+  document.getElementById('publik-placeholder').style.display = 'flex';
+  document.getElementById('publik-btn-buka').style.display = 'inline-block';
+  document.getElementById('publik-btn-ulang').style.display = 'none';
+  document.getElementById('publik-cam-status').textContent = 'Opsional — bisa langsung absen tanpa foto';
+}
+window.publikUlangFoto = publikUlangFoto;
+
+async function publikSubmitAbsen() {
+  const parsed = parseSesiQRToken(publikSesiToken);
+  if (!parsed) { showToast('❌ Token sesi tidak valid', 'error'); return; }
+  if (Date.now() > parsed.endTime) { showToast('⏹ Waktu absen sudah habis!', 'error'); return; }
+
+  const waktu = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+  let nama = '', nia = '', isNonAnggota = false, instansi = '';
+
+  if (publikJenisPeserta === 'anggota') {
+    nia = document.getElementById('publik-nia').value.trim();
+    if (!nia) { showToast('❌ Masukkan NIA terlebih dahulu', 'error'); return; }
+    // Cek di daftar anggota
+    let anggota = allAnggota.find(a => a.NIA === nia);
+    if (!anggota) {
+      showToast('⏳ Memverifikasi NIA...', 'info');
+      await syncAnggotaDariGAS();
+      anggota = allAnggota.find(a => a.NIA === nia);
+      if (!anggota) { showToast('❌ NIA tidak terdaftar', 'error'); return; }
+    }
+    nama = anggota.nama;
+  } else {
+    nama = document.getElementById('publik-nama-tamu').value.trim();
+    instansi = document.getElementById('publik-instansi').value.trim();
+    if (!nama) { showToast('❌ Masukkan nama terlebih dahulu', 'error'); return; }
+    nia = 'TAMU_' + Date.now();
+    isNonAnggota = true;
+  }
+
+  // Anti-duplikat via localStorage
+  const absenKey = 'absenKegiatan_' + parsed.sesiId;
+  const sudahAbsen = JSON.parse(localStorage.getItem(absenKey) || '[]');
+  const identifier = isNonAnggota ? nama.toLowerCase() : nia;
+  if (sudahAbsen.includes(identifier)) {
+    showToast('⚠️ ' + nama + ' sudah absen di sesi ini!', 'error'); return;
+  }
+
+  // Tambah ke sesi lokal jika ada
+  const sesiLokal = sesiList.find(s => s.id === parsed.sesiId);
+  const absenEntry = {
+    NIA: nia, nama, waktu,
+    isNonAnggota, instansi,
+    gpsLat: '', gpsLng: '',
+    selfieMini: null, selfieDataURL: publikSelfieDataURL
+  };
+  if (sesiLokal) {
+    if (sesiLokal.absensi.find(a => a.NIA === nia)) {
+      showToast('⚠️ Sudah absen!', 'error'); return;
+    }
+    sesiLokal.absensi.push(absenEntry);
+    saveSesi();
+  }
+
+  // Anti-duplikat
+  sudahAbsen.push(identifier);
+  localStorage.setItem(absenKey, JSON.stringify(sudahAbsen));
+
+  // Kirim ke GAS
+  const bintangDidapat = parsed.endTime && (Date.now() - (parsed.endTime - 60*60*1000)) <= 30 * 60 * 1000;
+  try {
+    await api({
+      action: 'absenKegiatanDirect',
+      sesiId: parsed.sesiId, NIA: nia, nama,
+      namaSesi: parsed.namaSesi || 'Kegiatan',
+      jenis: sesiLokal?.jenis || 'umum', waktu,
+      isNonAnggota: isNonAnggota ? '1' : '0',
+      instansi: instansi || '',
+      bintang: '0', startTimeSesi: ''
+    });
+  } catch(e) { console.warn('GAS gagal:', e.message); }
+
+  // Kirim selfie
+  if (publikSelfieDataURL) kirimFotoKeGAS(nia, nama, waktu, publikSelfieDataURL, 'publik-kegiatan');
+
+  // Tampilkan sukses
+  document.getElementById('publik-form-absen').style.display = 'none';
+  document.getElementById('publik-sukses').style.display = 'block';
+  document.getElementById('publik-sukses-nama').textContent = `Selamat datang, ${nama}!${isNonAnggota && instansi ? ' — ' + instansi : ''}`;
+  document.getElementById('publik-sukses-waktu').textContent = `Dicatat pada ${waktu}`;
+  
+  showToast('✅ Absensi berhasil! Selamat datang, ' + nama + '!', 'success');
+}
+window.publikSubmitAbsen = publikSubmitAbsen;
 window.kegiatanBukaKamera=kegiatanBukaKamera; window.kegiatanAmbilFoto=kegiatanAmbilFoto;
 window.kegiatanUlangFoto=kegiatanUlangFoto; window.kegiatanLanjutScan=kegiatanLanjutScan;
 window.kegiatanToggleScan=kegiatanToggleScan; window.previewSelfieKegiatan=previewSelfieKegiatan; window.setScanType=setScanType; window.toggleScan=toggleScan; window.adminLogin=adminLogin; window.switchTab=switchTab; window.togglePickAnggota=togglePickAnggota; window.saveJadwalHari=saveJadwalHari; window.showAddAnggota=showAddAnggota; window.showEditAnggota=showEditAnggota; window.submitEditAnggota=submitEditAnggota; window.closeModal=closeModal; window.submitAddAnggota=submitAddAnggota; window.deleteAnggota=deleteAnggota; window.loadRekap=loadRekap; window.exportCSV=exportCSV; window.downloadJadwalPDF=downloadJadwalPDF; window.renderJadwalPreview=renderJadwalPreview; window.goToAbsenPulang=goToAbsenPulang; window.adminLogout=adminLogout; window.addAgendaItem=addAgendaItem; window.saveAgendaItem=saveAgendaItem; window.deleteAgendaItem=deleteAgendaItem; window.savePengumuman=savePengumuman; window.previewAgendaWarna=previewAgendaWarna; window.loadRiwayatPiket=loadRiwayatPiket; window.exportRiwayatCSV=exportRiwayatCSV;
@@ -9894,6 +10437,26 @@ window.kipmSaveAddGen = kipmSaveAddGen;
 console.log('✅ KIPM Data Anggota System ready');
 // Init landing state
 document.body.classList.add('on-landing');
+
+// ── Auto-detect URL QR Parameter (?sesi=...) ──
+// Ini memungkinkan peserta scan QR dengan kamera biasa dan langsung dibawa ke halaman absen
+(function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sesiParam = params.get('sesi');
+    if (sesiParam) {
+      // Tunggu semua script selesai load, lalu redirect ke halaman absen publik
+      setTimeout(() => {
+        if (typeof initAbsenPublik === 'function') {
+          const handled = initAbsenPublik();
+          if (!handled) {
+            console.warn('QR sesi tidak valid atau sudah kadaluarsa');
+          }
+        }
+      }, 500);
+    }
+  } catch(e) { console.warn('URL param parse error:', e); }
+})();
 
 // ── Auto-restore halaman ujicoba setelah reload (skip password) ──
 (function() {
