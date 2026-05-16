@@ -1937,8 +1937,6 @@ function switchIzinTab(tab) {
       <button class="nav-item" onclick="switchTab('izin')" data-tab="izin">📝 Izin & Ketidakhadiran</button>
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota BPH Aktif</button>
       <button class="nav-item" onclick="switchTab('data-kipm')" data-tab="data-kipm">📚 Data Anggota KIPM</button>
-      <button class="nav-item" onclick="switchTab('riwayat-kipmup')" data-tab="riwayat-kipmup">🏛️ Riwayat Absen KIPM-UP</button>
-      <button class="nav-item" onclick="switchTab('riwayat-nonbph')" data-tab="riwayat-nonbph">🌱 Riwayat Absen Non-BPH</button>
       <button class="nav-item" onclick="switchTab('konten')" data-tab="konten">🖊️ Edit Konten Halaman</button>
       <!-- Papan Peringkat dihapus — sudah terintegrasi di Riwayat DP & Riwayat Piket -->
     </nav>
@@ -2453,15 +2451,6 @@ function switchIzinTab(tab) {
       </div>
 
       <div id="tab-konten" class="tab-panel">
-        <div class="table-card" style="padding:20px; margin-bottom:16px;">
-          <div style="font-weight:600; font-size:15px; margin-bottom:4px;">🖥️ Pengaturan Kiosk Bursa</div>
-          <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">PIN untuk membuka mode scanner di komputer bursa</div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input class="form-input" id="kiosk-pin-input" type="password" placeholder="PIN baru (min. 4 karakter)" style="flex:1;">
-            <button class="btn-sm primary" style="padding:10px 16px; white-space:nowrap;" onclick="setKioskPinAdmin()">💾 Simpan PIN</button>
-          </div>
-          <div style="font-size:11px; color:var(--text3); margin-top:8px;">PIN tersimpan di browser ini. Default: <span style="font-family:var(--mono); color:var(--accent2);">2017kipm</span></div>
-        </div>
         <div class="table-card" style="padding:20px; margin-bottom:16px;">
           <div style="font-weight:600; font-size:15px; margin-bottom:4px;">📋 Agenda Kegiatan</div>
           <div style="font-size:12px; color:var(--text2); margin-bottom:16px;">Perubahan langsung tampil di halaman anggota setelah absen</div>
@@ -10365,16 +10354,30 @@ function ujicobaRenderHistory() {
       container.innerHTML = '<div style="font-size:11px; color:var(--text3); text-align:center; padding:10px;">Belum ada rekap hari ini</div>';
       return;
     }
+    // Build name lookup from all data sources
+    const _nameLookup = {};
+    try {
+      if (typeof allAnggota !== 'undefined' && allAnggota.length) {
+        allAnggota.forEach(a => { if (a.NIA && a.nama) _nameLookup[a.NIA] = a.nama; });
+      }
+      const _kd = JSON.parse(localStorage.getItem('kipmAnggotaData') || '{}');
+      Object.values(_kd).forEach(gen => {
+        if (gen.members) gen.members.forEach(m => { if (m.nia && m.nama) _nameLookup[m.nia] = m.nama; });
+      });
+    } catch(e) {}
+
     container.innerHTML = todayRecords.map((r, idx) => {
       const iD = r.tipe === 'DATANG';
       const borderCol = iD ? 'var(--accent)' : '#c084fc';
+      // Best name: stored name (if different from NIA) → lookup by NIA → stored name → NIA
+      const displayNama = (r.nama && r.nama !== r.nia) ? r.nama : (_nameLookup[r.nia] || r.nia || '—');
       const fotoHTML = r.foto
         ? `<img src="${r.foto}" onclick="ujicobaPreviewFoto('${idx}')" style="width:72px; height:72px; border-radius:10px; object-fit:cover; border:2px solid ${borderCol}; flex-shrink:0; cursor:pointer; transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk preview">`
         : `<div style="width:72px; height:72px; border-radius:10px; background:var(--bg3); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:28px; border:2px solid var(--border2);">👤</div>`;
       return `<div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:10px; align-items:center;">
         ${fotoHTML}
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.nama && r.nama !== r.nia ? r.nama : (r.nia || '—')}</div>
+          <div style="font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayNama}</div>
           <div style="font-size:10px; color:#94a3b8; margin-top:2px;">${r.nia ? 'NIA ' + r.nia : ''}</div>
           <div style="font-size:10px; color:var(--text3); margin-top:1px;">${r.waktuStr || ''}</div>
         </div>
