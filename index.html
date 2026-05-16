@@ -769,6 +769,16 @@ const realAnggota = [
   {NIA:'000000001', nama:'Alfan Tirta Admajaya Putra', divisi:'Founder'}
 ];
 
+// DATA DEWAN PENGAWAS (DP) — hardcoded
+const realDP = [
+  {NIA:'072023013', nama:'Retno Anggraeni',      divisi:'Ketua DP'},
+  {NIA:'082024014', nama:'M. Fabian Al Aziz',    divisi:'DP'},
+  {NIA:'082024018', nama:'Putri Aisyah Novianti', divisi:'DP'},
+  {NIA:'082024024', nama:'Sabila Nur Aisyah',    divisi:'DP'},
+  {NIA:'082024016', nama:'Muhammad Anwar',        divisi:'DP'}
+];
+const dpAnggota = realDP; // alias
+
 const jadwalMingguanDefault = {
   // SENIN: Mariyah Sujana, Maudyna Tasya A., Melany Septiana Putri, Darwita Sangadji, Afief Baharmus, Ahmad Haidar Pasha, Tofan Habibi, Nasya Aliyah Inka
   1: ['092025012', '092025013', '092025014', '092025007', '092025002', '092025004', '082024029', '092025027'],
@@ -1748,7 +1758,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota BPH Aktif</button>
       <button class="nav-item" onclick="switchTab('data-kipm')" data-tab="data-kipm">📚 Data Anggota KIPM</button>
       <button class="nav-item" onclick="switchTab('konten')" data-tab="konten">🖊️ Edit Konten Halaman</button>
-      <button class="nav-item" onclick="switchTab('ranking')" data-tab="ranking">🏆 Papan Peringkat</button>
+      <!-- Papan Peringkat dihapus — sudah terintegrasi di Riwayat DP & Riwayat Piket -->
     </nav>
     <div class="sidebar-footer" style="padding:16px; border-top:1px solid var(--border);">
       <div id="admin-nama-display">Admin</div>
@@ -2034,6 +2044,9 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
           <div style="font-size:11px; color:var(--text3);" id="riwayat-piket-info"></div>
         </div>
 
+        <!-- PAPAN PERINGKAT PIKET — auto-update saat halaman dibuka -->
+        <div id="piket-ranking-board" style="margin-bottom:16px;"></div>
+
         <!-- STAT BOXES -->
         <div id="riwayat-piket-stats" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:16px;"></div>
 
@@ -2111,6 +2124,9 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
             </div>
           </div>
         </div>
+        <!-- PAPAN PERINGKAT DP — auto-update saat halaman dibuka -->
+        <div id="dp-ranking-board" style="margin-bottom:16px;"></div>
+
         <div id="dp-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
         <div class="table-card">
           <div class="table-scroll">
@@ -2125,78 +2141,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         </div>
       </div>
 
-      <!-- RANKING TAB -->
-      <div id="tab-ranking" class="tab-panel">
-        <!-- Filter periode -->
-        <div class="table-card" style="padding:16px; margin-bottom:16px;">
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <div style="font-weight:600; font-size:14px;">🏆 Papan Peringkat KIPM-UP</div>
-            <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
-              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);">Dari</div>
-              <input type="date" class="form-input" id="rank-dari" style="width:auto;" onchange="loadAllRankings()">
-              <div style="font-size:12px;color:var(--text2);">s/d</div>
-              <input type="date" class="form-input" id="rank-sampai" style="width:auto;" onchange="loadAllRankings()">
-              <button class="btn-sm primary" onclick="loadAllRankings()">🔄 Refresh</button>
-            </div>
-          </div>
-        </div>
 
-        <!-- 2 kolom ranking utama -->
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-
-          <!-- RANK 1: Bintang Piket -->
-          <div class="table-card" style="padding:0; overflow:hidden;">
-            <div style="background:linear-gradient(135deg,rgba(212,175,55,0.25),rgba(212,175,55,0.05)); padding:14px 16px; border-bottom:1px solid var(--border);">
-              <div style="font-size:13px; font-weight:700; color:#f0c040;">⭐ Ranking Piket</div>
-              <div style="font-size:11px; color:var(--text3); margin-top:2px;">0⭐=tidak absen · 1⭐=hadir tapi lupa pulang · 2⭐=hadir+pulang &lt;4j · 3⭐=hadir+pulang ≥4j</div>
-            </div>
-            <div id="rank-piket" style="padding:12px;">
-              <div style="color:var(--text3); font-size:12px; text-align:center; padding:20px;">Memuat...</div>
-            </div>
-          </div>
-
-          <!-- RANK 2: Poin Kegiatan/Rapat/Kelas -->
-          <div class="table-card" style="padding:0; overflow:hidden;">
-            <div style="background:linear-gradient(135deg,rgba(192,132,252,0.2),rgba(192,132,252,0.03)); padding:14px 16px; border-bottom:1px solid var(--border);">
-              <div style="font-size:13px; font-weight:700; color:#c084fc;">🎯 Ranking Kegiatan</div>
-              <div style="font-size:11px; color:var(--text3); margin-top:2px;">&lt;5 mnt=3poin · 5-15 mnt=2poin · &gt;15 mnt=1poin · tidak hadir=0poin</div>
-            </div>
-            <div id="rank-kegiatan" style="padding:12px;">
-              <div style="color:var(--text3); font-size:12px; text-align:center; padding:20px;">Memuat...</div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- RANKING DP — full width -->
-        <div class="table-card" style="padding:0; overflow:hidden; margin-bottom:16px;">
-          <div style="background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(251,191,36,0.03)); padding:14px 16px; border-bottom:1px solid var(--border);">
-            <div style="font-size:13px; font-weight:700; color:#fbbf24;">📋 Ranking Dewan Pengawas (DP)</div>
-            <div style="font-size:11px; color:var(--text3); margin-top:2px;">0⭐=tidak absen · 1⭐=hadir tapi lupa pulang · 2⭐=hadir+pulang · 3⭐=hadir rapat/kegiatan</div>
-          </div>
-          <div id="rank-dp" style="padding:12px;">
-            <div style="color:var(--text3); font-size:12px; text-align:center; padding:20px;">Memuat...</div>
-          </div>
-        </div>
-
-        <!-- Rekap bulanan historis -->
-        <div class="table-card" style="padding:16px;">
-          <div style="font-weight:600; font-size:14px; margin-bottom:12px;">📊 Rekap Historis per Bulan</div>
-          <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-            <select class="form-input" id="hist-kategori" style="width:auto;">
-              <option value="piket">Piket (Bintang)</option>
-              <option value="nonpiket">Non-Piket (Durasi)</option>
-              <option value="kegiatan">Kegiatan (Poin)</option>
-              <option value="bintang">Bintang Kegiatan ⭐</option>
-            </select>
-            <select class="form-input" id="hist-bulan" style="width:auto;"></select>
-            <button class="btn-sm primary" onclick="loadHistorisRank()">Tampilkan</button>
-          </div>
-          <div id="rank-historis-table">
-            <div style="color:var(--text3); font-size:12px; text-align:center; padding:20px;">Pilih bulan dan klik Tampilkan</div>
-          </div>
-        </div>
-      </div>
 
       <!-- KONTEN TAB -->
       <div id="tab-konten" class="tab-panel">
@@ -3132,8 +3077,8 @@ function switchTab(tab){
   
   if(tab==='dashboard') loadDashboard(); 
   if(tab==='rekap') loadRekap(); 
-  if(tab==='riwayat-piket') initRiwayatPiket();
-  if(tab==='riwayat-dp') initRiwayatDP();
+  if(tab==='riwayat-piket') { initRiwayatPiket(); renderPiketRankingBoard(); }
+  if(tab==='riwayat-dp') { initRiwayatDP(); renderDPRankingBoard(); }
   if(tab==='anggota') loadAnggotaTable(); 
   if(tab==='jadwal'){ loadAnggotaForPicker(); renderJadwalPreview(); } 
   if(tab==='konten') renderAgendaEditor();
@@ -8253,6 +8198,142 @@ function renderRiwayatDP() {
   }).join('');
 }
 window.renderRiwayatDP = renderRiwayatDP;
+
+// ══════════════════════════════════════════════════════════
+// PAPAN PERINGKAT DP — ditampilkan di halaman Riwayat Absensi DP
+// ══════════════════════════════════════════════════════════
+async function renderDPRankingBoard() {
+  const el = document.getElementById('dp-ranking-board');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">⏳ Memuat peringkat DP...</div>';
+
+  try {
+    // Ambil semua riwayat absensi dari GAS (tanpa filter tanggal, max 1 tahun)
+    const today = getTodayWIB();
+    const d = new Date(today); d.setFullYear(d.getFullYear() - 1);
+    const from = d.toISOString().slice(0,10);
+    const res = await api({action:'getRekapAbsensi', from, to: today});
+    const allData = (res.ok && res.data) ? res.data : [];
+
+    // Hitung hadir per NIA DP (hadir = ada record DATANG)
+    const dpNIASet = new Set(realDP.map(d => d.NIA));
+    const hadirMap = {};
+    realDP.forEach(d => { hadirMap[d.NIA] = 0; });
+    allData.forEach(r => {
+      if (r.tipe === 'DATANG' && dpNIASet.has(r.NIA)) hadirMap[r.NIA] = (hadirMap[r.NIA] || 0) + 1;
+    });
+
+    // Sort descending hadir
+    const ranked = realDP.map(d => ({...d, hadir: hadirMap[d.NIA] || 0}))
+      .sort((a,b) => b.hadir - a.hadir);
+
+    const badgeColors = ['#fbbf24','#94a3b8','#f97316'];
+    const badgeLabel  = ['🥇 #1','🥈 #2','🥉 #3'];
+
+    el.innerHTML = `
+      <div class="table-card" style="padding:0;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(251,191,36,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;color:#fbbf24;">🏆 Papan Peringkat Dewan Pengawas</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto;">Berdasarkan jumlah hadir (check-in)</span>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          ${ranked.length === 0
+            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi</div>'
+            : ranked.map((m, i) => {
+                const isTop = i < 3;
+                const bc = isTop ? badgeColors[i] : 'var(--text3)';
+                const bl = isTop ? badgeLabel[i] : `#${i+1}`;
+                return `
+                  <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid ${isTop?bc+'44':'var(--border)'};border-radius:10px;padding:10px 14px;${i===0?'box-shadow:0 0 0 1px '+bc+'33;':''}">
+                    <div style="min-width:42px;font-size:13px;font-weight:700;color:${bc};text-align:center;">${bl}</div>
+                    <div style="flex:1;">
+                      <div style="font-weight:600;font-size:13px;color:var(--text1);">${m.nama}</div>
+                      <div style="font-size:10px;color:var(--text3);margin-top:1px;">${m.divisi}</div>
+                    </div>
+                    <div style="text-align:right;">
+                      <div style="font-size:18px;font-weight:700;color:${bc};">${m.hadir}</div>
+                      <div style="font-size:10px;color:var(--text3);">kehadiran</div>
+                    </div>
+                  </div>`;
+              }).join('')
+          }
+        </div>
+      </div>`;
+  } catch(e) {
+    const el2 = document.getElementById('dp-ranking-board');
+    if(el2) el2.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px;">Belum ada data absensi</div>';
+  }
+}
+window.renderDPRankingBoard = renderDPRankingBoard;
+
+// ══════════════════════════════════════════════════════════
+// PAPAN PERINGKAT PIKET — ditampilkan di halaman Riwayat Absensi Piket
+// ══════════════════════════════════════════════════════════
+async function renderPiketRankingBoard() {
+  const el = document.getElementById('piket-ranking-board');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">⏳ Memuat peringkat piket...</div>';
+
+  try {
+    const today = getTodayWIB();
+    const d = new Date(today); d.setMonth(d.getMonth() - 3);
+    const from = d.toISOString().slice(0,10);
+    const res = await api({action:'getRekapAbsensi', from, to: today});
+    const allData = (res.ok && res.data) ? res.data : [];
+
+    // Ambil BPH Aktif dari GEN 9 (status Aktif)
+    const gen9 = (KIPM_DEFAULT_DATA['GEN 9']?.members || []).filter(m => m.status === 'Aktif');
+    const gen9NIASet = new Set(gen9.map(m => m.nia));
+
+    // Hitung hadir piket per NIA (hanya DATANG = check-in piket)
+    const hadirMap = {};
+    gen9.forEach(m => { hadirMap[m.nia] = 0; });
+    allData.forEach(r => {
+      if (r.tipe === 'DATANG' && gen9NIASet.has(r.NIA)) hadirMap[r.NIA] = (hadirMap[r.NIA] || 0) + 1;
+    });
+
+    const ranked = gen9.map(m => ({nama: m.nama, jabatan: m.jabatan, nia: m.nia, hadir: hadirMap[m.nia] || 0}))
+      .sort((a,b) => b.hadir - a.hadir)
+      .slice(0, 10); // top 10
+
+    const badgeColors = ['#fbbf24','#94a3b8','#f97316'];
+    const badgeLabel  = ['🥇 #1','🥈 #2','🥉 #3'];
+
+    el.innerHTML = `
+      <div class="table-card" style="padding:0;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;color:#f0c040;">⭐ Papan Peringkat Piket BPH Aktif (Gen 9)</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto;">Berdasarkan jumlah hadir piket</span>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          ${ranked.length === 0
+            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi</div>'
+            : ranked.map((m, i) => {
+                const isTop = i < 3;
+                const bc = isTop ? badgeColors[i] : 'var(--text3)';
+                const bl = isTop ? badgeLabel[i] : `#${i+1}`;
+                return `
+                  <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid ${isTop?bc+'44':'var(--border)'};border-radius:10px;padding:10px 14px;${i===0?'box-shadow:0 0 0 1px '+bc+'33;':''}">
+                    <div style="min-width:42px;font-size:13px;font-weight:700;color:${bc};text-align:center;">${bl}</div>
+                    <div style="flex:1;">
+                      <div style="font-weight:600;font-size:13px;color:var(--text1);">${m.nama}</div>
+                      <div style="font-size:10px;color:var(--text3);margin-top:1px;">${m.jabatan}</div>
+                    </div>
+                    <div style="text-align:right;">
+                      <div style="font-size:18px;font-weight:700;color:${bc};">${m.hadir}</div>
+                      <div style="font-size:10px;color:var(--text3);">kehadiran</div>
+                    </div>
+                  </div>`;
+              }).join('')
+          }
+        </div>
+      </div>`;
+  } catch(e) {
+    const el2 = document.getElementById('piket-ranking-board');
+    if(el2) el2.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px;">Belum ada data absensi</div>';
+  }
+}
+window.renderPiketRankingBoard = renderPiketRankingBoard;
 
 function exportRiwayatDPCSV() {
   if(!_dpDataCache.length) { showToast('Tidak ada data untuk diekspor','error'); return; }
