@@ -9487,11 +9487,20 @@ let ujicobaFotoData = null;
 let ujicobaCurrentTipe = 'DATANG';
 
 function goToUjiCoba() {
-  // Show password modal
-  document.getElementById('ujicoba-pass-input').value = '';
-  document.getElementById('ujicoba-pass-error').style.display = 'none';
-  document.getElementById('modal-ujicoba-password').classList.add('show');
-  setTimeout(() => document.getElementById('ujicoba-pass-input').focus(), 200);
+  // Langsung masuk tanpa password — sistem utama
+  sessionStorage.setItem('ujicoba_authed', '1');
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+  const pg = document.getElementById('page-ujicoba');
+  pg.style.display = 'flex';
+  pg.classList.add('active');
+  document.body.classList.remove('on-landing');
+  try { history.replaceState(null, '', '#ujicoba'); } catch(e) {}
+  const tgl = document.getElementById('ujicoba-tanggal');
+  if (tgl) tgl.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  ujicobaLoadPiket();
+  ujicobaLoadEvents();
+  ujicobaReset();
+  ujicobaRenderHistory();
 }
 
 function closeUjiCobaModal() {
@@ -9714,23 +9723,44 @@ function ujicobaSubmit() {
   // ── Kirim ke GAS — pakai validateBarcode + token (sama persis dengan kiosk) ──
   (async () => {
     try {
-      const token = getCurrentQRToken(); // token waktu 30 detik, sama seperti QR piket
-      const gasRes = await api({
-        action: 'validateBarcode',
-        token: token,
-        NIA: nia,
-        tipe: ujicobaCurrentTipe,
-        lat: '', lng: '', acc: '',
-        isJadwal: isPiket ? 'true' : 'false',
-        source: 'kipmup'
-      });
-      if (gasRes && gasRes.ok) {
-        console.log('✅ [Uji Coba] Absen ' + ujicobaCurrentTipe + ' berhasil masuk GAS — NIA ' + nia);
-      } else {
-        console.warn('⚠️ [Uji Coba] GAS response:', gasRes && gasRes.msg ? gasRes.msg : JSON.stringify(gasRes));
+      // Coba validateBarcode dengan token fresh — jika gagal, coba sekali lagi
+      let gasRes = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const token = getCurrentQRToken();
+        gasRes = await api({
+          action: 'validateBarcode',
+          token: token,
+          NIA: nia,
+          tipe: ujicobaCurrentTipe,
+          lat: '', lng: '', acc: '',
+          isJadwal: isPiket ? 'true' : 'false',
+          source: 'kipmup'
+        });
+        if (gasRes && gasRes.ok) {
+          console.log('✅ [KIPM-UP] Absen ' + ujicobaCurrentTipe + ' berhasil ke GAS — NIA ' + nia);
+          // Update status di notif modal bahwa GAS berhasil
+          const msgEl = document.getElementById('ujicoba-notif-msg');
+          if (msgEl) {
+            const gasInfo = document.getElementById('ujicoba-gas-status');
+            if (gasInfo) gasInfo.innerHTML = '✅ <b>Rekap tersimpan</b> di server';
+          }
+          break;
+        }
+        // Jika token expired (ganti slot 30 detik), coba ulang setelah 500ms
+        if (attempt < 2) await new Promise(r => setTimeout(r, 600));
+      }
+      if (!gasRes || !gasRes.ok) {
+        const msg = gasRes && gasRes.msg ? gasRes.msg : (gasRes ? JSON.stringify(gasRes) : 'no response');
+        console.warn('⚠️ [KIPM-UP] GAS gagal setelah 3x:', msg);
+        // Tandai record untuk retry sinkronisasi
+        try {
+          const pending = JSON.parse(localStorage.getItem('ujicoba_pending_sync') || '[]');
+          pending.push({ nia, tipe: ujicobaCurrentTipe, waktu: record.waktu, isPiket, nama: namaAnggota });
+          localStorage.setItem('ujicoba_pending_sync', JSON.stringify(pending));
+        } catch(e2) {}
       }
     } catch(e) {
-      console.warn('⚠️ [Uji Coba] Gagal kirim ke GAS (offline?):', e.message);
+      console.warn('⚠️ [KIPM-UP] Gagal kirim ke GAS (offline?):', e.message);
     }
   })();
 
@@ -10112,7 +10142,7 @@ window.refreshDashboardUjicoba = refreshDashboardUjicoba;
     <div id="ujicoba-notif-title" style="font-size:18px; font-weight:800; color:var(--text); margin-bottom:8px; line-height:1.3;"></div>
     <div id="ujicoba-notif-nama" style="font-size:13px; color:var(--text2); margin-bottom:10px; font-weight:600;"></div>
     <span id="ujicoba-notif-badge" style="display:inline-block; font-size:12px; font-weight:700; padding:5px 14px; border-radius:20px; border:1px solid; margin-bottom:20px;"></span>
-    <div id="ujicoba-notif-msg" style="font-size:13px; color:#cbd5e1; line-height:1.8; text-align:left; background:var(--bg3); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border);"></div>
+    <div id="ujicoba-notif-msg" style="font-size:13px; color:#cbd5e1; line-height:1.8; text-align:left; background:var(--bg3); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border);"><div id="ujicoba-gas-status" style="font-size:11px; color:var(--text3); margin-top:8px;">⏳ Mengirim data ke server...</div></div>
     <div style="font-size:11px; color:var(--text3); margin-bottom:14px;" id="ujicoba-notif-countdown"></div>
     <button onclick="closeUjicobaNotif(true)" style="width:100%; padding:12px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; border-radius:12px; cursor:pointer;">👍 Tutup & Lanjut</button>
   </div>
