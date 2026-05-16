@@ -9127,8 +9127,7 @@ async function renderPiketRankingBoard() {
     });
 
     const ranked = gen9.map(m => ({nama: m.nama, jabatan: m.jabatan, nia: m.nia, hadir: hadirMap[m.nia] || 0}))
-      .sort((a,b) => b.hadir - a.hadir)
-      .slice(0, 10); // top 10
+      .sort((a,b) => b.hadir - a.hadir); // tampilkan SEMUA anggota BPH
 
     const badgeColors = ['#fbbf24','#94a3b8','#f97316'];
     const badgeLabel  = ['🥇 #1','🥈 #2','🥉 #3'];
@@ -9136,7 +9135,7 @@ async function renderPiketRankingBoard() {
     el.innerHTML = `
       <div class="table-card" style="padding:0;overflow:hidden;">
         <div style="background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:700;color:#f0c040;">⭐ Papan Peringkat Piket BPH Aktif (Gen 9)</span>
+          <span style="font-size:13px;font-weight:700;color:#f0c040;">⭐ Papan Peringkat Piket BPH Aktif</span>
           <span style="font-size:10px;color:var(--text3);margin-left:auto;">📅 Periode: ${periodeLabel}</span>
         </div>
         <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
@@ -10374,11 +10373,8 @@ function showUjicobaNotif(tipe, nama) {
 
   modal.classList.add('show');
 
-  // Auto close + refresh after 5 seconds
+  // TIDAK ada auto-close — modal hanya ditutup lewat tombol manual
   clearTimeout(window._ujicoba_notif_timer);
-  window._ujicoba_notif_timer = setTimeout(() => {
-    closeUjicobaNotif(true);
-  }, 5000);
 }
 
 function closeUjicobaNotif(doRefresh) {
