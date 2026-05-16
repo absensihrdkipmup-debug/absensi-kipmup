@@ -902,6 +902,14 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
           <span style="font-size:16px;">⏳</span> Memuat jadwal...
         </div>
       </div>
+
+      <!-- Rekap Absen Hari Ini -->
+      <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:22px; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+        <span>🗂️</span> Rekap Absen Hari Ini
+      </div>
+      <div id="ujicoba-history-list" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:11px; color:var(--text3); text-align:center; padding:10px;">Belum ada rekap hari ini</div>
+      </div>
     </div>
 
     <!-- ══ KOLOM TENGAH: Input NIA + Selfie ══ -->
@@ -945,19 +953,19 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       </div>
 
       <!-- Link Galeri BEI — selalu tampil -->
-      <a href="https://rdis.idx.co.id/id/register-visit-onsite/401" target="_blank" id="ujicoba-galeri-link" style="display:block; width:100%; text-decoration:none; background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(234,88,12,0.08)); border:1px solid rgba(245,158,11,0.4); border-radius:14px; padding:14px 16px; transition:all 0.2s;">
+      <a href="https://rdis.idx.co.id/id/register-visit-onsite/401" target="_blank" id="ujicoba-galeri-link" style="display:block; width:100%; text-decoration:none; background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(234,88,12,0.10)); border:1.5px solid rgba(245,158,11,0.55); border-radius:14px; padding:14px 16px; transition:all 0.2s;">
         <div style="display:flex; align-items:flex-start; gap:12px;">
           <div style="font-size:26px; flex-shrink:0; line-height:1;">⚠️</div>
           <div style="flex:1;">
-            <div style="font-size:11px; font-weight:800; color:#f59e0b; letter-spacing:0.5px; margin-bottom:5px;">JANGAN LUPA!</div>
-            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:5px;">Absen juga di sini →</div>
-            <div style="font-size:11px; color:var(--text2); margin-bottom:8px;">Daftar Hadir Galeri Bursa BEI — wajib diisi setiap hadir</div>
-            <div style="font-size:10px; color:var(--text3); font-style:italic; line-height:1.5; background:rgba(0,0,0,0.2); border-radius:8px; padding:8px 10px; border-left:2px solid #f59e0b;">
-              💡 Bantu galeri ini lebih maju! Dengan kalian mengisi link ini, galeri kita berpotensi menjadi <strong style="color:#fbbf24;">galeri teraktif</strong> dan rewardnya besar. Yuk manfaatkan!
+            <div style="font-size:11px; font-weight:800; color:#fbbf24; letter-spacing:0.5px; margin-bottom:5px;">JANGAN LUPA!</div>
+            <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:5px;">Absen juga di sini →</div>
+            <div style="font-size:12px; color:#e2c97e; margin-bottom:8px; font-weight:500;">Daftar Hadir Galeri Bursa BEI — wajib diisi setiap hadir</div>
+            <div style="font-size:11px; color:#f0d88a; font-style:italic; line-height:1.6; background:rgba(0,0,0,0.25); border-radius:8px; padding:8px 10px; border-left:2px solid #fbbf24;">
+              💡 Bantu galeri ini lebih maju! Dengan kalian mengisi link ini, galeri kita berpotensi menjadi <strong style="color:#ffd84d;">galeri teraktif</strong> dan rewardnya besar. Yuk manfaatkan!
             </div>
-            <div style="font-size:10px; color:var(--text3); margin-top:6px; font-family:var(--mono);">rdis.idx.co.id · Register Visit Onsite</div>
+            <div style="font-size:11px; color:#c9a84c; margin-top:6px; font-family:var(--mono);">rdis.idx.co.id · Register Visit Onsite</div>
           </div>
-          <div style="font-size:16px; color:var(--text3); flex-shrink:0; align-self:center;">›</div>
+          <div style="font-size:18px; color:#fbbf24; flex-shrink:0; align-self:center;">›</div>
         </div>
       </a>
 
@@ -968,7 +976,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       <div id="ujicoba-result" style="display:none; width:100%; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:12px; padding:16px; text-align:center;">
         <div style="font-size:24px; margin-bottom:6px;">✅</div>
         <div style="font-weight:700; color:var(--accent); font-size:14px;" id="ujicoba-result-nama"></div>
-        <div style="font-size:11px; color:var(--text3); margin-top:4px;" id="ujicoba-result-info"></div>
+        <div style="font-size:11px; color:var(--text2); margin-top:4px;" id="ujicoba-result-info"></div>
         <button onclick="ujicobaReset()" style="margin-top:12px; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); font-family:var(--font); font-size:12px; padding:7px 18px; border-radius:20px; cursor:pointer;">🔄 Absen Berikutnya</button>
       </div>
     </div>
@@ -9243,7 +9251,7 @@ document.body.classList.add('on-landing');
         document.body.classList.remove('on-landing');
         const tgl = document.getElementById('ujicoba-tanggal');
         if (tgl) tgl.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        setTimeout(() => { ujicobaLoadPiket(); ujicobaLoadEvents(); ujicobaReset(); }, 100);
+        setTimeout(() => { ujicobaLoadPiket(); ujicobaLoadEvents(); ujicobaReset(); ujicobaRenderHistory(); }, 100);
       }
     }
   }
@@ -9288,6 +9296,7 @@ function checkUjiCobaPassword() {
     ujicobaLoadPiket();
     ujicobaLoadEvents();
     ujicobaReset();
+    ujicobaRenderHistory();
   } else {
     document.getElementById('ujicoba-pass-error').style.display = 'block';
     document.getElementById('ujicoba-pass-input').value = '';
@@ -9459,37 +9468,22 @@ function ujicobaSubmit() {
     localStorage.setItem('ujicoba_absen', JSON.stringify(records));
   } catch(e) { showToast('⚠️ Gagal menyimpan data lokal', 'error'); }
 
-  // ── Show success result ──
-  document.getElementById('ujicoba-photo-btns').style.display = 'none';
-  document.getElementById('ujicoba-btn-submit').style.display = 'none';
-  document.getElementById('ujicoba-galeri-link').style.display = 'none';
-  const result = document.getElementById('ujicoba-result');
-  document.getElementById('ujicoba-result-nama').textContent =
-    (ujicobaCurrentTipe === 'DATANG' ? '🟢 Datang' : '🟣 Pulang') + ' — ' + namaAnggota;
-  document.getElementById('ujicoba-result-info').textContent =
-    'Tercatat pukul ' + waktuStr +
-    ' · NIA ' + nia +
-    (isPiket ? ' · ✅ Piket' : ' · 👤 Non-Piket');
-  result.style.display = 'block';
-
-  showToast('✅ Absen berhasil dicatat!', 'success');
-
-  // ── Update piket list status immediately ──
+  // ── Update rekap history di kolom kiri langsung ──
+  ujicobaRenderHistory();
   ujicobaUpdatePiketStatus(nia, ujicobaCurrentTipe, waktuStr);
 
-  // ── Auto-refresh halaman setelah 3 detik ──
-  let countdown = 3;
-  const infoEl = document.getElementById('ujicoba-result-info');
-  const baseText = infoEl.textContent;
-  const timer = setInterval(() => {
+  // ── Tampilkan notif modal selamat ──
+  showUjicobaNotif(ujicobaCurrentTipe, namaAnggota);
+
+  // Countdown di notif modal
+  let countdown = 5;
+  const ctEl = document.getElementById('ujicoba-notif-countdown');
+  clearInterval(window._ujicoba_notif_interval);
+  window._ujicoba_notif_interval = setInterval(() => {
     countdown--;
-    infoEl.textContent = baseText + ' · Refresh dalam ' + countdown + 's...';
-    if (countdown <= 0) {
-      clearInterval(timer);
-      // Stop camera stream if any
-      if (ujicobaStream) { ujicobaStream.getTracks().forEach(t => t.stop()); ujicobaStream = null; }
-      // Full page refresh — data sudah tersimpan di localStorage
-      window.location.reload();
+    if (ctEl) ctEl.textContent = 'Halaman refresh otomatis dalam ' + countdown + ' detik...';
+    if (countdown <= 0) clearInterval(window._ujicoba_notif_interval);
+  }, 1000);
     }
   }, 1000);
 }
@@ -9669,14 +9663,109 @@ function ujicobaLoadEvents() {
         '<span style="font-size:18px;">' + ev.ikon + '</span>' +
         '<div style="font-size:13px; font-weight:700; color:' + ev.textColor + ';">' + ev.nama + '</div>' +
         '</div>' +
-        '<div style="font-size:10px; color:var(--text3); margin-bottom:2px;">📅 ' + hariStr + (ev.hari !== null ? ' · ' + ev.waktu : '') + '</div>' +
-        '<div style="font-size:10px; color:var(--text3);">📍 ' + ev.tempat + '</div>' +
+        '<div style="font-size:11px; color:#c0cce0; margin-bottom:3px; font-weight:500;">📅 ' + hariStr + (ev.hari !== null ? ' · ' + ev.waktu : '') + '</div>' +
+        '<div style="font-size:11px; color:#c0cce0; font-weight:500;">📍 ' + ev.tempat + '</div>' +
         '</div>';
     }).join('');
   }
 }
+
+// ── NOTIF MODAL ABSENSI BERHASIL ──
+function showUjicobaNotif(tipe, nama) {
+  const modal = document.getElementById('modal-ujicoba-notif');
+  const isDatang = tipe === 'DATANG';
+
+  document.getElementById('ujicoba-notif-emoji').textContent = isDatang ? '😊' : '👋';
+  document.getElementById('ujicoba-notif-title').textContent = isDatang
+    ? 'Selamat! Absensi Datang Berhasil'
+    : 'Selamat! Absensi Pulang Berhasil';
+  document.getElementById('ujicoba-notif-nama').textContent = nama;
+  document.getElementById('ujicoba-notif-badge').textContent = isDatang ? '🟢 Datang' : '🟣 Pulang';
+  document.getElementById('ujicoba-notif-badge').style.background = isDatang
+    ? 'rgba(74,222,128,0.2)' : 'rgba(192,132,252,0.2)';
+  document.getElementById('ujicoba-notif-badge').style.color = isDatang ? 'var(--accent)' : '#c084fc';
+  document.getElementById('ujicoba-notif-badge').style.borderColor = isDatang
+    ? 'rgba(74,222,128,0.5)' : 'rgba(192,132,252,0.5)';
+
+  const msgEl = document.getElementById('ujicoba-notif-msg');
+  if (isDatang) {
+    msgEl.innerHTML =
+      '✨ Jangan lupa cek <strong style="color:#fbbf24;">Event Mendatang</strong> ya!<br><br>' +
+      '📋 Isi absensi untuk <strong style="color:#e2c97e;">Galeri Bursa BEI</strong> juga.<br><br>' +
+      '🤲 Berdoa dulu sebelum mulai aktivitas.<br><br>' +
+      '<em style="color:#94a3b8;">Semoga yang kamu kerjakan hari ini bermanfaat banyak buat kamu dan sekitar. Selamat bertugas! 😊</em>';
+  } else {
+    msgEl.innerHTML =
+      '🙏 Terima kasih atas effort kamu untuk <strong style="color:#4ade80;">KIPM</strong> hari ini!<br><br>' +
+      '🛣️ Hati-hati di jalan ya.<br><br>' +
+      '❤️ Jaga kesehatannya dan jangan lupa berdoa.<br><br>' +
+      '<em style="color:#94a3b8;">Sampai bertemu kembali! 👋</em>';
+  }
+
+  modal.classList.add('show');
+
+  // Auto close + refresh after 5 seconds
+  clearTimeout(window._ujicoba_notif_timer);
+  window._ujicoba_notif_timer = setTimeout(() => {
+    closeUjicobaNotif(true);
+  }, 5000);
+}
+
+function closeUjicobaNotif(doRefresh) {
+  document.getElementById('modal-ujicoba-notif').classList.remove('show');
+  clearTimeout(window._ujicoba_notif_timer);
+  if (doRefresh) {
+    if (ujicobaStream) { ujicobaStream.getTracks().forEach(t => t.stop()); ujicobaStream = null; }
+    window.location.reload();
+  }
+}
+
+// ── Render rekap history di kolom kiri ──
+function ujicobaRenderHistory() {
+  const container = document.getElementById('ujicoba-history-list');
+  if (!container) return;
+  const todayStr = new Date().toISOString().split('T')[0];
+  try {
+    const records = JSON.parse(localStorage.getItem('ujicoba_absen') || '[]');
+    const todayRecords = records.filter(r => r.tanggal === todayStr || (r.waktu && r.waktu.startsWith(todayStr)));
+    if (todayRecords.length === 0) {
+      container.innerHTML = '<div style="font-size:11px; color:var(--text3); text-align:center; padding:10px;">Belum ada rekap hari ini</div>';
+      return;
+    }
+    container.innerHTML = todayRecords.map(r => {
+      const iD = r.tipe === 'DATANG';
+      return '<div style="background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:10px; align-items:center;">' +
+        (r.foto ? '<img src="' + r.foto + '" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid ' + (iD ? 'var(--accent)' : '#c084fc') + '; flex-shrink:0;">' : '<div style="width:40px; height:40px; border-radius:50%; background:var(--bg3); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px;">👤</div>') +
+        '<div style="flex:1; min-width:0;">' +
+        '<div style="font-size:12px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + (r.nama || r.nia) + '</div>' +
+        '<div style="font-size:10px; color:#94a3b8; margin-top:1px;">' + (r.nia ? 'NIA ' + r.nia + ' · ' : '') + r.waktuStr + '</div>' +
+        '</div>' +
+        '<span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; background:' + (iD ? 'rgba(74,222,128,0.15)' : 'rgba(192,132,252,0.15)') + '; color:' + (iD ? 'var(--accent)' : '#c084fc') + '; border:1px solid ' + (iD ? 'rgba(74,222,128,0.3)' : 'rgba(192,132,252,0.3)') + ';">' + (iD ? '🟢 Datang' : '🟣 Pulang') + '</span>' +
+        '</div>';
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="font-size:11px; color:var(--text3);">Gagal memuat rekap</div>';
+  }
+}
 // ── End Absen Uji Coba ──
 </script>
+
+<!-- ══ MODAL NOTIF ABSENSI BERHASIL ══ -->
+<div id="modal-ujicoba-notif" class="modal-overlay" style="z-index:600;">
+  <div class="modal-box" style="max-width:400px; text-align:center; padding:32px 28px;">
+    <div id="ujicoba-notif-emoji" style="font-size:56px; margin-bottom:12px; display:block; line-height:1; animation:notifBounce 0.6s cubic-bezier(0.34,1.56,0.64,1);">😊</div>
+    <div id="ujicoba-notif-title" style="font-size:18px; font-weight:800; color:var(--text); margin-bottom:8px; line-height:1.3;"></div>
+    <div id="ujicoba-notif-nama" style="font-size:13px; color:var(--text2); margin-bottom:10px; font-weight:600;"></div>
+    <span id="ujicoba-notif-badge" style="display:inline-block; font-size:12px; font-weight:700; padding:5px 14px; border-radius:20px; border:1px solid; margin-bottom:20px;"></span>
+    <div id="ujicoba-notif-msg" style="font-size:13px; color:#cbd5e1; line-height:1.8; text-align:left; background:var(--bg3); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border);"></div>
+    <div style="font-size:11px; color:var(--text3); margin-bottom:14px;" id="ujicoba-notif-countdown"></div>
+    <button onclick="closeUjicobaNotif(true)" style="width:100%; padding:12px; background:var(--accent); color:#0a1a0f; border:none; font-family:var(--font); font-size:14px; font-weight:700; border-radius:12px; cursor:pointer;">👍 Tutup & Lanjut</button>
+  </div>
+</div>
+<style>
+@keyframes notifBounce { from { opacity:0; transform:scale(0.5); } to { opacity:1; transform:scale(1); } }
+#modal-ujicoba-notif .modal-box { animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+</style>
 
 <!-- ── MODAL EDIT ANGGOTA KIPM ── -->
 <div id="modal-kipm-edit" class="modal-overlay">
