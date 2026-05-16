@@ -834,9 +834,14 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
       </button>
       <!-- Absen Piket (Lama) disembunyikan — masih bisa diakses via Admin -->
 
-      <button class="btn-main btn-kegiatan" onclick="goToKegiatanScan()">
-        <span class="btn-icon">🎯</span>
-        <span class="btn-text"><span class="btn-label">Absen Kegiatan KIPM-UP</span><span class="btn-sublabel">Rapat / Kelas / Event</span></span>
+      <button class="btn-main" onclick="showModalTampilQRKegiatan()" style="background:rgba(167,139,250,0.10); color:#c084fc; border-color:rgba(167,139,250,0.28);">
+        <span class="btn-icon">📲</span>
+        <span class="btn-text"><span class="btn-label">Tampilkan QR Kegiatan</span><span class="btn-sublabel">Admin · Tampilkan QR untuk peserta scan</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
+      <button class="btn-main" onclick="goToRiwayatKegiatan()" style="background:rgba(34,211,238,0.09); color:var(--accent2); border-color:rgba(34,211,238,0.25);">
+        <span class="btn-icon">📋</span>
+        <span class="btn-text"><span class="btn-label">Riwayat Absensi Kegiatan</span><span class="btn-sublabel">Lihat kehadiran event / rapat</span></span>
         <span class="btn-arrow">›</span>
       </button>
       <button class="btn-main" onclick="goToIzinAnggota()" style="background:rgba(251,146,60,0.10); color:#fb923c; border-color:rgba(251,146,60,0.25);">
@@ -1962,6 +1967,7 @@ function switchIzinTab(tab) {
       <button class="nav-item" onclick="switchTab('riwayat-piket')" data-tab="riwayat-piket">📅 Riwayat Absensi Piket</button>
       <button class="nav-item" onclick="switchTab('riwayat-dp')" data-tab="riwayat-dp">🛡️ Riwayat Absensi DP</button>
       <button class="nav-item" onclick="switchTab('kegiatan')" data-tab="kegiatan">🎯 Absensi Kegiatan</button>
+      <button class="nav-item" onclick="switchTab('riwayat-kegiatan')" data-tab="riwayat-kegiatan">📋 Riwayat Absensi Kegiatan</button>
       <button class="nav-item" onclick="switchTab('izin')" data-tab="izin">📝 Izin & Ketidakhadiran</button>
       <button class="nav-item" onclick="switchTab('anggota')" data-tab="anggota">👥 Data Anggota BPH Aktif</button>
       <button class="nav-item" onclick="switchTab('data-kipm')" data-tab="data-kipm">📚 Data Anggota KIPM</button>
@@ -2124,6 +2130,23 @@ function switchIzinTab(tab) {
       </div>
 
       <!-- IZIN TAB -->
+      <div id="tab-riwayat-kegiatan" class="tab-panel">
+        <div style="padding:16px; max-width:700px; margin:0 auto; width:100%;">
+          <div style="font-weight:700; font-size:15px; margin-bottom:14px;">📋 Riwayat Absensi Kegiatan</div>
+          <!-- Filter jenis -->
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;">
+            <button class="tab-sub-btn active" id="rwkt-tab-semua" onclick="switchRwktJenis('')">Semua</button>
+            <button class="tab-sub-btn" id="rwkt-tab-rapat" onclick="switchRwktJenis('rapat')">🏛️ Rapat</button>
+            <button class="tab-sub-btn" id="rwkt-tab-kelas-tnd" onclick="switchRwktJenis('kelas-tnd')">🎓 Kelas TnD</button>
+            <button class="tab-sub-btn" id="rwkt-tab-kelas-enr" onclick="switchRwktJenis('kelas-enr')">📈 Kelas EnR</button>
+            <button class="tab-sub-btn" id="rwkt-tab-lainnya" onclick="switchRwktJenis('lainnya')">📌 Lainnya</button>
+          </div>
+          <div id="riwayat-kegiatan-list" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="color:var(--text3); text-align:center; padding:32px; font-size:13px;">⏳ Memuat data...</div>
+          </div>
+        </div>
+      </div>
+
       <div id="tab-izin" class="tab-panel">
         <div class="tab-sub">
           <button class="tab-sub-btn active" onclick="switchSubIzin('masuk')" id="sub-izin-masuk">📥 Izin Masuk</button>
@@ -2637,13 +2660,13 @@ function switchIzinTab(tab) {
   <div style="padding:16px; max-width:600px; margin:0 auto; width:100%;">
     <!-- Filter jenis -->
     <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;">
-      <button class="tab-sub-btn active" id="rwkt-tab-semua" onclick="switchRwktJenis('')">Semua</button>
-      <button class="tab-sub-btn" id="rwkt-tab-rapat" onclick="switchRwktJenis('rapat')">🏛️ Rapat</button>
-      <button class="tab-sub-btn" id="rwkt-tab-kelas-tnd" onclick="switchRwktJenis('kelas-tnd')">🎓 Kelas TnD</button>
-      <button class="tab-sub-btn" id="rwkt-tab-kelas-enr" onclick="switchRwktJenis('kelas-enr')">📈 Kelas EnR</button>
-      <button class="tab-sub-btn" id="rwkt-tab-lainnya" onclick="switchRwktJenis('lainnya')">📌 Lainnya</button>
+      <button class="tab-sub-btn active" id="rwkt-pub-tab-semua" onclick="switchRwktJenis('')">Semua</button>
+      <button class="tab-sub-btn" id="rwkt-pub-tab-rapat" onclick="switchRwktJenis('rapat')">🏛️ Rapat</button>
+      <button class="tab-sub-btn" id="rwkt-pub-tab-kelas-tnd" onclick="switchRwktJenis('kelas-tnd')">🎓 Kelas TnD</button>
+      <button class="tab-sub-btn" id="rwkt-pub-tab-kelas-enr" onclick="switchRwktJenis('kelas-enr')">📈 Kelas EnR</button>
+      <button class="tab-sub-btn" id="rwkt-pub-tab-lainnya" onclick="switchRwktJenis('lainnya')">📌 Lainnya</button>
     </div>
-    <div id="riwayat-kegiatan-list" style="display:flex; flex-direction:column; gap:12px;">
+    <div id="riwayat-kegiatan-list-pub" style="display:flex; flex-direction:column; gap:12px;">
       <div style="color:var(--text3); text-align:center; padding:32px; font-size:13px;">⏳ Memuat data...</div>
     </div>
   </div>
@@ -3579,7 +3602,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
   document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); 
   
-  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'riwayat-dp':'🛡️ Riwayat Absensi DP', 'kegiatan':'Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'riwayat-kipmup':'🏛️ Riwayat Absen KIPM-UP', 'riwayat-nonbph':'🌱 Riwayat Absen Non-BPH', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
+  const titles = {'dashboard':'Dashboard', 'jadwal':'Jadwal Piket', 'rekap':'Rekap Absensi Hadir', 'riwayat-piket':'📅 Riwayat Absensi Piket', 'riwayat-dp':'🛡️ Riwayat Absensi DP', 'kegiatan':'Absensi Kegiatan', 'riwayat-kegiatan':'📋 Riwayat Absensi Kegiatan', 'izin':'Izin & Ketidakhadiran', 'anggota':'Data Anggota BPH Aktif', 'data-kipm':'📚 Data Anggota KIPM', 'riwayat-kipmup':'🏛️ Riwayat Absen KIPM-UP', 'riwayat-nonbph':'🌱 Riwayat Absen Non-BPH', 'konten':'Edit Konten Halaman', 'ranking':'🏆 Papan Peringkat'};
   document.getElementById('tab-title').innerText = titles[tab] || ''; 
   
   if(tab==='dashboard') loadDashboard(); 
@@ -3590,6 +3613,7 @@ function switchTab(tab){
   if(tab==='jadwal'){ loadAnggotaForPicker(); renderJadwalPreview(); } 
   if(tab==='konten') renderAgendaEditor();
   if(tab==='kegiatan'){ renderPesertaSesiPicker(); switchSubKegiatan('buat'); }
+  if(tab==='riwayat-kegiatan'){ setTimeout(() => renderRiwayatKegiatan(), 50); }
   if(tab==='izin'){ switchSubIzin('masuk'); document.getElementById('izin-tanggal').value = getTodayWIB(); }
   if(tab==='ranking'){ initRankingBulan(); loadAllRankings(); }
   if(tab==='data-kipm'){ setTimeout(kipmInit, 0); }
