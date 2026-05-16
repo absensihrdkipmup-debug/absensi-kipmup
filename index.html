@@ -2279,11 +2279,6 @@ function switchIzinTab(tab) {
             <button class="btn-sm" onclick="resetTampilanPiket()" title="Kosongkan tampilan riwayat piket. Data di GAS tetap aman." style="background:rgba(248,113,113,0.10);border-color:rgba(248,113,113,0.35);color:var(--red);">🔄 Reset Tampilan</button>
 
           </div>
-          <!-- View toggle -->
-          <div style="display:flex;gap:6px;margin-bottom:8px;">
-            <button id="btn-view-template" class="tab-sub-btn active" onclick="setRiwayatView('template')">📋 Per Hari (Template)</button>
-            <button id="btn-view-tabel" class="tab-sub-btn" onclick="setRiwayatView('tabel')">📊 Tabel Lengkap</button>
-          </div>
           <div style="font-size:11px; color:var(--text3);" id="riwayat-piket-info"></div>
         </div>
 
@@ -2304,25 +2299,11 @@ function switchIzinTab(tab) {
         <!-- STAT BOXES -->
         <div id="riwayat-piket-stats" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:16px;"></div>
 
-        <!-- VIEW: TEMPLATE PER HARI (default) -->
+        <!-- VIEW: TEMPLATE PER HARI -->
         <div id="riwayat-view-template">
           <div id="riwayat-hari-cards"></div>
         </div>
 
-        <!-- VIEW: TABEL LENGKAP (tersembunyi default) -->
-        <div id="riwayat-view-tabel" style="display:none;">
-          <div class="table-card">
-            <div class="table-scroll">
-              <table>
-                <thead><tr>
-                  <th>Tanggal</th><th>Hari</th><th>NIA</th><th>Nama</th><th>Divisi</th>
-                  <th>Status Hadir</th><th>Durasi</th><th>Keterangan</th>
-                </tr></thead>
-                <tbody id="tbl-riwayat-piket"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
       </div>
       
       <!-- ANGGOTA TAB -->
@@ -9977,44 +9958,25 @@ async function renderPiketRankingBoard() {
     el.innerHTML = `
       <div class="table-card" style="padding:0;overflow:hidden;">
         <div style="background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:700;color:#f0c040;">📅 Riwayat Absensi Piket — Per Anggota</span>
+          <span style="font-size:13px;font-weight:700;color:#f0c040;">📅 Rekap Kehadiran Piket — Per Anggota</span>
           <span style="font-size:10px;color:var(--text3);margin-left:auto;">Periode: ${periodeLabel}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border);background:var(--bg3);">
-          <div style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.5px;">ANGGOTA</div>
-          <div style="padding:6px 4px;font-size:10px;font-weight:700;color:var(--text3);text-align:center;">DETAIL</div>
-          <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#4ade80;text-align:right;">KEHADIRAN</div>
         </div>
         <div style="display:flex;flex-direction:column;">
           ${ranked.length === 0
             ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">Belum ada data absensi untuk periode ini</div>'
             : ranked.map((m, i) => {
                 const isTop = i < 3;
-                const bc = isTop ? badgeColors[i] : (m.hadir > 0 ? 'var(--accent)' : 'var(--text3)');
-                const badge = isTop ? badgeLabel[i] : `#${i+1}`;
-                const alphaColor = m.alpha > 0 ? 'var(--red)' : 'var(--text3)';
-                const lpColor = m.lupaPulang > 0 ? '#f59e0b' : 'var(--text3)';
-                const totalHari = m.hadir + m.alpha;
+                const bc = isTop ? badgeColors[i] : (m.hadir > 0 ? 'var(--text1)' : 'var(--text3)');
+                const badge = isTop ? badgeLabel[i] : `<span style="color:var(--text3);font-weight:600;font-size:12px;">#${i+1}</span>`;
                 return `
-                  <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);background:${i===0?'rgba(212,175,55,0.04)':i===1?'rgba(148,163,184,0.03)':i===2?'rgba(249,115,22,0.03)':''};">
-                    <div>
-                      <div style="display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:11px;font-weight:700;color:${bc};min-width:22px;">${badge}</span>
-                        <div>
-                          <div style="font-weight:600;font-size:13px;color:var(--text1);">${m.nama}</div>
-                          <div style="font-size:10px;color:var(--text3);">${m.jabatan}</div>
-                        </div>
-                      </div>
+                  <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);${i===0?'background:rgba(212,175,55,0.04);':i===1?'background:rgba(148,163,184,0.03);':i===2?'background:rgba(249,115,22,0.03);':''}">
+                    <div style="min-width:28px;text-align:center;font-size:14px;">${badge}</div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-weight:600;font-size:13px;color:${bc};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.nama}</div>
+                      <div style="font-size:10px;color:var(--text3);margin-top:1px;">${m.jabatan}</div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-                      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
-                        ${m.alpha > 0 ? `<span style="font-size:10px;background:rgba(248,113,113,0.12);color:${alphaColor};border:1px solid rgba(248,113,113,0.25);border-radius:6px;padding:1px 6px;white-space:nowrap;">❌ Alfa ${m.alpha}×</span>` : ''}
-                        ${m.lupaPulang > 0 ? `<span style="font-size:10px;background:rgba(245,158,11,0.12);color:${lpColor};border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:1px 6px;white-space:nowrap;">⏰ Lupa pulang ${m.lupaPulang}×</span>` : ''}
-                        ${m.alpha === 0 && m.lupaPulang === 0 ? '<span style="font-size:10px;background:rgba(74,222,128,0.10);color:var(--accent);border:1px solid rgba(74,222,128,0.25);border-radius:6px;padding:1px 8px;">✅ Disiplin</span>' : ''}
-                      </div>
-                    </div>
-                    <div style="text-align:right;min-width:60px;">
-                      <div style="font-size:18px;font-weight:700;color:${bc};">${m.hadir}</div>
+                    <div style="text-align:right;flex-shrink:0;">
+                      <div style="font-size:18px;font-weight:700;color:${isTop ? badgeColors[i] : (m.hadir > 0 ? 'var(--accent)' : 'var(--text3)')}">${m.hadir}</div>
                       <div style="font-size:10px;color:var(--text3);">kehadiran</div>
                     </div>
                   </div>`;
