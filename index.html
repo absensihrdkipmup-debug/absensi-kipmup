@@ -2035,6 +2035,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
             <input class="form-input" id="riwayat-piket-cari" placeholder="Cari nama / NIA..." style="width:150px;" oninput="renderRiwayatTemplate()">
             <button class="btn-sm primary" onclick="loadRiwayatPiket()">🔍 Tampilkan</button>
             <button class="btn-sm" onclick="exportRiwayatCSV()">⬇ Export CSV</button>
+            <button class="btn-sm" onclick="resetTampilanPiket()" title="Kosongkan tampilan riwayat piket. Data di GAS tetap aman." style="background:rgba(248,113,113,0.10);border-color:rgba(248,113,113,0.35);color:var(--red);">🔄 Reset Tampilan</button>
           </div>
           <!-- View toggle -->
           <div style="display:flex;gap:6px;margin-bottom:8px;">
@@ -2046,6 +2047,17 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
 
         <!-- PAPAN PERINGKAT PIKET — auto-update saat halaman dibuka -->
         <div id="piket-ranking-board" style="margin-bottom:16px;"></div>
+        <!-- INFO RESET -->
+        <div id="piket-reset-info" style="display:none;margin-bottom:16px;">
+          <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:18px;">ℹ️</span>
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:13px;font-weight:600;color:#f0c040;">Tampilan telah direset</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">Data di Google Sheets tetap aman. Pilih periode lalu klik <b>🔍 Tampilkan</b> untuk memuat ulang riwayat & papan peringkat piket sesuai tanggal yang dipilih.</div>
+            </div>
+            <button class="btn-sm primary" onclick="loadRiwayatPiket(); renderPiketRankingBoard();" style="white-space:nowrap;">🔍 Muat Ulang Sekarang</button>
+          </div>
+        </div>
 
         <!-- STAT BOXES -->
         <div id="riwayat-piket-stats" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:16px;"></div>
@@ -2121,11 +2133,23 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
               <input class="form-input" id="dp-cari" placeholder="Cari nama / NIA..." style="width:160px;" oninput="renderRiwayatDP()">
               <button class="btn-sm primary" onclick="loadRiwayatDP()">🔍 Tampilkan</button>
               <button class="btn-sm" onclick="exportRiwayatDPCSV()" style="background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.25);color:var(--accent);">⬇ CSV</button>
+              <button class="btn-sm" onclick="resetTampilanDP()" title="Kosongkan tampilan riwayat DP. Data di GAS tetap aman." style="background:rgba(248,113,113,0.10);border-color:rgba(248,113,113,0.35);color:var(--red);">🔄 Reset Tampilan</button>
             </div>
           </div>
         </div>
         <!-- PAPAN PERINGKAT DP — auto-update saat halaman dibuka -->
         <div id="dp-ranking-board" style="margin-bottom:16px;"></div>
+        <!-- INFO RESET -->
+        <div id="dp-reset-info" style="display:none;margin-bottom:16px;">
+          <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:18px;">ℹ️</span>
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:13px;font-weight:600;color:#fbbf24;">Tampilan telah direset</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">Data di Google Sheets tetap aman. Pilih periode lalu klik <b>🔍 Tampilkan</b> untuk memuat ulang riwayat & papan peringkat DP sesuai tanggal yang dipilih.</div>
+            </div>
+            <button class="btn-sm primary" onclick="loadRiwayatDP(); renderDPRankingBoard();" style="white-space:nowrap;">🔍 Muat Ulang Sekarang</button>
+          </div>
+        </div>
 
         <div id="dp-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
         <div class="table-card">
@@ -5414,6 +5438,7 @@ function initRiwayatPiket() {
 // Shared state: semua baris hasil load (cached)
 let riwayatAllRows = [];
 let riwayatDayGroups = []; // [{tgl, dow, namaHari, rows:[...]}]
+let _piketRawDataCache = []; // raw GAS data untuk ranking board
 
 async function loadRiwayatPiket() {
   const from = document.getElementById('riwayat-piket-from')?.value || '';
@@ -5435,6 +5460,9 @@ async function loadRiwayatPiket() {
     const res = await api({ action: 'getRekapAbsensi', from, to });
     if(res && res.ok && Array.isArray(res.data)) absensiData = res.data;
   } catch(e) { console.warn('Gagal ambil absensi:', e); }
+
+  // Cache raw data untuk ranking board
+  _piketRawDataCache = absensiData;
 
   // Generate semua hari kerja Senin-Jumat dalam range
   const namaHariArr = ['','Senin','Selasa','Rabu','Kamis','Jumat'];
@@ -5537,6 +5565,12 @@ async function loadRiwayatPiket() {
   // Render sesuai mode
   if(riwayatViewMode === 'template') renderRiwayatTemplate();
   else renderRiwayatTabel();
+
+  // Papan peringkat piket refresh dengan periode yang sama
+  renderPiketRankingBoard();
+  // Sembunyikan hint reset
+  const hintEl = document.getElementById('piket-reset-info');
+  if (hintEl) hintEl.style.display = 'none';
 }
 
 // ── RENDER VIEW 1: Template Per Hari ──
@@ -8105,6 +8139,11 @@ async function loadRiwayatDP() {
     _dpDataCache = allData.filter(r => dpNIAs.has(r.NIA));
 
     renderRiwayatDP();
+    // Papan peringkat ikut periode yang sama — pakai cache yg baru
+    renderDPRankingBoard();
+    // Sembunyikan hint reset
+    const infoEl = document.getElementById('dp-reset-info');
+    if (infoEl) infoEl.style.display = 'none';
   } catch(e) {
     if(tbody) tbody.innerHTML = `<tr><td colspan="7" class="empty-state">❌ Gagal memuat: ${e.message}</td></tr>`;
   }
@@ -8200,27 +8239,102 @@ function renderRiwayatDP() {
 window.renderRiwayatDP = renderRiwayatDP;
 
 // ══════════════════════════════════════════════════════════
+// RESET TAMPILAN DP — clear cache & tabel, data GAS aman
+// ══════════════════════════════════════════════════════════
+function resetTampilanDP() {
+  if (!confirm('Reset tampilan Riwayat Absensi DP?\n\n✅ Data di Google Sheets TETAP AMAN.\n⚠️ Tampilan & papan peringkat akan dikosongkan.\n\nGunakan tombol "🔍 Tampilkan" atau pilih periode baru untuk memuat ulang.')) return;
+
+  // Clear cache dan tabel
+  _dpDataCache = [];
+
+  const tbody = document.getElementById('tbl-dp');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-state" style="color:var(--text3);">Tampilan direset. Pilih periode & klik 🔍 Tampilkan untuk memuat ulang.</td></tr>';
+
+  const statsEl = document.getElementById('dp-stats');
+  if (statsEl) statsEl.innerHTML = '';
+
+  // Kosongkan papan peringkat
+  const rankEl = document.getElementById('dp-ranking-board');
+  if (rankEl) rankEl.innerHTML = '';
+
+  // Tampilkan info hint
+  const infoEl = document.getElementById('dp-reset-info');
+  if (infoEl) infoEl.style.display = 'block';
+
+  showToast('✅ Tampilan Riwayat DP direset. Data GAS tetap aman.', 'success');
+}
+window.resetTampilanDP = resetTampilanDP;
+
+// ══════════════════════════════════════════════════════════
+// RESET TAMPILAN PIKET — clear cache & tabel, data GAS aman
+// ══════════════════════════════════════════════════════════
+function resetTampilanPiket() {
+  if (!confirm('Reset tampilan Riwayat Absensi Piket?\n\n✅ Data di Google Sheets TETAP AMAN.\n⚠️ Tampilan & papan peringkat akan dikosongkan.\n\nGunakan tombol "🔍 Tampilkan" atau pilih periode baru untuk memuat ulang.')) return;
+
+  // Clear semua cache riwayat piket
+  riwayatAllRows = [];
+  riwayatDayGroups = [];
+  _piketRawDataCache = [];
+
+  const cardsEl = document.getElementById('riwayat-hari-cards');
+  if (cardsEl) cardsEl.innerHTML = '<div style="color:var(--text3);padding:24px;text-align:center;">Tampilan direset. Pilih periode & klik 🔍 Tampilkan untuk memuat ulang.</div>';
+
+  const tbody = document.getElementById('tbl-riwayat-piket');
+  if (tbody) tbody.innerHTML = '';
+
+  const statsEl = document.getElementById('riwayat-piket-stats');
+  if (statsEl) statsEl.innerHTML = '';
+
+  const infoEl2 = document.getElementById('riwayat-piket-info');
+  if (infoEl2) infoEl2.textContent = 'Tampilan dikosongkan. Pilih rentang tanggal lalu klik Tampilkan.';
+
+  // Kosongkan papan peringkat
+  const rankEl = document.getElementById('piket-ranking-board');
+  if (rankEl) rankEl.innerHTML = '';
+
+  // Tampilkan info hint
+  const hintEl = document.getElementById('piket-reset-info');
+  if (hintEl) hintEl.style.display = 'block';
+
+  showToast('✅ Tampilan Riwayat Piket direset. Data GAS tetap aman.', 'success');
+}
+window.resetTampilanPiket = resetTampilanPiket;
+
+// ══════════════════════════════════════════════════════════
 // PAPAN PERINGKAT DP — ditampilkan di halaman Riwayat Absensi DP
+// Ikut periode filter dp-from / dp-to
 // ══════════════════════════════════════════════════════════
 async function renderDPRankingBoard() {
   const el = document.getElementById('dp-ranking-board');
   if (!el) return;
   el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">⏳ Memuat peringkat DP...</div>';
 
+  // Ambil periode dari filter (atau default 1 tahun)
+  const today = getTodayWIB();
+  const fromEl = document.getElementById('dp-from');
+  const toEl   = document.getElementById('dp-to');
+  const from   = (fromEl && fromEl.value) ? fromEl.value : (() => { const d = new Date(today); d.setFullYear(d.getFullYear()-1); return d.toISOString().slice(0,10); })();
+  const to     = (toEl   && toEl.value)   ? toEl.value   : today;
+
+  // Label periode untuk ditampilkan
+  const periodeLabel = `${from} s/d ${to}`;
+
   try {
-    // Ambil semua riwayat absensi dari GAS (tanpa filter tanggal, max 1 tahun)
-    const today = getTodayWIB();
-    const d = new Date(today); d.setFullYear(d.getFullYear() - 1);
-    const from = d.toISOString().slice(0,10);
-    const res = await api({action:'getRekapAbsensi', from, to: today});
-    const allData = (res.ok && res.data) ? res.data : [];
+    // Gunakan _dpDataCache jika sudah ada data dari loadRiwayatDP periode yang sama
+    let data = _dpDataCache.length > 0 ? _dpDataCache : null;
+
+    if (!data) {
+      const res = await api({action:'getRekapAbsensi', from, to});
+      const allData = (res.ok && res.data) ? res.data : [];
+      const dpNIASet = new Set(realDP.map(d => d.NIA));
+      data = allData.filter(r => dpNIASet.has(r.NIA));
+    }
 
     // Hitung hadir per NIA DP (hadir = ada record DATANG)
-    const dpNIASet = new Set(realDP.map(d => d.NIA));
     const hadirMap = {};
     realDP.forEach(d => { hadirMap[d.NIA] = 0; });
-    allData.forEach(r => {
-      if (r.tipe === 'DATANG' && dpNIASet.has(r.NIA)) hadirMap[r.NIA] = (hadirMap[r.NIA] || 0) + 1;
+    data.forEach(r => {
+      if (r.tipe === 'DATANG' && hadirMap.hasOwnProperty(r.NIA)) hadirMap[r.NIA]++;
     });
 
     // Sort descending hadir
@@ -8230,15 +8344,19 @@ async function renderDPRankingBoard() {
     const badgeColors = ['#fbbf24','#94a3b8','#f97316'];
     const badgeLabel  = ['🥇 #1','🥈 #2','🥉 #3'];
 
+    // Sembunyikan reset-info kalau ada data
+    const infoEl = document.getElementById('dp-reset-info');
+    if (infoEl && data.length > 0) infoEl.style.display = 'none';
+
     el.innerHTML = `
       <div class="table-card" style="padding:0;overflow:hidden;">
-        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(251,191,36,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(251,191,36,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:13px;font-weight:700;color:#fbbf24;">🏆 Papan Peringkat Dewan Pengawas</span>
-          <span style="font-size:10px;color:var(--text3);margin-left:auto;">Berdasarkan jumlah hadir (check-in)</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto;">📅 Periode: ${periodeLabel}</span>
         </div>
         <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
           ${ranked.length === 0
-            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi</div>'
+            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi untuk periode ini</div>'
             : ranked.map((m, i) => {
                 const isTop = i < 3;
                 const bc = isTop ? badgeColors[i] : 'var(--text3)';
@@ -8268,18 +8386,31 @@ window.renderDPRankingBoard = renderDPRankingBoard;
 
 // ══════════════════════════════════════════════════════════
 // PAPAN PERINGKAT PIKET — ditampilkan di halaman Riwayat Absensi Piket
+// Ikut periode filter riwayat-piket-from / riwayat-piket-to
 // ══════════════════════════════════════════════════════════
 async function renderPiketRankingBoard() {
   const el = document.getElementById('piket-ranking-board');
   if (!el) return;
   el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">⏳ Memuat peringkat piket...</div>';
 
+  // Ambil periode dari filter piket (atau default 3 bulan)
+  const today = getTodayWIB();
+  const fromEl = document.getElementById('riwayat-piket-from');
+  const toEl   = document.getElementById('riwayat-piket-to');
+  const from   = (fromEl && fromEl.value) ? fromEl.value : (() => { const d = new Date(today); d.setMonth(d.getMonth()-3); return d.toISOString().slice(0,10); })();
+  const to     = (toEl   && toEl.value)   ? toEl.value   : today;
+
+  const periodeLabel = `${from} s/d ${to}`;
+
   try {
-    const today = getTodayWIB();
-    const d = new Date(today); d.setMonth(d.getMonth() - 3);
-    const from = d.toISOString().slice(0,10);
-    const res = await api({action:'getRekapAbsensi', from, to: today});
-    const allData = (res.ok && res.data) ? res.data : [];
+    // Gunakan _piketRawDataCache jika sudah ada data dari loadRiwayatPiket
+    let rawData = null;
+    if (_piketRawDataCache && _piketRawDataCache.length > 0) {
+      rawData = _piketRawDataCache;
+    } else {
+      const res = await api({action:'getRekapAbsensi', from, to});
+      rawData = (res.ok && res.data) ? res.data : [];
+    }
 
     // Ambil BPH Aktif dari GEN 9 (status Aktif)
     const gen9 = (KIPM_DEFAULT_DATA['GEN 9']?.members || []).filter(m => m.status === 'Aktif');
@@ -8288,7 +8419,7 @@ async function renderPiketRankingBoard() {
     // Hitung hadir piket per NIA (hanya DATANG = check-in piket)
     const hadirMap = {};
     gen9.forEach(m => { hadirMap[m.nia] = 0; });
-    allData.forEach(r => {
+    rawData.forEach(r => {
       if (r.tipe === 'DATANG' && gen9NIASet.has(r.NIA)) hadirMap[r.NIA] = (hadirMap[r.NIA] || 0) + 1;
     });
 
@@ -8301,13 +8432,13 @@ async function renderPiketRankingBoard() {
 
     el.innerHTML = `
       <div class="table-card" style="padding:0;overflow:hidden;">
-        <div style="background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <div style="background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:13px;font-weight:700;color:#f0c040;">⭐ Papan Peringkat Piket BPH Aktif (Gen 9)</span>
-          <span style="font-size:10px;color:var(--text3);margin-left:auto;">Berdasarkan jumlah hadir piket</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto;">📅 Periode: ${periodeLabel}</span>
         </div>
         <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
           ${ranked.length === 0
-            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi</div>'
+            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi untuk periode ini</div>'
             : ranked.map((m, i) => {
                 const isTop = i < 3;
                 const bc = isTop ? badgeColors[i] : 'var(--text3)';
