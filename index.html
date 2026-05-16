@@ -9420,16 +9420,25 @@ function ujicobaBukaKamera() {
 function ujicobaAmbilFoto() {
   const video = document.getElementById('ujicoba-video');
   const canvas = document.getElementById('ujicoba-canvas');
-  canvas.width = 400;
-  canvas.height = 400;
+
+  // Pakai dimensi asli video — crop square dari tengah (sama seperti kiosk)
+  const vw = video.videoWidth  || 480;
+  const vh = video.videoHeight || 480;
+  const side = Math.min(vw, vh); // ambil sisi terpendek untuk crop square
+  canvas.width  = side;
+  canvas.height = side;
   const ctx = canvas.getContext('2d');
-  // Flip to mirror
+
+  // Crop dari tengah + flip horizontal (mirror)
+  const sx = Math.floor((vw - side) / 2);
+  const sy = Math.floor((vh - side) / 2);
   ctx.save();
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(video, sx, sy, side, side, 0, 0, side, side);
   ctx.restore();
-  ujicobaFotoData = canvas.toDataURL('image/jpeg', 0.8);
+
+  ujicobaFotoData = canvas.toDataURL('image/jpeg', 0.82);
 
   // Stop camera, show preview
   if (ujicobaStream) { ujicobaStream.getTracks().forEach(t => t.stop()); ujicobaStream = null; }
@@ -9524,38 +9533,25 @@ function ujicobaSubmit() {
     localStorage.setItem('ujicoba_absen', JSON.stringify(records));
   } catch(e) { showToast('⚠️ Gagal menyimpan data lokal', 'error'); }
 
-  // ── MIGRASI: Kirim ke GAS backend (sama dengan sistem Absen Piket lama) ──
-  // Koneksi langsung ke Google Sheets — data absensi masuk ke sheet yang sama
+  // ── Kirim ke GAS — pakai validateBarcode + token (sama persis dengan kiosk) ──
   (async () => {
     try {
+      const token = getCurrentQRToken(); // token waktu 30 detik, sama seperti QR piket
       const gasRes = await api({
-        action: 'recordAbsensi',
+        action: 'validateBarcode',
+        token: token,
         NIA: nia,
-        nama: namaAnggota,
         tipe: ujicobaCurrentTipe,
-        lat: '',
-        lng: '',
-        acc: '',
-        source: 'ujicoba',   // penanda bahwa ini dari sistem Absen Uji Coba
-        selfieBase64: ujicobaFotoData || ''
+        lat: '', lng: '', acc: '',
+        isJadwal: isPiket ? 'true' : 'false'
       });
       if (gasRes && gasRes.ok) {
-        console.log('✅ [Uji Coba] Absen ' + ujicobaCurrentTipe + ' berhasil dikirim ke GAS untuk NIA ' + nia);
+        console.log('✅ [Uji Coba] Absen ' + ujicobaCurrentTipe + ' berhasil masuk GAS — NIA ' + nia);
       } else {
-        console.warn('⚠️ [Uji Coba] GAS response:', gasRes);
-        // Fallback: coba via validateBarcode (action piket lama)
-        await api({
-          action: 'validateBarcode',
-          NIA: nia,
-          tipe: ujicobaCurrentTipe,
-          lat: '', lng: '', acc: '',
-          isJadwal: isPiket,
-          source: 'ujicoba'
-        });
+        console.warn('⚠️ [Uji Coba] GAS response:', gasRes && gasRes.msg ? gasRes.msg : JSON.stringify(gasRes));
       }
     } catch(e) {
       console.warn('⚠️ [Uji Coba] Gagal kirim ke GAS (offline?):', e.message);
-      // Data sudah aman di localStorage, tidak perlu alert user
     }
   })();
 
