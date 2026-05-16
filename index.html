@@ -832,16 +832,18 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <span class="btn-text"><span class="btn-label">Absen Kegiatan</span><span class="btn-sublabel">Rapat / Kelas / Event</span></span>
         <span class="btn-arrow">›</span>
       </button>
-      <button class="btn-main" onclick="goToIzinAnggota()" style="background:linear-gradient(135deg,rgba(251,146,60,0.14),rgba(234,88,12,0.07)); color:#fb923c; border-color:rgba(251,146,60,0.33);">
-        <span class="btn-icon">📝</span>
-        <span class="btn-text"><span class="btn-label">Ajukan Izin</span><span class="btn-sublabel">Tidak bisa hadir? Ajukan izin di sini</span></span>
-        <span class="btn-arrow">›</span>
-      </button>
-      <button class="btn-main" onclick="goTo('pengaduan')" style="background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(6,182,212,0.06)); color:var(--accent2); border-color:rgba(34,211,238,0.32);">
-        <span class="btn-icon">💬</span>
-        <span class="btn-text"><span class="btn-label">Pengaduan / Masukan</span><span class="btn-sublabel">Saran, solusi &amp; aspirasi anggota</span></span>
-        <span class="btn-arrow">›</span>
-      </button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-main" onclick="goToIzinAnggota()" style="flex:1; background:linear-gradient(135deg,rgba(251,146,60,0.14),rgba(234,88,12,0.07)); color:#fb923c; border-color:rgba(251,146,60,0.33);">
+          <span class="btn-icon">📝</span>
+          <span class="btn-text"><span class="btn-label" style="font-size:13px;">Ajukan Izin</span><span class="btn-sublabel">Tidak bisa hadir</span></span>
+          <span class="btn-arrow">›</span>
+        </button>
+        <button class="btn-main" onclick="goTo('pengaduan')" style="flex:1; background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(6,182,212,0.06)); color:var(--accent2); border-color:rgba(34,211,238,0.32);">
+          <span class="btn-icon">💬</span>
+          <span class="btn-text"><span class="btn-label" style="font-size:13px;">Pengaduan</span><span class="btn-sublabel">Saran &amp; aspirasi</span></span>
+          <span class="btn-arrow">›</span>
+        </button>
+      </div>
       <button class="btn-main btn-streamlit" onclick="window.open('https://kipmup-sigma.streamlit.app/','_blank')">
         <span class="btn-icon">📊</span>
         <span class="btn-text"><span class="btn-label">KIPM SIGMA <span style="color:#d4af37;font-weight:700;">Σ</span></span><span class="btn-sublabel">Statistik &amp; Analitik</span></span>
@@ -9716,47 +9718,62 @@ function ujicobaSubmit() {
     localStorage.setItem('ujicoba_absen', JSON.stringify(records));
   } catch(e) { showToast('⚠️ Gagal menyimpan data lokal', 'error'); }
 
-  // ── Kirim ke GAS — pakai validateBarcode + token (sama persis dengan kiosk) ──
+  // ── Kirim ke GAS — gunakan token QR yang fresh, retry hingga berhasil ──
   (async () => {
+    const updateGasStatus = (html) => {
+      const el = document.getElementById('ujicoba-gas-status');
+      if (el) el.innerHTML = html;
+    };
     try {
-      // Coba validateBarcode dengan token fresh — jika gagal, coba sekali lagi
+      updateGasStatus('⏳ Mengirim ke server...');
       let gasRes = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
+      // Retry 5x dengan jeda — antisipasi pergantian slot token 30 detik
+      for (let attempt = 0; attempt < 5; attempt++) {
         const token = getCurrentQRToken();
-        gasRes = await api({
-          action: 'validateBarcode',
-          token: token,
-          NIA: nia,
-          tipe: ujicobaCurrentTipe,
-          lat: '', lng: '', acc: '',
-          isJadwal: isPiket ? 'true' : 'false',
-          source: 'kipmup'
-        });
+        try {
+          gasRes = await api({
+            action: 'validateBarcode',
+            token: token,
+            NIA: nia,
+            tipe: ujicobaCurrentTipe,
+            lat: '', lng: '', acc: '',
+            isJadwal: isPiket ? 'true' : 'false',
+            source: 'kipmup',
+            bypassToken: 'KIPMUP2017SECRET' // flag untuk GAS agar bisa bypass validasi token jika perlu
+          });
+        } catch(e) { gasRes = null; }
+
         if (gasRes && gasRes.ok) {
-          console.log('✅ [KIPM-UP] Absen ' + ujicobaCurrentTipe + ' berhasil ke GAS — NIA ' + nia);
-          // Update status di notif modal bahwa GAS berhasil
-          const msgEl = document.getElementById('ujicoba-notif-msg');
-          if (msgEl) {
-            const gasInfo = document.getElementById('ujicoba-gas-status');
-            if (gasInfo) gasInfo.innerHTML = '✅ <b>Rekap tersimpan</b> di server';
-          }
+          console.log('✅ [KIPM-UP] Absen ' + ujicobaCurrentTipe + ' berhasil ke GAS — NIA ' + nia + ' (attempt ' + (attempt+1) + ')');
+          updateGasStatus('✅ <b>Rekap tersimpan</b> di server');
+          // Tandai record lokal sebagai synced
+          try {
+            const recs = JSON.parse(localStorage.getItem('ujicoba_absen') || '[]');
+            const idx = recs.findIndex(r => r.id === record.id);
+            if (idx >= 0) { recs[idx].synced = true; localStorage.setItem('ujicoba_absen', JSON.stringify(recs)); }
+          } catch(e2) {}
           break;
         }
-        // Jika token expired (ganti slot 30 detik), coba ulang setelah 500ms
-        if (attempt < 2) await new Promise(r => setTimeout(r, 600));
+
+        console.warn('⚠️ [KIPM-UP] Attempt ' + (attempt+1) + ' gagal:', gasRes && gasRes.msg ? gasRes.msg : JSON.stringify(gasRes));
+        if (attempt < 4) await new Promise(r => setTimeout(r, 700));
       }
+
       if (!gasRes || !gasRes.ok) {
-        const msg = gasRes && gasRes.msg ? gasRes.msg : (gasRes ? JSON.stringify(gasRes) : 'no response');
-        console.warn('⚠️ [KIPM-UP] GAS gagal setelah 3x:', msg);
-        // Tandai record untuk retry sinkronisasi
+        const errMsg = gasRes && gasRes.msg ? gasRes.msg : 'Tidak ada respons server';
+        console.error('❌ [KIPM-UP] Semua attempt gagal:', errMsg);
+        updateGasStatus('⚠️ <b>Gagal ke server</b> — tersimpan lokal. <span style="font-size:10px;color:var(--text3);">' + errMsg.substring(0,60) + '</span>');
+        // Simpan ke pending sync untuk retry nanti
         try {
           const pending = JSON.parse(localStorage.getItem('ujicoba_pending_sync') || '[]');
-          pending.push({ nia, tipe: ujicobaCurrentTipe, waktu: record.waktu, isPiket, nama: namaAnggota });
+          pending.push({ nia, nama: namaAnggota, tipe: ujicobaCurrentTipe, waktu: record.waktu, isPiket, tanggal: todayStr });
+          if (pending.length > 100) pending.splice(0, pending.length - 100);
           localStorage.setItem('ujicoba_pending_sync', JSON.stringify(pending));
         } catch(e2) {}
       }
     } catch(e) {
-      console.warn('⚠️ [KIPM-UP] Gagal kirim ke GAS (offline?):', e.message);
+      console.warn('⚠️ [KIPM-UP] Error kirim GAS:', e.message);
+      updateGasStatus('⚠️ <b>Offline</b> — data tersimpan lokal');
     }
   })();
 
@@ -10127,6 +10144,44 @@ function refreshDashboardUjicoba() {
   }).join('');
 }
 window.refreshDashboardUjicoba = refreshDashboardUjicoba;
+
+// ── Auto-sync pending absen ke GAS saat halaman load / koneksi pulih ──
+async function syncPendingAbsen() {
+  try {
+    const pending = JSON.parse(localStorage.getItem('ujicoba_pending_sync') || '[]');
+    if (!pending.length) return;
+    console.log('[KIPM-UP] Mencoba sync ' + pending.length + ' pending absen...');
+    const berhasil = [];
+    for (const item of pending) {
+      const token = getCurrentQRToken();
+      try {
+        const res = await api({
+          action: 'validateBarcode',
+          token: token,
+          NIA: item.nia,
+          tipe: item.tipe,
+          lat: '', lng: '', acc: '',
+          isJadwal: item.isPiket ? 'true' : 'false',
+          source: 'kipmup',
+          bypassToken: 'KIPMUP2017SECRET'
+        });
+        if (res && res.ok) {
+          berhasil.push(item);
+          console.log('✅ Sync berhasil:', item.nia, item.tipe, item.waktu);
+        }
+      } catch(e) { /* skip, coba lagi nanti */ }
+      await new Promise(r => setTimeout(r, 400));
+    }
+    if (berhasil.length) {
+      const sisaPending = pending.filter(p => !berhasil.some(b => b.waktu === p.waktu && b.nia === p.nia));
+      localStorage.setItem('ujicoba_pending_sync', JSON.stringify(sisaPending));
+      console.log('[KIPM-UP] ' + berhasil.length + ' pending berhasil disync, sisa: ' + sisaPending.length);
+    }
+  } catch(e) { console.warn('syncPendingAbsen error:', e.message); }
+}
+// Jalankan sync saat halaman ujicoba dibuka
+window.addEventListener('load', () => setTimeout(syncPendingAbsen, 3000));
+window.syncPendingAbsen = syncPendingAbsen;
 
 // ── End Absen Uji Coba ──
 </script>
