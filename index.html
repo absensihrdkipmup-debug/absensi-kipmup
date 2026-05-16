@@ -839,11 +839,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
         <span class="btn-text"><span class="btn-label">Tampilkan QR Kegiatan</span><span class="btn-sublabel">Admin · Tampilkan QR untuk peserta scan</span></span>
         <span class="btn-arrow">›</span>
       </button>
-      <button class="btn-main" onclick="goToRiwayatKegiatan()" style="background:rgba(34,211,238,0.09); color:var(--accent2); border-color:rgba(34,211,238,0.25);">
-        <span class="btn-icon">📋</span>
-        <span class="btn-text"><span class="btn-label">Riwayat Absensi Kegiatan</span><span class="btn-sublabel">Lihat kehadiran event / rapat</span></span>
-        <span class="btn-arrow">›</span>
-      </button>
+      <!-- Riwayat Absensi Kegiatan dipindah ke menu Admin -->
       <button class="btn-main" onclick="goToIzinAnggota()" style="background:rgba(251,146,60,0.10); color:#fb923c; border-color:rgba(251,146,60,0.25);">
         <span class="btn-icon">📝</span>
         <span class="btn-text"><span class="btn-label">Ajukan Izin &amp; Pengaduan</span><span class="btn-sublabel">Tidak bisa hadir · Saran &amp; aspirasi</span></span>
@@ -9880,19 +9876,16 @@ window.renderDPRankingBoard = renderDPRankingBoard;
 async function renderPiketRankingBoard() {
   const el = document.getElementById('piket-ranking-board');
   if (!el) return;
-  el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">⏳ Memuat peringkat piket...</div>';
+  el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">⏳ Memuat daftar absensi piket...</div>';
 
-  // Ambil periode dari filter piket (atau default 3 bulan)
   const today = getTodayWIB();
   const fromEl = document.getElementById('riwayat-piket-from');
   const toEl   = document.getElementById('riwayat-piket-to');
   const from   = (fromEl && fromEl.value) ? fromEl.value : (() => { const d = new Date(today); d.setMonth(d.getMonth()-3); return d.toISOString().slice(0,10); })();
   const to     = (toEl   && toEl.value)   ? toEl.value   : today;
-
   const periodeLabel = `${from} s/d ${to}`;
 
   try {
-    // Gunakan _piketRawDataCache jika sudah ada data dari loadRiwayatPiket
     let rawData = null;
     if (_piketRawDataCache && _piketRawDataCache.length > 0) {
       rawData = _piketRawDataCache;
@@ -9901,44 +9894,126 @@ async function renderPiketRankingBoard() {
       rawData = (res.ok && res.data) ? res.data : [];
     }
 
-    // Ambil BPH Aktif dari GEN 9 (status Aktif)
+    // Ambil BPH Aktif GEN 9
     const gen9 = (KIPM_DEFAULT_DATA['GEN 9']?.members || []).filter(m => m.status === 'Aktif');
     const gen9NIASet = new Set(gen9.map(m => m.nia));
 
-    // Hitung hadir piket per NIA (hanya DATANG = check-in piket)
-    const hadirMap = {};
-    gen9.forEach(m => { hadirMap[m.nia] = 0; });
+    // Bangun pasangan DATANG/PULANG per NIA+tanggal
+    const pairs = {};
     rawData.forEach(r => {
-      if (r.tipe === 'DATANG' && gen9NIASet.has(r.NIA)) hadirMap[r.NIA] = (hadirMap[r.NIA] || 0) + 1;
+      if (!gen9NIASet.has(r.NIA)) return;
+      const key = r.NIA + '_' + r.tanggal;
+      if (!pairs[key]) pairs[key] = { NIA: r.NIA, tanggal: r.tanggal, adaDatang: false, adaPulang: false, durasi: 0, waktuDatang: null };
+      if (r.tipe === 'DATANG') { pairs[key].adaDatang = true; if (r.waktu) pairs[key].waktuDatang = r.waktu; }
+      if (r.tipe === 'PULANG' && r.durasi && r.durasi !== '-') {
+        const mnt = typeof parseDurasiToMenit === 'function' ? parseDurasiToMenit(r.durasi) : 0;
+        if (mnt > 0) { pairs[key].adaPulang = true; pairs[key].durasi = Math.min(mnt, 720); }
+      }
+    });
+    // Estimasi lupa pulang
+    const DURASI_LP = typeof DURASI_LUPA_PULANG !== 'undefined' ? DURASI_LUPA_PULANG : 240;
+    const BATAS_4H  = typeof BATAS_4_JAM !== 'undefined' ? BATAS_4_JAM : 240;
+    Object.values(pairs).forEach(p => {
+      if (p.adaDatang && !p.adaPulang && p.tanggal < today && p.waktuDatang) {
+        try { const m = String(p.waktuDatang).match(/(\d{1,2}):(\d{2})/); if (m) p.durasi = DURASI_LP; } catch(e) {}
+      }
     });
 
-    const ranked = gen9.map(m => ({nama: m.nama, jabatan: m.jabatan, nia: m.nia, hadir: hadirMap[m.nia] || 0}))
-      .sort((a,b) => b.hadir - a.hadir); // tampilkan SEMUA anggota BPH
+    // Hitung statistik per anggota
+    const statMap = {};
+    gen9.forEach(m => {
+      statMap[m.nia] = { nama: m.nama, jabatan: m.jabatan, nia: m.nia, hadir: 0, lupaPulang: 0, alpha: 0, total: 0 };
+    });
+
+    // Kumpulkan semua hari kerja dalam range
+    const allPiketDays = new Set(
+      Object.values(pairs).filter(p => p.adaDatang).map(p => p.tanggal)
+    );
+    // Dari rawData, hitung per tanggal per NIA
+    const dateNIASet = new Set(rawData.filter(r => r.tipe === 'DATANG' && gen9NIASet.has(r.NIA)).map(r => r.tanggal + '_' + r.NIA));
+
+    // Hitung semua hari kerja dalam range untuk menentukan alpha
+    const allWorkdays = [];
+    const cur = new Date(from + 'T00:00:00');
+    const endDate = new Date(to + 'T00:00:00');
+    const todayDate = new Date(today + 'T00:00:00');
+    while (cur <= endDate && cur < todayDate) {
+      const dow = cur.getUTCDay();
+      if (dow >= 1 && dow <= 5) {
+        const y = cur.getUTCFullYear();
+        const mo = String(cur.getUTCMonth()+1).padStart(2,'0');
+        const d  = String(cur.getUTCDate()).padStart(2,'0');
+        allWorkdays.push(`${y}-${mo}-${d}`);
+      }
+      cur.setUTCDate(cur.getUTCDate() + 1);
+    }
+
+    // Hitung per anggota: hadir, lupaPulang, alpha
+    gen9.forEach(m => {
+      const s = statMap[m.nia];
+      allWorkdays.forEach(tgl => {
+        const key = m.nia + '_' + tgl;
+        const pair = pairs[key];
+        if (!pair || !pair.adaDatang) {
+          s.alpha++;
+        } else if (pair.adaDatang && !pair.adaPulang) {
+          s.hadir++;
+          s.lupaPulang++;
+          s.total += pair.durasi || DURASI_LP;
+        } else {
+          s.hadir++;
+          s.total += pair.durasi || 0;
+        }
+      });
+    });
+
+    // Urutkan: hadir DESC → total DESC → nama ASC
+    const ranked = Object.values(statMap)
+      .sort((a, b) => b.hadir - a.hadir || b.total - a.total || a.nama.localeCompare(b.nama));
 
     const badgeColors = ['#fbbf24','#94a3b8','#f97316'];
-    const badgeLabel  = ['🥇 #1','🥈 #2','🥉 #3'];
+    const badgeLabel  = ['🥇','🥈','🥉'];
 
     el.innerHTML = `
       <div class="table-card" style="padding:0;overflow:hidden;">
         <div style="background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.03));padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:13px;font-weight:700;color:#f0c040;">⭐ Papan Peringkat Piket BPH Aktif</span>
-          <span style="font-size:10px;color:var(--text3);margin-left:auto;">📅 Periode: ${periodeLabel}</span>
+          <span style="font-size:13px;font-weight:700;color:#f0c040;">📅 Riwayat Absensi Piket — Per Anggota</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto;">Periode: ${periodeLabel}</span>
         </div>
-        <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border);background:var(--bg3);">
+          <div style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.5px;">ANGGOTA</div>
+          <div style="padding:6px 4px;font-size:10px;font-weight:700;color:var(--text3);text-align:center;">DETAIL</div>
+          <div style="padding:6px 10px;font-size:10px;font-weight:700;color:#4ade80;text-align:right;">KEHADIRAN</div>
+        </div>
+        <div style="display:flex;flex-direction:column;">
           ${ranked.length === 0
-            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Belum ada data absensi untuk periode ini</div>'
+            ? '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px;">Belum ada data absensi untuk periode ini</div>'
             : ranked.map((m, i) => {
                 const isTop = i < 3;
-                const bc = isTop ? badgeColors[i] : 'var(--text3)';
-                const bl = isTop ? badgeLabel[i] : `#${i+1}`;
+                const bc = isTop ? badgeColors[i] : (m.hadir > 0 ? 'var(--accent)' : 'var(--text3)');
+                const badge = isTop ? badgeLabel[i] : `#${i+1}`;
+                const alphaColor = m.alpha > 0 ? 'var(--red)' : 'var(--text3)';
+                const lpColor = m.lupaPulang > 0 ? '#f59e0b' : 'var(--text3)';
+                const totalHari = m.hadir + m.alpha;
                 return `
-                  <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid ${isTop?bc+'44':'var(--border)'};border-radius:10px;padding:10px 14px;${i===0?'box-shadow:0 0 0 1px '+bc+'33;':''}">
-                    <div style="min-width:42px;font-size:13px;font-weight:700;color:${bc};text-align:center;">${bl}</div>
-                    <div style="flex:1;">
-                      <div style="font-weight:600;font-size:13px;color:var(--text1);">${m.nama}</div>
-                      <div style="font-size:10px;color:var(--text3);margin-top:1px;">${m.jabatan}</div>
+                  <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);background:${i===0?'rgba(212,175,55,0.04)':i===1?'rgba(148,163,184,0.03)':i===2?'rgba(249,115,22,0.03)':''};">
+                    <div>
+                      <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:11px;font-weight:700;color:${bc};min-width:22px;">${badge}</span>
+                        <div>
+                          <div style="font-weight:600;font-size:13px;color:var(--text1);">${m.nama}</div>
+                          <div style="font-size:10px;color:var(--text3);">${m.jabatan}</div>
+                        </div>
+                      </div>
                     </div>
-                    <div style="text-align:right;">
+                    <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+                        ${m.alpha > 0 ? `<span style="font-size:10px;background:rgba(248,113,113,0.12);color:${alphaColor};border:1px solid rgba(248,113,113,0.25);border-radius:6px;padding:1px 6px;white-space:nowrap;">❌ Alfa ${m.alpha}×</span>` : ''}
+                        ${m.lupaPulang > 0 ? `<span style="font-size:10px;background:rgba(245,158,11,0.12);color:${lpColor};border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:1px 6px;white-space:nowrap;">⏰ Lupa pulang ${m.lupaPulang}×</span>` : ''}
+                        ${m.alpha === 0 && m.lupaPulang === 0 ? '<span style="font-size:10px;background:rgba(74,222,128,0.10);color:var(--accent);border:1px solid rgba(74,222,128,0.25);border-radius:6px;padding:1px 8px;">✅ Disiplin</span>' : ''}
+                      </div>
+                    </div>
+                    <div style="text-align:right;min-width:60px;">
                       <div style="font-size:18px;font-weight:700;color:${bc};">${m.hadir}</div>
                       <div style="font-size:10px;color:var(--text3);">kehadiran</div>
                     </div>
@@ -9949,7 +10024,7 @@ async function renderPiketRankingBoard() {
       </div>`;
   } catch(e) {
     const el2 = document.getElementById('piket-ranking-board');
-    if(el2) el2.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px;">Belum ada data absensi</div>';
+    if(el2) el2.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px;">Gagal memuat data absensi</div>';
   }
 }
 window.renderPiketRankingBoard = renderPiketRankingBoard;
