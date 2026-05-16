@@ -1778,7 +1778,7 @@ const KIPM_DEFAULT_DATA = {"GEN 1":{"color":"#8a96a8","members":[{"id":"gen-1_00
             <div class="table-scroll"><table><thead><tr><th>Tipe</th><th>Waktu</th><th>NIA</th><th>Nama</th></tr></thead><tbody id="tbl-today"></tbody></table></div>
           </div>
           <div class="table-card" style="padding:16px;">
-            <div style="font-weight:600; font-size:13px; margin-bottom:12px;">📸 Foto Selfie Hari Ini <span style="font-size:11px; color:var(--text3); font-weight:400;">(sesi ini saja)</span></div>
+            <div style="font-weight:600; font-size:13px; margin-bottom:12px;">📸 Foto Selfie Hari Ini <span style="font-size:11px; color:var(--text3); font-weight:400;">(07:00–20:00 hari kerja · auto-refresh)</span></div>
             <div id="selfie-gallery-dashboard" class="selfie-grid"><div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie hari ini</div></div>
           </div>
         </div>
@@ -3266,6 +3266,15 @@ async function loadDashboard(){
   else tbody.innerHTML='<tr><td colspan="4" class="empty-state">Belum ada absensi hari ini</td></tr>'; 
   renderSelfieGalleryDashboard();
   renderDashboardSesiAktif();
+
+  // Auto-refresh selfie gallery setiap 2 menit selama dashboard terbuka
+  if (window._selfieRefreshTimer) clearInterval(window._selfieRefreshTimer);
+  window._selfieRefreshTimer = setInterval(() => {
+    if (document.getElementById('tab-dashboard')?.classList.contains('active') ||
+        document.getElementById('tab-dashboard')?.style.display !== 'none') {
+      renderSelfieGalleryDashboard();
+    }
+  }, 2 * 60 * 1000);
 }
 
 function resetFilterRekap() {
@@ -4737,12 +4746,29 @@ function previewSelfieKegiatan(nia, src) {
 }
 
 // ── Dashboard selfie gallery ──
-function renderSelfieGalleryDashboard() {
+async function renderSelfieGalleryDashboard() {
   const el = document.getElementById('selfie-gallery-dashboard');
   if(!el) return;
   const today = getTodayWIB();
 
-  // Gabung selfie dari memory (filter hari WIB ini) + shared localStorage key
+  // Cek apakah sekarang masih dalam jam piket (07:00 – 20:00 WIB)
+  const nowWIB = new Date(Date.now() + 7*3600*1000);
+  const jamNow = nowWIB.getUTCHours() * 60 + nowWIB.getUTCMinutes(); // menit dari 00:00
+  const JAM_MULAI  = 7  * 60; // 07:00
+  const JAM_SELESAI = 20 * 60; // 20:00
+  const dalamJadwal = jamNow >= JAM_MULAI && jamNow <= JAM_SELESAI;
+  // Akhiri di hari kerja Senin-Jumat
+  const dowWIB = nowWIB.getUTCDay();
+  const hariKerja = dowWIB >= 1 && dowWIB <= 5;
+
+  if (!dalamJadwal || !hariKerja) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">📵 Di luar jam piket — foto selfie hanya tampil 07:00–20:00 hari kerja.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div style="color:var(--text3);font-size:11px;grid-column:1/-1;">⏳ Memuat foto...</div>';
+
+  // 1. Selfie dari memory / localStorage device ini
   let allSelfies = selfieGallery.filter(s => isSameDayWIB(s.savedAt || 0));
   try {
     const sharedRaw = localStorage.getItem('selfieGallery_shared_' + today);
@@ -4754,14 +4780,39 @@ function renderSelfieGalleryDashboard() {
     }
   } catch(e) {}
 
-  if(!allSelfies.length){ 
-    el.innerHTML='<div style="color:var(--text3); font-size:12px; grid-column:1/-1;">Belum ada foto selfie hari ini.<br><span style="font-size:10px; opacity:0.7;">Foto masuk saat anggota absen via Kiosk Bursa.</span></div>'; 
-    return; 
+  // 2. Fetch foto dari GAS (untuk cross-device sync)
+  try {
+    const res = await api({action:'getSelfie', tanggal: today});
+    if(res && res.ok && Array.isArray(res.data)) {
+      res.data.forEach(s => {
+        // Tambah jika belum ada di local (NIA + tipe)
+        if(!allSelfies.find(x => x.NIA === s.NIA && (x.tipe||'') === (s.tipe||''))) {
+          allSelfies.push({
+            NIA: s.NIA,
+            nama: s.nama || s.NIA,
+            waktu: s.waktu || '',
+            tipe: s.tipe || '',
+            selfieMini: s.selfieBase64 || s.selfieMini || '',
+            selfieDataURL: s.selfieBase64 || '',
+            savedAt: Date.now()
+          });
+        }
+      });
+    }
+  } catch(e) {
+    // GAS mungkin belum punya endpoint getSelfie — tidak masalah, pakai local
+    console.warn('getSelfie GAS belum tersedia:', e.message);
   }
+
+  if(!allSelfies.length){
+    el.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;">Belum ada foto selfie hari ini.<br><span style="font-size:10px;opacity:0.7;">Foto masuk saat anggota absen via Kiosk Bursa.</span></div>';
+    return;
+  }
+
   el.innerHTML = allSelfies.map(s => `
-    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${s.selfieDataURL || s.selfieMini}')">
-      <img src="${s.selfieMini}" alt="${s.nama || ''}">
-      <div class="selfie-label">${(s.nama||'').split(' ')[0]}${s.tipe ? ' · '+s.tipe : ''}</div>
+    <div class="selfie-item" onclick="previewSelfieKegiatan('${s.NIA}', '${(s.selfieDataURL||s.selfieMini||'').replace(/'/g,'&apos;')}')">
+      ${s.selfieMini ? `<img src="${s.selfieMini}" alt="${s.nama||''}" onerror="this.style.display='none'">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--text3);">👤</div>`}
+      <div class="selfie-label">${(s.nama||'').split(' ')[0]}${s.tipe ? ' · '+s.tipe : ''}${s.waktu ? '<br><span style="font-size:9px;opacity:0.7;">'+s.waktu+'</span>' : ''}</div>
     </div>`).join('');
 }
 
@@ -8740,8 +8791,9 @@ function kipmRender() {
   if (statTotal) statTotal.textContent = all.length + ' Total Anggota';
   if (statAktif) statAktif.textContent = totalAktif + ' Aktif';
 
-  // List NIA yang bisa absen
-  const bisaAbsenSet = new Set(
+  // Catatan: semua anggota yang memiliki NIA valid bisa absen dengan NIA masing-masing
+  // Kolom "Absensi" menunjukkan apakah anggota juga terdaftar sebagai BPH Aktif (ikut jadwal piket)
+  const bphAktifSet = new Set(
     ((typeof allAnggota !== 'undefined' && allAnggota.length > 0) ? allAnggota : realAnggota)
       .map(a => a.NIA)
   );
@@ -8780,10 +8832,12 @@ function kipmRender() {
         ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(74,222,128,0.15);color:var(--accent);">Aktif</span>'
         : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(90,100,120,0.2);color:var(--text3);">Pasif</span>';
 
-      const bisaAbsen = bisaAbsenSet.has(m.nia);
-      const absenBadge = bisaAbsen
-        ? '<span title="NIA terdaftar di sistem absensi" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(74,222,128,0.15);color:var(--accent);white-space:nowrap;">✅ Bisa</span>'
-        : '<span title="NIA belum di sistem absensi" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,0.1);color:var(--red);white-space:nowrap;">✗ Tidak</span>';
+      // Semua anggota KIPM bisa absen dengan NIA masing-masing
+      // Badge ini menunjukkan apakah anggota juga BPH Aktif (punya jadwal piket)
+      const isBPHAktif = bphAktifSet.has(m.nia);
+      const absenBadge = isBPHAktif
+        ? '<span title="BPH Aktif — punya jadwal piket" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(74,222,128,0.15);color:var(--accent);white-space:nowrap;">🏛️ BPH</span>'
+        : '<span title="Semua anggota KIPM bisa absen dengan NIA masing-masing" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,211,238,0.1);color:var(--accent2);white-space:nowrap;">✅ Bisa</span>';
 
       const editBtns = isFounder
         ? '<span style="font-size:10px;color:var(--text3);padding:2px 8px;">🔒 Founder</span>'
@@ -8826,7 +8880,7 @@ function kipmRender() {
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Nama</th>'
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Jabatan</th>'
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Status</th>'
-            + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Absensi</th>'
+            + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;" title="Semua anggota bisa absen. BPH = punya jadwal piket.">Absensi</th>'
             + '<th style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-align:left;">Aksi</th>'
           + '</tr></thead>'
           + '<tbody>' + (visMembers.length ? rowsHTML : emptyRow) + '</tbody>'
